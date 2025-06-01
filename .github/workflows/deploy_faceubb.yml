@@ -32,8 +32,6 @@ jobs:
 
       - name: Ejecutar despliegue
         env:
-          GIT_COMMIT_SHA: ${{ github.sha }}
-          # Pasar los secretos con el contenido completo de los .env
           SECRET_ENV_FRONTEND_CONTENT: ${{ secrets.ENV_FRONTEND_CONTENT }}
           SECRET_ENV_BACKEND_CONTENT: ${{ secrets.ENV_BACKEND_CONTENT }}
         run: |
@@ -48,11 +46,8 @@ jobs:
             ENV_FILE_BACKEND="$APP_DIR/backend/src/config/.env"
             ENV_FILE_FRONTEND="$APP_DIR/frontend/.env"
             
-            echo ">>> Iniciando despliegue para el commit: $GIT_COMMIT_SHA"
-
             # 1. Actualizar código
             cd "$APP_DIR"
-            echo "Actualizando repositorio al commit: $GIT_COMMIT_SHA..."
             git fetch origin
             git reset --hard origin/main
             
