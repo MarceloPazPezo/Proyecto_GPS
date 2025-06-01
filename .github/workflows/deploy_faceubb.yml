@@ -36,87 +36,74 @@ jobs:
           PASS_SECRET_ENV_FRONTEND_CONTENT: ${{ secrets.ENV_FRONTEND_CONTENT }}
           PASS_SECRET_ENV_BACKEND_CONTENT: ${{ secrets.ENV_BACKEND_CONTENT }}
         run: |
-          export GH_ARG_GIT_COMMIT_SHA="${{ env.PASS_GIT_COMMIT_SHA }}"
-          export GH_ARG_SECRET_ENV_FRONTEND_CONTENT="${{ env.PASS_SECRET_ENV_FRONTEND_CONTENT }}"
-          export GH_ARG_SECRET_ENV_BACKEND_CONTENT="${{ env.PASS_SECRET_ENV_BACKEND_CONTENT }}"
-
           sshpass -p "${{ secrets.PROD_PASSWORD }}" ssh \
           -q \
           -o StrictHostKeyChecking=no \
           -p ${{ secrets.PROD_PORT }} \
-          ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} \
-          bash -s -- \
-          "$GH_ARG_GIT_COMMIT_SHA" \
-          "$GH_ARG_SECRET_ENV_FRONTEND_CONTENT" \
-          "$GH_ARG_SECRET_ENV_BACKEND_CONTENT" << 'EOF'
+          ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} << EOF
             set -euo pipefail
 
-            # Recuperar los argumentos pasados al script
-            # $1 es el primer argumento después de '--', $2 el segundo, etc.
-            ARG_GIT_COMMIT_SHA="$1" # Ahora este es el SHA del commit
-            ARG_SECRET_ENV_FRONTEND_CONTENT="$2"
-            ARG_SECRET_ENV_BACKEND_CONTENT="$3"
+            ARG_GIT_COMMIT_SHA="${{ env.PASS_GIT_COMMIT_SHA }}"
             
-            # Cargar NVM si existe y Node.js fue instalado con él
-            export NVM_DIR="$HOME/.nvm"
-            if [ -s "$NVM_DIR/nvm.sh" ]; then
+            # 1 Cargar NVM si existe y Node.js fue instalado con él
+            export NVM_DIR="\$HOME/.nvm"
+            if [ -s "\$NVM_DIR/nvm.sh" ]; then
               echo "Cargando nvm..."
-              . "$NVM_DIR/nvm.sh" # Source nvm.sh
+              . "\$NVM_DIR/nvm.sh"
             else
               echo "Advertencia: nvm no encontrado en $NVM_DIR. Asumiendo que node/npm están en el PATH."
             fi
             
-            # Verificar si npm está ahora disponible
+
+            # 2 Verificar si npm está ahora disponible
             if ! command -v npm &> /dev/null; then
                 echo "Error: npm no se pudo encontrar incluso después de intentar cargar nvm."
                 echo "Por favor, instala Node.js y npm en el servidor y asegúrate de que estén en el PATH."
                 exit 1
             fi
 
-            APP_DIR="/home/vlopez/Proyecto_GPS"
-            ENV_FILE_BACKEND="$APP_DIR/backend/src/config/.env"
-            ENV_FILE_FRONTEND="$APP_DIR/frontend/.env"
+            APP_DIR="/home/${{ secrets.PROD_USER }}/Proyecto_GPS"
+            ENV_FILE_BACKEND="\$APP_DIR/backend/src/config/.env"
+            ENV_FILE_FRONTEND="\$APP_DIR/frontend/.env"
             
-            # 1. Actualizar código
-            cd "$APP_DIR"
+            # 3. Actualizar código
+            cd "\$APP_DIR"
             git fetch origin
-
-            # Usa el SHA del commit que pasaste como argumento
-            git reset --hard "$ARG_GIT_COMMIT_SHA" 
+            git reset --hard "\$ARG_GIT_COMMIT_SHA"
             
-            # 2. Crear/Sobrescribir .env para Backend con contenido del secreto
-            if [ -n "$ARG_SECRET_ENV_BACKEND_CONTENT" ]; then
+            # 4. Crear/Sobrescribir .env para Backend con contenido del secreto
+            if [ -n "${{ secrets.ENV_BACKEND_CONTENT }}" ]; then
               echo "Escribiendo configuración de backend en $ENV_FILE_BACKEND..."
-              printf '%s\n' "$ARG_SECRET_ENV_BACKEND_CONTENT" > "$ENV_FILE_BACKEND"
+              printf '%s\n' "${{ secrets.ENV_BACKEND_CONTENT }}" > "$ENV_FILE_BACKEND"
             else
-              echo "ADVERTENCIA: El secreto ENV_BACKEND_CONTENT no se pasó o está vacío. Creando .env básico."
-              echo "# Generated on $(date)" > "$ENV_FILE_BACKEND" # $(date) se ejecuta en el remoto
+              echo "ADVERTENCIA: El secreto ENV_BACKEND_CONTENT no está definido. Creando .env básico."
+              echo "# Generated on \$(date)" > "$ENV_FILE_BACKEND"
               echo "NODE_ENV=production" >> "$ENV_FILE_BACKEND"
             fi
 
-            # 3. Crear/Sobrescribir .env para Frontend con contenido del secreto
-            if [ -n "$ARG_SECRET_ENV_FRONTEND_CONTENT" ]; then
+            # 5. Crear/Sobrescribir .env para Frontend con contenido del secreto
+            if [ -n "${{ secrets.ENV_FRONTEND_CONTENT }}" ]; then
               echo "Escribiendo configuración de frontend en $ENV_FILE_FRONTEND..."
-              printf '%s\n' "$ARG_SECRET_ENV_FRONTEND_CONTENT" > "$ENV_FILE_FRONTEND"
+              printf '%s\n' "${{ secrets.ENV_FRONTEND_CONTENT }}" > "$ENV_FILE_FRONTEND"
             else
-              echo "ADVERTENCIA: El secreto ENV_FRONTEND_CONTENT no se pasó o está vacío. Creando .env básico."
-              echo "# Generated on $(date)" > "$ENV_FILE_FRONTEND" # $(date) se ejecuta en el remoto
+              echo "ADVERTENCIA: El secreto ENV_FRONTEND_CONTENT no está definido. Creando .env básico."
+              echo "# Generated on \$(date)" > "$ENV_FILE_FRONTEND"
               echo "VITE_API_URL=https://url-por-defecto.com/api" >> "$ENV_FILE_FRONTEND"
             fi
-            
-            # 4. Instalar dependencias del backend
-            cd "$APP_DIR/backend"
+
+            # 6. Instalar dependencias del backend
+            cd "\$APP_DIR/backend"
             npm ci --production
 
-            # 5. Reiniciar backend
+            # 7. Reiniciar backend
             pm2 restart freehoot-backend || pm2 start src/index.js --name "freehoot-backend"
             
-            # 6. Instalar dependencias y contruir frontend
-            cd "$APP_DIR/frontend"
+            # 8. Instalar dependencias y contruir frontend
+            cd "\$APP_DIR/frontend"
             npm ci
             npm run build
 
-            # 7. Reiniciar frontend (considera si es necesario para frontend estático)
+            # 9. Reiniciar frontend
             pm2 restart freehoot-frontend || pm2 start npm --name "freehoot-frontend" -- run preview
             
             echo "Despliegue completado en $(date)"
