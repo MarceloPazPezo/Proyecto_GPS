@@ -55,6 +55,22 @@ jobs:
             ARG_SECRET_ENV_FRONTEND_CONTENT="$2"
             ARG_SECRET_ENV_BACKEND_CONTENT="$3"
             
+            # Cargar NVM si existe y Node.js fue instalado con él
+            export NVM_DIR="$HOME/.nvm"
+            if [ -s "$NVM_DIR/nvm.sh" ]; then
+              echo "Cargando nvm..."
+              . "$NVM_DIR/nvm.sh" # Source nvm.sh
+            else
+              echo "Advertencia: nvm no encontrado en $NVM_DIR. Asumiendo que node/npm están en el PATH."
+            fi
+            
+            # Verificar si npm está ahora disponible
+            if ! command -v npm &> /dev/null; then
+                echo "Error: npm no se pudo encontrar incluso después de intentar cargar nvm."
+                echo "Por favor, instala Node.js y npm en el servidor y asegúrate de que estén en el PATH."
+                exit 1
+            fi
+
             APP_DIR="/home/vlopez/Proyecto_GPS"
             ENV_FILE_BACKEND="$APP_DIR/backend/src/config/.env"
             ENV_FILE_FRONTEND="$APP_DIR/frontend/.env"
@@ -62,6 +78,7 @@ jobs:
             # 1. Actualizar código
             cd "$APP_DIR"
             git fetch origin
+            
             # Usa el SHA del commit que pasaste como argumento
             git reset --hard "$ARG_GIT_COMMIT_SHA" 
             
@@ -85,7 +102,6 @@ jobs:
               echo "VITE_API_URL=https://url-por-defecto.com/api" >> "$ENV_FILE_FRONTEND"
             fi
             
-            # ... (resto de tu script de despliegue sin cambios en esta parte) ...
             # 4. Instalar dependencias del backend
             cd "$APP_DIR/backend"
             npm ci --production
@@ -95,7 +111,7 @@ jobs:
             
             # 6. Instalar dependencias y contruir frontend
             cd "$APP_DIR/frontend"
-            npm ci --production
+            npm ci
             npm run build
 
             # 7. Reiniciar frontend (considera si es necesario para frontend estático)
