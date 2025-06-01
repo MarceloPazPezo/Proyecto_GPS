@@ -32,21 +32,23 @@ jobs:
 
       - name: Ejecutar despliegue
         env:
-          # Estas son las variables del entorno del RUNNER que vamos a pasar
-          PASS_GIT_COMMIT_SHA: ${{ github.sha }} # Ejemplo si necesitas el SHA
+          PASS_GIT_COMMIT_SHA: ${{ github.sha }}
           PASS_SECRET_ENV_FRONTEND_CONTENT: ${{ secrets.ENV_FRONTEND_CONTENT }}
           PASS_SECRET_ENV_BACKEND_CONTENT: ${{ secrets.ENV_BACKEND_CONTENT }}
         run: |
+          export GH_ARG_GIT_COMMIT_SHA="${{ env.PASS_GIT_COMMIT_SHA }}"
+          export GH_ARG_SECRET_ENV_FRONTEND_CONTENT="${{ env.PASS_SECRET_ENV_FRONTEND_CONTENT }}"
+          export GH_ARG_SECRET_ENV_BACKEND_CONTENT="${{ env.PASS_SECRET_ENV_BACKEND_CONTENT }}"
+
           sshpass -p "${{ secrets.PROD_PASSWORD }}" ssh \
           -q \
           -o StrictHostKeyChecking=no \
           -p ${{ secrets.PROD_PORT }} \
           ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} \
           bash -s -- \
-          "${{ env.PASS_GIT_COMMIT_SHA }}" \
-          "${{ env.PASS_SECRET_ENV_FRONTEND_CONTENT }}" \
-          "${{ env.PASS_SECRET_ENV_BACKEND_CONTENT }}" << 'EOF'
-            # Este script se ejecuta en el SERVIDOR REMOTO
+          "$GH_ARG_GIT_COMMIT_SHA" \
+          "$GH_ARG_SECRET_ENV_FRONTEND_CONTENT" \
+          "$GH_ARG_SECRET_ENV_BACKEND_CONTENT" << 'EOF'
             set -euo pipefail
 
             # Recuperar los argumentos pasados al script
@@ -78,7 +80,7 @@ jobs:
             # 1. Actualizar código
             cd "$APP_DIR"
             git fetch origin
-            
+
             # Usa el SHA del commit que pasaste como argumento
             git reset --hard "$ARG_GIT_COMMIT_SHA" 
             
