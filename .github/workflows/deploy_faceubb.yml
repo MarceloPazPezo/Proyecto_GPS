@@ -27,8 +27,8 @@ jobs:
         continue-on-error: false
         with:
           config_file: /dev/shm/face-ubb.ovpn
-          username: ${{ secrets.RUT }}
-          password: ${{ secrets.PASS }}
+          username: ${{ secrets.OPENVPN_USERNAME }}
+          password: ${{ secrets.OPENVPN_PASSWORD }}
 
       - name: Eliminar archivo de configuración OpenVPN # Limpia el archivo de configuración de OpenVPN
         if: always()
@@ -42,9 +42,10 @@ jobs:
       - name: Configurar SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          printf "%s\n" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          printf "%s\n" "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
 
       - name: Ejecutar despliegue
         env:
@@ -53,10 +54,10 @@ jobs:
           SECRET_ENV_FRONTEND_CONTENT: ${{ secrets.ENV_FRONTEND_CONTENT }}
           SECRET_ENV_BACKEND_CONTENT: ${{ secrets.ENV_BACKEND_CONTENT }}
         run: |
-          ssh -i ~/.ssh/id_ed25519 \
+          ssh -v -i ~/.ssh/id_ed25519 \
             -p ${{ secrets.PROD_PORT }} \
             ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} << 'EOF'
-            set -euo pipefail  # Falla en cualquier error
+            set -xeuo pipefail  # Falla en cualquier error
             
             APP_DIR="/home/vlopez/Proyecto_GPS"
             ENV_FILE_BACKEND="$APP_DIR/backend/src/config/.env"
