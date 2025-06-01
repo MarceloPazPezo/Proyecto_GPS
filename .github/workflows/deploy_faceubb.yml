@@ -1,12 +1,12 @@
-name: Despliegue a produccion
+name: Despliegue a face-ubb
 
 on:
-  push: # Se ejecuta cuando se hace un push al repositorio
+  push:
     branches:
-      - main # Se ejecuta solo para la rama main
+      - main
 
 jobs:
-  deploy: # Job para desplegar el proyecto
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Instalar dependencias (OpenVPN, SSH y sshpass)
@@ -14,13 +14,9 @@ jobs:
           sudo apt update -qq > /dev/null 2>&1
           sudo apt install -y -qq openvpn openvpn-systemd-resolved openssh-client sshpass
 
-      - name: Crear archivo de configuración OpenVPN # Crea el archivo de configuración de OpenVPN en memoria
+      - name: Crear archivo de configuración OpenVPN
         run: echo "${{ secrets.OPENVPN_CONFIG }}" > /dev/shm/face-ubb.ovpn
 
-        # Conecta a la VPN de la UBB usando un action de GitHub del usuario kota65535.
-        # Tambien se podría usar el cliente de OpenVPN directamente.
-        # La ventaja de usar el action es que se encarga de crear el cliente y manejar la conexión por nosotros.
-        # Más información en https://github.com/kota65535/github-openvpn-connect-action/tree/v3.1.0/
       - name: Conexion a la VPN de la UBB
         uses: kota65535/github-openvpn-connect-action@v3.1.0
         timeout-minutes: 2
@@ -30,22 +26,9 @@ jobs:
           username: ${{ secrets.OPENVPN_USERNAME }}
           password: ${{ secrets.OPENVPN_PASSWORD }}
 
-      - name: Eliminar archivo de configuración OpenVPN # Limpia el archivo de configuración de OpenVPN
+      - name: Eliminar archivo de configuración OpenVPN
         if: always()
         run: rm -f /dev/shm/face-ubb.ovpn
-
-      # La siguiente sección es para conectarse al servidor y desplegar el código
-      # Este ejemplo usa sshpass para conectarse al servidor usando SSH.
-      # Es recomendable usar claves SSH en lugar de contraseñas para mayor seguridad, evitando el uso de contraseñas.
-      # Hay muchas formas de hacer esto, este es solo un ejemplo sencillo con Node. Debe ser adaptado a tu proyecto.
-
-      - name: Configurar SSH
-        run: |
-          mkdir -p ~/.ssh
-          printf "%s\n" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          printf "%s\n" "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
 
       - name: Ejecutar despliegue
         env:
@@ -54,10 +37,12 @@ jobs:
           SECRET_ENV_FRONTEND_CONTENT: ${{ secrets.ENV_FRONTEND_CONTENT }}
           SECRET_ENV_BACKEND_CONTENT: ${{ secrets.ENV_BACKEND_CONTENT }}
         run: |
-          ssh -v -i ~/.ssh/id_ed25519 \
-            -p ${{ secrets.PROD_PORT }} \
-            ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} << 'EOF'
-            set -xeuo pipefail  # Falla en cualquier error
+          sshpass -p "${{ secrets.PROD_PASSWORD }}" ssh \
+          -q \
+          -o StrictHostKeyChecking=no \
+          -p ${{ secrets.PROD_PORT }} \
+          ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} << 'EOF'
+            set -euo pipefail
             
             APP_DIR="/home/vlopez/Proyecto_GPS"
             ENV_FILE_BACKEND="$APP_DIR/backend/src/config/.env"
@@ -115,4 +100,4 @@ jobs:
         if: always()
         run: |
           sudo pkill openvpn || true
-          rm -f /tmp/ubb-vpn.ovpn ~/.ssh/id_ed25519
+          rm -f /tmp/ubb-vpn.ovpn
