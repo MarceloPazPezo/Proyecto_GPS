@@ -1,0 +1,35 @@
+"use strict";
+
+import { EntitySchema } from "typeorm"
+
+const RespuestaSchema = new EntitySchema({
+    name:"Respuesta",
+    TableName:"respuestas",
+    columns:{
+        textoRespuesta: {
+        type: "varchar",
+        length: 2000,
+        nullable: false,
+    },
+    correcta:{
+        type: "boolean",
+        default: false,
+    },
+    idPreguntas:{
+        type: "int",
+        primary: true,
+    },
+    },
+    relations:{
+        idPreguntas:{
+            target: "pregunta",
+            type: "many-to-one",
+            joinColumn: { name: "idPreguntas", referencedColumnName: "id" },
+            onDelete: "CASCADE",
+            
+        }
+    }
+
+});
+
+export default RespuestaSchema;
