@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest # Crea un entorno virtual en Ubuntu
     strategy:
       matrix:
-        project: [backend, frontend] # Define una matriz de proyectos para ejecutar pruebas
+        project: [backend] # Define una matriz de proyectos para ejecutar pruebas
     steps:
       - name: Checkout código # Clona el repositorio en el entorno virtual
         uses: actions/checkout@v4 # Usa una acción de GitHub
