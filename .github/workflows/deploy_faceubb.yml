@@ -134,7 +134,7 @@ jobs:
             
             # 4. Instalar dependencias del backend
             cd "$APP_DIR/backend"
-            npm ci --production
+            npm ci
 
             # 5. Reiniciar backend
             pm2 restart freehoot-backend || pm2 start src/index.js --name "freehoot-backend"
