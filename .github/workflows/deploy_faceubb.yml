@@ -1,12 +1,12 @@
-name: Despliegue a produccion
+name: Despliegue a face-ubb
 
 on:
-  push: # Se ejecuta cuando se hace un push al repositorio
+  push:
     branches:
-      - main # Se ejecuta solo para la rama main
+      - main
 
 jobs:
-  deploy: # Job para desplegar el proyecto
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Instalar dependencias (OpenVPN, SSH y sshpass)
@@ -14,13 +14,9 @@ jobs:
           sudo apt update -qq > /dev/null 2>&1
           sudo apt install -y -qq openvpn openvpn-systemd-resolved openssh-client sshpass
 
-      - name: Crear archivo de configuración OpenVPN # Crea el archivo de configuración de OpenVPN en memoria
+      - name: Crear archivo de configuración OpenVPN
         run: echo "${{ secrets.OPENVPN_CONFIG }}" > /dev/shm/face-ubb.ovpn
 
-        # Conecta a la VPN de la UBB usando un action de GitHub del usuario kota65535.
-        # Tambien se podría usar el cliente de OpenVPN directamente.
-        # La ventaja de usar el action es que se encarga de crear el cliente y manejar la conexión por nosotros.
-        # Más información en https://github.com/kota65535/github-openvpn-connect-action/tree/v3.1.0/
       - name: Conexion a la VPN de la UBB
         uses: kota65535/github-openvpn-connect-action@v3.1.0
         timeout-minutes: 2
@@ -30,82 +26,84 @@ jobs:
           username: ${{ secrets.OPENVPN_USERNAME }}
           password: ${{ secrets.OPENVPN_PASSWORD }}
 
-      - name: Eliminar archivo de configuración OpenVPN # Limpia el archivo de configuración de OpenVPN
+      - name: Eliminar archivo de configuración OpenVPN
         if: always()
         run: rm -f /dev/shm/face-ubb.ovpn
 
-      # La siguiente sección es para conectarse al servidor y desplegar el código
-      # Este ejemplo usa sshpass para conectarse al servidor usando SSH.
-      # Es recomendable usar claves SSH en lugar de contraseñas para mayor seguridad, evitando el uso de contraseñas.
-      # Hay muchas formas de hacer esto, este es solo un ejemplo sencillo con Node. Debe ser adaptado a tu proyecto.
-
-      - name: Configurar SSH
-        run: |
-          mkdir -p ~/.ssh
-          printf "%s\n" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          printf "%s\n" "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
-
       - name: Ejecutar despliegue
         env:
-          GIT_COMMIT_SHA: ${{ github.sha }}
-          # Pasar los secretos con el contenido completo de los .env
-          SECRET_ENV_FRONTEND_CONTENT: ${{ secrets.ENV_FRONTEND_CONTENT }}
-          SECRET_ENV_BACKEND_CONTENT: ${{ secrets.ENV_BACKEND_CONTENT }}
+          PASS_GIT_COMMIT_SHA: ${{ github.sha }}
+          PASS_SECRET_ENV_FRONTEND_CONTENT: ${{ secrets.ENV_FRONTEND_CONTENT }}
+          PASS_SECRET_ENV_BACKEND_CONTENT: ${{ secrets.ENV_BACKEND_CONTENT }}
         run: |
-          ssh -v -i ~/.ssh/id_ed25519 \
-            -p ${{ secrets.PROD_PORT }} \
-            ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} << 'EOF'
-            set -xeuo pipefail  # Falla en cualquier error
-            
-            APP_DIR="/home/vlopez/Proyecto_GPS"
-            ENV_FILE_BACKEND="$APP_DIR/backend/src/config/.env"
-            ENV_FILE_FRONTEND="$APP_DIR/frontend/.env"
-            
-            echo ">>> Iniciando despliegue para el commit: $GIT_COMMIT_SHA"
+          sshpass -p "${{ secrets.PROD_PASSWORD }}" ssh \
+          -q \
+          -o StrictHostKeyChecking=no \
+          -p ${{ secrets.PROD_PORT }} \
+          ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} << EOF
+            set -euo pipefail
 
-            # 1. Actualizar código
-            cd "$APP_DIR"
-            echo "Actualizando repositorio al commit: $GIT_COMMIT_SHA..."
-            git fetch origin
-            git reset --hard origin/main
+            ARG_GIT_COMMIT_SHA="${{ env.PASS_GIT_COMMIT_SHA }}"
             
-            # 2. Crear/Sobrescribir .env para Backend con contenido del secreto
-            # Asegúrate de que la variable de entorno SECRET_ENV_BACKEND_CONTENT esté definida
-            if [ -n "$SECRET_ENV_BACKEND_CONTENT" ]; then
+            # 1 Cargar NVM si existe y Node.js fue instalado con él
+            export NVM_DIR="\$HOME/.nvm"
+            if [ -s "\$NVM_DIR/nvm.sh" ]; then
+              echo "Cargando nvm..."
+              . "\$NVM_DIR/nvm.sh"
+            else
+              echo "Advertencia: nvm no encontrado en $NVM_DIR. Asumiendo que node/npm están en el PATH."
+            fi
+            
+
+            # 2 Verificar si npm está ahora disponible
+            if ! command -v npm &> /dev/null; then
+                echo "Error: npm no se pudo encontrar incluso después de intentar cargar nvm."
+                echo "Por favor, instala Node.js y npm en el servidor y asegúrate de que estén en el PATH."
+                exit 1
+            fi
+
+            APP_DIR="/home/${{ secrets.PROD_USER }}/Proyecto_GPS"
+            ENV_FILE_BACKEND="\$APP_DIR/backend/src/config/.env"
+            ENV_FILE_FRONTEND="\$APP_DIR/frontend/.env"
+            
+            # 3. Actualizar código
+            cd "\$APP_DIR"
+            git fetch origin
+            git reset --hard "\$ARG_GIT_COMMIT_SHA"
+            
+            # 4. Crear/Sobrescribir .env para Backend con contenido del secreto
+            if [ -n "${{ secrets.ENV_BACKEND_CONTENT }}" ]; then
               echo "Escribiendo configuración de backend en $ENV_FILE_BACKEND..."
-              # Usar printf para manejar correctamente los saltos de línea y caracteres especiales
-              printf '%s\n' "$SECRET_ENV_BACKEND_CONTENT" > "$ENV_FILE_BACKEND"
+              printf '%s\n' "${{ secrets.ENV_BACKEND_CONTENT }}" > "$ENV_FILE_BACKEND"
             else
               echo "ADVERTENCIA: El secreto ENV_BACKEND_CONTENT no está definido. Creando .env básico."
-              echo "# Generated on $(date)" > "$ENV_FILE_BACKEND"
+              echo "# Generated on \$(date)" > "$ENV_FILE_BACKEND"
               echo "NODE_ENV=production" >> "$ENV_FILE_BACKEND"
             fi
 
-            # 3. Crear/Sobrescribir .env para Frontend con contenido del secreto
-            if [ -n "$SECRET_ENV_FRONTEND_CONTENT" ]; then
+            # 5. Crear/Sobrescribir .env para Frontend con contenido del secreto
+            if [ -n "${{ secrets.ENV_FRONTEND_CONTENT }}" ]; then
               echo "Escribiendo configuración de frontend en $ENV_FILE_FRONTEND..."
-              printf '%s\n' "$SECRET_ENV_FRONTEND_CONTENT" > "$ENV_FILE_FRONTEND"
+              printf '%s\n' "${{ secrets.ENV_FRONTEND_CONTENT }}" > "$ENV_FILE_FRONTEND"
             else
               echo "ADVERTENCIA: El secreto ENV_FRONTEND_CONTENT no está definido. Creando .env básico."
-              echo "# Generated on $(date)" > "$ENV_FILE_FRONTEND"
+              echo "# Generated on \$(date)" > "$ENV_FILE_FRONTEND"
               echo "VITE_API_URL=https://url-por-defecto.com/api" >> "$ENV_FILE_FRONTEND"
             fi
-            
-            # 4. Instalar dependencias del backend
-            cd "$APP_DIR/backend"
+
+            # 6. Instalar dependencias del backend
+            cd "\$APP_DIR/backend"
             npm ci --production
 
-            # 5. Reiniciar backend
+            # 7. Reiniciar backend
             pm2 restart freehoot-backend || pm2 start src/index.js --name "freehoot-backend"
             
-            # 6. Instalar dependencias y contruir frontend
-            cd "$APP_DIR/frontend"
-            npm ci --production
+            # 8. Instalar dependencias y contruir frontend
+            cd "\$APP_DIR/frontend"
+            npm ci
             npm run build
 
-            # 7. Reiniciar frontend
+            # 9. Reiniciar frontend
             pm2 restart freehoot-frontend || pm2 start npm --name "freehoot-frontend" -- run preview
             
             echo "Despliegue completado en $(date)"
@@ -115,4 +113,4 @@ jobs:
         if: always()
         run: |
           sudo pkill openvpn || true
-          rm -f /tmp/ubb-vpn.ovpn ~/.ssh/id_ed25519
+          rm -f /tmp/ubb-vpn.ovpn

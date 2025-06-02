@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import UserSchema from './user.entity.js';
+import UserSchema from '../entity/user.entity.js';
 
 describe('UserSchema Entity', () => {
     it('should have correct entity name and table name', () => {
