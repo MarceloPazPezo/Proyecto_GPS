@@ -3,30 +3,35 @@
 import { EntitySchema } from "typeorm"
 
 const RespuestaSchema = new EntitySchema({
-    name:"Respuesta",
-    TableName:"respuestas",
-    columns:{
+    name: "Respuesta",
+    TableName: "respuestas",
+    columns: {
+        id: {
+            type: "int",
+            primary: true,
+            generated: true,
+        },
         textoRespuesta: {
-        type: "varchar",
-        length: 2000,
-        nullable: false,
+            type: "varchar",
+            length: 2000,
+            nullable: false,
+        },
+        correcta: {
+            type: "boolean",
+            default: false,
+        },
+        idPreguntas: {
+            type: "int",
+            primary: true,
+        },
     },
-    correcta:{
-        type: "boolean",
-        default: false,
-    },
-    idPreguntas:{
-        type: "int",
-        primary: true,
-    },
-    },
-    relations:{
-        idPreguntas:{
+    relations: {
+        idPreguntas: {
             target: "pregunta",
             type: "many-to-one",
             joinColumn: { name: "idPreguntas", referencedColumnName: "id" },
             onDelete: "CASCADE",
-            
+
         }
     }
 
