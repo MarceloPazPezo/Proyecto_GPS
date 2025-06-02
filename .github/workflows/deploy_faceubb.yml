@@ -12,7 +12,7 @@ jobs:
       - name: Instalar dependencias (OpenVPN, SSH y sshpass)
         run: |
           sudo apt update -qq > /dev/null 2>&1
-          sudo apt install -y -qq openvpn openvpn-systemd-resolved openssh-client sshpass base64
+          sudo apt install -y -qq openvpn openvpn-systemd-resolved openssh-client sshpass
 
       - name: Crear archivo de configuración OpenVPN
         run: echo "${{ secrets.OPENVPN_CONFIG }}" > /dev/shm/face-ubb.ovpn
@@ -26,32 +26,57 @@ jobs:
           username: ${{ secrets.OPENVPN_USERNAME }}
           password: ${{ secrets.OPENVPN_PASSWORD }}
 
-      - name: Eliminar archivo de configuración OpenVPN
+      - name: Eliminar archivo de configuración OpenVPN (temporal VPN)
         if: always()
         run: rm -f /dev/shm/face-ubb.ovpn
 
-      - name: Codificar secretos .env a Base64
-        id: encode_secrets
+      # NUEVO: Crear archivos .env temporales en el runner
+      - name: Crear archivos .env temporales para scp
         run: |
-          # Usamos printf %s para no añadir un newline extra al contenido del secreto
-          # Usamos base64 -w0 para que la salida sea una sola línea sin wrapping
-          encoded_frontend=$(printf %s "${{ secrets.ENV_FRONTEND_CONTENT }}" | base64 -w0)
-          encoded_backend=$(printf %s "${{ secrets.ENV_BACKEND_CONTENT }}" | base64 -w0)
-          echo "::set-output name=frontend_b64::$encoded_frontend"
-          echo "::set-output name=backend_b64::$encoded_backend"
-          # Para versiones más nuevas de Actions, usar GITHUB_OUTPUT:
-          # echo "frontend_b64=$encoded_frontend" >> $GITHUB_OUTPUT
-          # echo "backend_b64=$encoded_backend" >> $GITHUB_OUTPUT
+          # Usamos /dev/shm para que los archivos estén en memoria y sean rápidos y se limpien si el runner falla
+          # También podrías usar /tmp o un directorio específico.
+          # Importante: printf '%s' evita añadir un newline extra al final del contenido del secreto.
+          printf '%s' "${{ secrets.ENV_FRONTEND_CONTENT }}" > /dev/shm/frontend.env.tmp
+          printf '%s' "${{ secrets.ENV_BACKEND_CONTENT }}" > /dev/shm/backend.env.tmp
+        shell: bash # Aseguramos que printf '%s' funcione como se espera
 
-      - name: Ejecutar despliegue
+      - name: Copiar archivos .env al servidor remoto
+        env:
+          PROD_HOST: ${{ secrets.PROD_HOST }}
+          PROD_USER: ${{ secrets.PROD_USER }}
+          PROD_PASSWORD: ${{ secrets.PROD_PASSWORD }}
+          PROD_PORT: ${{ secrets.PROD_PORT }}
+        run: |
+          APP_DIR_REMOTE="/home/vlopez/Proyecto_GPS" # Asegúrate que esta ruta sea correcta
+          ENV_FILE_BACKEND_REMOTE="$APP_DIR_REMOTE/backend/src/config/.env"
+          ENV_FILE_FRONTEND_REMOTE="$APP_DIR_REMOTE/frontend/.env"
+
+          echo "Copiando .env de frontend a $PROD_USER@$PROD_HOST:$ENV_FILE_FRONTEND_REMOTE"
+          sshpass -p "$PROD_PASSWORD" scp \
+            -o StrictHostKeyChecking=no \
+            -P "$PROD_PORT" \
+            /dev/shm/frontend.env.tmp "$PROD_USER@$PROD_HOST:$ENV_FILE_FRONTEND_REMOTE"
+
+          echo "Copiando .env de backend a $PROD_USER@$PROD_HOST:$ENV_FILE_BACKEND_REMOTE"
+          sshpass -p "$PROD_PASSWORD" scp \
+            -o StrictHostKeyChecking=no \
+            -P "$PROD_PORT" \
+            /dev/shm/backend.env.tmp "$PROD_USER@$PROD_HOST:$ENV_FILE_BACKEND_REMOTE"
+
+      # NUEVO: Eliminar archivos .env temporales del runner
+      - name: Eliminar archivos .env temporales del runner
+        if: always() # Asegura que se ejecute incluso si pasos anteriores fallan
+        run: |
+          rm -f /dev/shm/frontend.env.tmp
+          rm -f /dev/shm/backend.env.tmp
+
+      - name: Ejecutar despliegue (script remoto)
         env:
           PASS_GIT_COMMIT_SHA: ${{ github.sha }}
-          PASS_SECRET_ENV_FRONTEND_CONTENT_B64: ${{ steps.encode_secrets.outputs.frontend_b64 }}
-          PASS_SECRET_ENV_BACKEND_CONTENT_B64: ${{ steps.encode_secrets.outputs.backend_b64 }}
+          # Ya no pasamos el contenido de los .env aquí
         run: |
           export GH_ARG_GIT_COMMIT_SHA="${{ env.PASS_GIT_COMMIT_SHA }}"
-          export GH_ARG_SECRET_ENV_FRONTEND_CONTENT_B64="${{ env.PASS_SECRET_ENV_FRONTEND_CONTENT_B64 }}"
-          export GH_ARG_SECRET_ENV_BACKEND_CONTENT_B64="${{ env.PASS_SECRET_ENV_BACKEND_CONTENT_B64 }}"
+          # Ya no necesitamos exportar GH_ARG_SECRET_ENV_...
 
           sshpass -p "${{ secrets.PROD_PASSWORD }}" ssh \
           -q \
@@ -60,60 +85,51 @@ jobs:
           ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} \
           bash -s -- \
           "$GH_ARG_GIT_COMMIT_SHA" \
-          "$GH_ARG_SECRET_ENV_FRONTEND_CONTENT_B64" \
-          "$GH_ARG_SECRET_ENV_BACKEND_CONTENT_B64" << 'EOF'
+          << 'EOF' # Los argumentos $2 y $3 ya no se pasan ni se usan
             set -euo pipefail
 
             ARG_GIT_COMMIT_SHA="$1"
-            ARG_SECRET_ENV_FRONTEND_CONTENT_B64="$2"
-            ARG_SECRET_ENV_BACKEND_CONTENT_B64="$3"
+            # ARG_SECRET_ENV_FRONTEND_CONTENT="$2" # Ya no se usa
+            # ARG_SECRET_ENV_BACKEND_CONTENT="$3"  # Ya no se usa
             
-            # Cargar NVM si existe y Node.js fue instalado con él
             export NVM_DIR="$HOME/.nvm"
             if [ -s "$NVM_DIR/nvm.sh" ]; then
               echo "Cargando nvm..."
-              . "$NVM_DIR/nvm.sh" # Source nvm.sh
+              . "$NVM_DIR/nvm.sh"
             else
-              echo "Advertencia: nvm no encontrado en $NVM_DIR. Asumiendo que node/npm están en el PATH."
+              echo "Advertencia: nvm no encontrado. Asumiendo node/npm en PATH."
             fi
             
-            # Verificar si npm está ahora disponible
             if ! command -v npm &> /dev/null; then
-                echo "Error: npm no se pudo encontrar incluso después de intentar cargar nvm."
-                echo "Por favor, instala Node.js y npm en el servidor y asegúrate de que estén en el PATH."
+                echo "Error: npm no encontrado."
                 exit 1
             fi
 
             APP_DIR="/home/vlopez/Proyecto_GPS"
-            ENV_FILE_BACKEND="$APP_DIR/backend/src/config/.env"
-            ENV_FILE_FRONTEND="$APP_DIR/frontend/.env"
+            # Los archivos .env ya deberían existir gracias a scp
             
             # 1. Actualizar código
             cd "$APP_DIR"
             git fetch origin
-            # Usa el SHA del commit que pasaste como argumento
             git reset --hard "$ARG_GIT_COMMIT_SHA" 
             
-            # 2. Crear/Sobrescribir .env para Backend con contenido del secreto
-            if [ -n "$ARG_SECRET_ENV_BACKEND_CONTENT_B64" ]; then
-              echo "Escribiendo configuración de backend en $ENV_FILE_BACKEND..."
-              # Decodificar Base64 y escribir al archivo
-              echo "$ARG_SECRET_ENV_BACKEND_CONTENT_B64" | base64 -d > "$ENV_FILE_BACKEND"
+            # 2. y 3. Los archivos .env ya fueron creados por scp.
+            # Podemos verificar si existen por si algo falló con scp
+            ENV_FILE_BACKEND="$APP_DIR/backend/src/config/.env"
+            ENV_FILE_FRONTEND="$APP_DIR/frontend/.env"
+
+            if [ ! -f "$ENV_FILE_BACKEND" ]; then
+              echo "ERROR: El archivo .env de backend no fue encontrado en $ENV_FILE_BACKEND después de scp."
+              exit 1
             else
-              echo "ADVERTENCIA: El secreto ENV_BACKEND_CONTENT (Base64) no se pasó o está vacío. Creando .env básico."
-              echo "# Generated on $(date)" > "$ENV_FILE_BACKEND"
-              echo "NODE_ENV=production" >> "$ENV_FILE_BACKEND"
+              echo "Archivo .env de backend encontrado en $ENV_FILE_BACKEND."
             fi
 
-            # 3. Crear/Sobrescribir .env para Frontend con contenido del secreto (decodificado)
-            if [ -n "$ARG_SECRET_ENV_FRONTEND_CONTENT_B64" ]; then
-              echo "Escribiendo configuración de frontend en $ENV_FILE_FRONTEND..."
-              # Decodificar Base64 y escribir al archivo
-              echo "$ARG_SECRET_ENV_FRONTEND_CONTENT_B64" | base64 -d > "$ENV_FILE_FRONTEND"
+            if [ ! -f "$ENV_FILE_FRONTEND" ]; then
+              echo "ERROR: El archivo .env de frontend no fue encontrado en $ENV_FILE_FRONTEND después de scp."
+              exit 1
             else
-              echo "ADVERTENCIA: El secreto ENV_FRONTEND_CONTENT (Base64) no se pasó o está vacío. Creando .env básico."
-              echo "# Generated on $(date)" > "$ENV_FILE_FRONTEND"
-              echo "VITE_API_URL=https://url-por-defecto.com/api" >> "$ENV_FILE_FRONTEND"
+              echo "Archivo .env de frontend encontrado en $ENV_FILE_FRONTEND."
             fi
             
             # 4. Instalar dependencias del backend
@@ -128,14 +144,14 @@ jobs:
             npm ci
             npm run build
 
-            # 7. Reiniciar frontend (considera si es necesario para frontend estático)
+            # 7. Reiniciar frontend
             pm2 restart freehoot-frontend || pm2 start npm --name "freehoot-frontend" -- run preview
             
             echo "Despliegue completado en $(date)"
           EOF
 
-      - name: Limpieza
+      - name: Limpieza final (VPN)
         if: always()
         run: |
           sudo pkill openvpn || true
-          rm -f /tmp/ubb-vpn.ovpn
+          # rm -f /tmp/ubb-vpn.ovpn # Ya se eliminó /dev/shm/face-ubb.ovpn
