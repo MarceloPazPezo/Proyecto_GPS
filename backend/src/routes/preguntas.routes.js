@@ -1,5 +1,6 @@
 "use strict";
 import { Router } from "express";
+import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 
 import{
     createPregunta,
@@ -11,6 +12,7 @@ import{
 
 const router = Router();
 router
+  .use(authenticateJwt) 
   .get("/cuestionario/:idCuestionario", getPreguntas)
   .get("/:id", getPregunta)
   .post("/", createPregunta)
