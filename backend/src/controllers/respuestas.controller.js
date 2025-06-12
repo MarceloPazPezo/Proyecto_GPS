@@ -4,7 +4,8 @@ import {
     getRespuestaService,
     getRespuestasService,
     updateRespuestaService,
-    deleteRespuestaService
+    deleteRespuestaService,
+    addLotepRespuestasService
 } from "../services/respuestas.service.js";
 
 import { 
@@ -105,5 +106,38 @@ export async function deleteRespuesta(req, res) {
     } catch (error) {
         console.error("Error al eliminar la respuesta:", error);
          handleErrorServer(res, 500, error.message);
+    }
+}
+
+export async function addLotepRespuestas(req, res) {
+    try {
+        const respuestasBody = req.body;
+
+        // Si el body es { respuestas: [...] } o un array directo
+
+
+        const respuestas = respuestasBody.respuestas
+            ? respuestasBody.respuestas
+            : respuestasBody;
+
+        const loteRespuestas = { respuestas };
+
+        // Validación de cada respuesta
+        for (const respuesta of respuestas) {
+            const { error } = respuestaBodyValidation.validate(respuesta);
+            if (error) return handleErrorClient(res, 400, "Error de validación en lote", error.message);
+        }
+
+        // Aquí deberías llamar a tu service para guardar el lote de respuestas
+        const [addedRespuestas, errorRespuestas] = await addLotepRespuestasService(loteRespuestas);
+
+         if (errorRespuestas) return res.status(500).json({ error: errorRespuestas });
+         if (!addedRespuestas || addedRespuestas.length === 0) return res.status(400).send();
+
+         handleSuccess(res, 201, "Respuestas añadidas exitosamente", addedRespuestas);
+
+    } catch (error) {
+        console.error("Error al añadir las respuestas:", error);
+        handleErrorServer(res, 500, error.message);
     }
 }

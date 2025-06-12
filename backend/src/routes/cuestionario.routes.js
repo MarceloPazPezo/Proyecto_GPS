@@ -5,8 +5,12 @@ import {
     getCuestionario,
     getCuestionarios,
     deleteCuestionario,
-    updateCuestionario
+    updateCuestionario,
+    addLotepPreguntas,
+    obtenerPreguntasYRespuestasController
 } from "../controllers/cuestionario.controller.js";
+
+
 
 const router=Router();
 
@@ -16,5 +20,7 @@ router.get("/all",getCuestionarios);
 router.post("/",createCuestionario);
 router.patch("/",updateCuestionario);
 router.delete("/",deleteCuestionario);
+router.post("/addLote/:idCuestionario", addLotepPreguntas);
+router.get("/lote/:idCuestionario", obtenerPreguntasYRespuestasController);
 
 export default router;

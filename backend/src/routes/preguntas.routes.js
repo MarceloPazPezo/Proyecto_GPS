@@ -7,7 +7,7 @@ import{
     getPregunta,
     getPreguntas,
     updatePregunta,
-    deletePregunta
+    deletePregunta,
 } from "../controllers/preguntas.controller.js";
 
 const router = Router();
@@ -17,6 +17,7 @@ router
   .get("/:id", getPregunta)
   .post("/", createPregunta)
   .patch("/update/:id", updatePregunta)
-  .delete("/del/:id", deletePregunta);
+  .delete("/del/:id", deletePregunta)
+
 
 export default router;

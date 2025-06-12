@@ -4,7 +4,7 @@ import {
     getPreguntaService,
     getPreguntasService,
     updatePreguntaService,
-    deletePreguntaService
+    deletePreguntaService,
 } from "../services/preguntas.service.js";
 
 import { handleErrorClient, handleErrorServer, handleSuccess } from "../handlers/responseHandlers.js";
@@ -13,6 +13,7 @@ import {
     questionBodyValidation, 
     questionQueryValidation 
 } from "../validations/preguntas.validation.js";
+
 
 
 export async function getPregunta(req, res) {
