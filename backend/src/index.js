@@ -10,10 +10,21 @@ import { cookieKey, HOST, PORT } from "./config/configEnv.js";
 import { connectDB } from "./config/configDb.js";
 import { createUsers } from "./config/initialSetup.js";
 import { passportJwtSetup } from "./auth/passport.auth.js";
+import http from 'http'
+import { Server } from 'socket.io'
+import { socketEvents } from "./services/socket.service.js";
 
 async function setupServer() {
   try {
     const app = express();
+
+    const server = http.createServer(app);
+
+    const io = new Server(server, {
+      connectionStateRecovery: {
+        maxDisconnectionDuration: 10 * 60 * 1000
+      }
+    });
 
     app.disable("x-powered-by");
 
@@ -61,7 +72,9 @@ async function setupServer() {
 
     app.use("/api", indexRoutes);
 
-    app.listen(PORT, () => {
+    io.on('connection',socketEvents);
+
+    server.listen(PORT, () => {
       console.log(`=> Servidor corriendo en ${HOST}:${PORT}/api`);
     });
   } catch (error) {
