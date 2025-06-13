@@ -1,12 +1,12 @@
-name: Despliegue a produccion
+name: Despliegue a face-ubb
 
 on:
-  push: # Se ejecuta cuando se hace un push al repositorio
+  push:
     branches:
-      - main # Se ejecuta solo para la rama main
+      - main
 
 jobs:
-  deploy: # Job para desplegar el proyecto
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Instalar dependencias (OpenVPN, SSH y sshpass)
@@ -14,13 +14,9 @@ jobs:
           sudo apt update -qq > /dev/null 2>&1
           sudo apt install -y -qq openvpn openvpn-systemd-resolved openssh-client sshpass
 
-      - name: Crear archivo de configuración OpenVPN # Crea el archivo de configuración de OpenVPN en memoria
+      - name: Crear archivo de configuración OpenVPN
         run: echo "${{ secrets.OPENVPN_CONFIG }}" > /dev/shm/face-ubb.ovpn
 
-        # Conecta a la VPN de la UBB usando un action de GitHub del usuario kota65535.
-        # Tambien se podría usar el cliente de OpenVPN directamente.
-        # La ventaja de usar el action es que se encarga de crear el cliente y manejar la conexión por nosotros.
-        # Más información en https://github.com/kota65535/github-openvpn-connect-action/tree/v3.1.0/
       - name: Conexion a la VPN de la UBB
         uses: kota65535/github-openvpn-connect-action@v3.1.0
         timeout-minutes: 2
@@ -30,79 +26,122 @@ jobs:
           username: ${{ secrets.OPENVPN_USERNAME }}
           password: ${{ secrets.OPENVPN_PASSWORD }}
 
-      - name: Eliminar archivo de configuración OpenVPN # Limpia el archivo de configuración de OpenVPN
+      - name: Eliminar archivo de configuración OpenVPN (temporal VPN)
         if: always()
         run: rm -f /dev/shm/face-ubb.ovpn
 
-      # La siguiente sección es para conectarse al servidor y desplegar el código
-      # Este ejemplo usa sshpass para conectarse al servidor usando SSH.
-      # Es recomendable usar claves SSH en lugar de contraseñas para mayor seguridad, evitando el uso de contraseñas.
-      # Hay muchas formas de hacer esto, este es solo un ejemplo sencillo con Node. Debe ser adaptado a tu proyecto.
-
-      - name: Configurar SSH
+      # NUEVO: Crear archivos .env temporales en el runner
+      - name: Crear archivos .env temporales para scp
         run: |
-          mkdir -p ~/.ssh
-          printf "%s\n" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          printf "%s\n" "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
+          # Usamos /dev/shm para que los archivos estén en memoria y sean rápidos y se limpien si el runner falla
+          # También podrías usar /tmp o un directorio específico.
+          # Importante: printf '%s' evita añadir un newline extra al final del contenido del secreto.
+          printf '%s' "${{ secrets.ENV_FRONTEND_CONTENT }}" > /dev/shm/frontend.env.tmp
+          printf '%s' "${{ secrets.ENV_BACKEND_CONTENT }}" > /dev/shm/backend.env.tmp
+        shell: bash # Aseguramos que printf '%s' funcione como se espera
 
-      - name: Ejecutar despliegue
+      - name: Copiar archivos .env al servidor remoto
         env:
-          GIT_COMMIT_SHA: ${{ github.sha }}
-          # Pasar los secretos con el contenido completo de los .env
-          SECRET_ENV_FRONTEND_CONTENT: ${{ secrets.ENV_FRONTEND_CONTENT }}
-          SECRET_ENV_BACKEND_CONTENT: ${{ secrets.ENV_BACKEND_CONTENT }}
+          PROD_HOST: ${{ secrets.PROD_HOST }}
+          PROD_USER: ${{ secrets.PROD_USER }}
+          PROD_PASSWORD: ${{ secrets.PROD_PASSWORD }}
+          PROD_PORT: ${{ secrets.PROD_PORT }}
         run: |
-          ssh -v -i ~/.ssh/id_ed25519 \
-            -p ${{ secrets.PROD_PORT }} \
-            ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} << 'EOF'
-            set -xeuo pipefail  # Falla en cualquier error
-            
-            APP_DIR="/home/vlopez/Proyecto_GPS"
-            ENV_FILE_BACKEND="$APP_DIR/backend/src/config/.env"
-            ENV_FILE_FRONTEND="$APP_DIR/frontend/.env"
-            
-            echo ">>> Iniciando despliegue para el commit: $GIT_COMMIT_SHA"
+          APP_DIR_REMOTE="/home/vlopez/Proyecto_GPS" # Asegúrate que esta ruta sea correcta
+          ENV_FILE_BACKEND_REMOTE="$APP_DIR_REMOTE/backend/src/config/.env"
+          ENV_FILE_FRONTEND_REMOTE="$APP_DIR_REMOTE/frontend/.env"
 
-            # 1. Actualizar código
-            cd "$APP_DIR"
-            echo "Actualizando repositorio al commit: $GIT_COMMIT_SHA..."
-            git fetch origin
-            git reset --hard origin/main
+          echo "Copiando .env de frontend a $PROD_USER@$PROD_HOST:$ENV_FILE_FRONTEND_REMOTE"
+          sshpass -p "$PROD_PASSWORD" scp \
+            -o StrictHostKeyChecking=no \
+            -P "$PROD_PORT" \
+            /dev/shm/frontend.env.tmp "$PROD_USER@$PROD_HOST:$ENV_FILE_FRONTEND_REMOTE"
+
+          echo "Copiando .env de backend a $PROD_USER@$PROD_HOST:$ENV_FILE_BACKEND_REMOTE"
+          sshpass -p "$PROD_PASSWORD" scp \
+            -o StrictHostKeyChecking=no \
+            -P "$PROD_PORT" \
+            /dev/shm/backend.env.tmp "$PROD_USER@$PROD_HOST:$ENV_FILE_BACKEND_REMOTE"
+
+      # NUEVO: Eliminar archivos .env temporales del runner
+      - name: Eliminar archivos .env temporales del runner
+        if: always() # Asegura que se ejecute incluso si pasos anteriores fallan
+        run: |
+          rm -f /dev/shm/frontend.env.tmp
+          rm -f /dev/shm/backend.env.tmp
+
+      - name: Ejecutar despliegue (script remoto)
+        env:
+          PASS_GIT_COMMIT_SHA: ${{ github.sha }}
+          # Ya no pasamos el contenido de los .env aquí
+        run: |
+          export GH_ARG_GIT_COMMIT_SHA="${{ env.PASS_GIT_COMMIT_SHA }}"
+          # Ya no necesitamos exportar GH_ARG_SECRET_ENV_...
+
+          sshpass -p "${{ secrets.PROD_PASSWORD }}" ssh \
+          -q \
+          -o StrictHostKeyChecking=no \
+          -p ${{ secrets.PROD_PORT }} \
+          ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} \
+          bash -s -- \
+          "$GH_ARG_GIT_COMMIT_SHA" \
+          << 'EOF' # Los argumentos $2 y $3 ya no se pasan ni se usan
+            set -euo pipefail
+
+            ARG_GIT_COMMIT_SHA="$1"
+            # ARG_SECRET_ENV_FRONTEND_CONTENT="$2" # Ya no se usa
+            # ARG_SECRET_ENV_BACKEND_CONTENT="$3"  # Ya no se usa
             
-            # 2. Crear/Sobrescribir .env para Backend con contenido del secreto
-            # Asegúrate de que la variable de entorno SECRET_ENV_BACKEND_CONTENT esté definida
-            if [ -n "$SECRET_ENV_BACKEND_CONTENT" ]; then
-              echo "Escribiendo configuración de backend en $ENV_FILE_BACKEND..."
-              # Usar printf para manejar correctamente los saltos de línea y caracteres especiales
-              printf '%s\n' "$SECRET_ENV_BACKEND_CONTENT" > "$ENV_FILE_BACKEND"
+            export NVM_DIR="$HOME/.nvm"
+            if [ -s "$NVM_DIR/nvm.sh" ]; then
+              echo "Cargando nvm..."
+              . "$NVM_DIR/nvm.sh"
             else
-              echo "ADVERTENCIA: El secreto ENV_BACKEND_CONTENT no está definido. Creando .env básico."
-              echo "# Generated on $(date)" > "$ENV_FILE_BACKEND"
-              echo "NODE_ENV=production" >> "$ENV_FILE_BACKEND"
+              echo "Advertencia: nvm no encontrado. Asumiendo node/npm en PATH."
+            fi
+            
+            if ! command -v npm &> /dev/null; then
+                echo "Error: npm no encontrado."
+                exit 1
             fi
 
-            # 3. Crear/Sobrescribir .env para Frontend con contenido del secreto
-            if [ -n "$SECRET_ENV_FRONTEND_CONTENT" ]; then
-              echo "Escribiendo configuración de frontend en $ENV_FILE_FRONTEND..."
-              printf '%s\n' "$SECRET_ENV_FRONTEND_CONTENT" > "$ENV_FILE_FRONTEND"
+            APP_DIR="/home/vlopez/Proyecto_GPS"
+            # Los archivos .env ya deberían existir gracias a scp
+            
+            # 1. Actualizar código
+            cd "$APP_DIR"
+            git fetch origin
+            git reset --hard "$ARG_GIT_COMMIT_SHA" 
+            
+            # 2. y 3. Los archivos .env ya fueron creados por scp.
+            # Podemos verificar si existen por si algo falló con scp
+            ENV_FILE_BACKEND="$APP_DIR/backend/src/config/.env"
+            ENV_FILE_FRONTEND="$APP_DIR/frontend/.env"
+
+            if [ ! -f "$ENV_FILE_BACKEND" ]; then
+              echo "ERROR: El archivo .env de backend no fue encontrado en $ENV_FILE_BACKEND después de scp."
+              exit 1
             else
-              echo "ADVERTENCIA: El secreto ENV_FRONTEND_CONTENT no está definido. Creando .env básico."
-              echo "# Generated on $(date)" > "$ENV_FILE_FRONTEND"
-              echo "VITE_API_URL=https://url-por-defecto.com/api" >> "$ENV_FILE_FRONTEND"
+              echo "Archivo .env de backend encontrado en $ENV_FILE_BACKEND."
+            fi
+
+            if [ ! -f "$ENV_FILE_FRONTEND" ]; then
+              echo "ERROR: El archivo .env de frontend no fue encontrado en $ENV_FILE_FRONTEND después de scp."
+              exit 1
+            else
+              echo "Archivo .env de frontend encontrado en $ENV_FILE_FRONTEND."
             fi
             
             # 4. Instalar dependencias del backend
             cd "$APP_DIR/backend"
-            npm ci --production
+            npm ci
 
             # 5. Reiniciar backend
             pm2 restart freehoot-backend || pm2 start src/index.js --name "freehoot-backend"
             
             # 6. Instalar dependencias y contruir frontend
             cd "$APP_DIR/frontend"
-            npm ci --production
+            npm ci
             npm run build
 
             # 7. Reiniciar frontend
@@ -111,8 +150,8 @@ jobs:
             echo "Despliegue completado en $(date)"
           EOF
 
-      - name: Limpieza
+      - name: Limpieza final (VPN)
         if: always()
         run: |
           sudo pkill openvpn || true
-          rm -f /tmp/ubb-vpn.ovpn ~/.ssh/id_ed25519
+          # rm -f /tmp/ubb-vpn.ovpn # Ya se eliminó /dev/shm/face-ubb.ovpn
