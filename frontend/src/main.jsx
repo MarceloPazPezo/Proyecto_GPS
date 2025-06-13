@@ -6,6 +6,7 @@ import Users from '@pages/Users';
 import Register from '@pages/Register';
 import Error404 from '@pages/Error404';
 import Root from '@pages/Root';
+import QuizCrear from '@pages/QuizCrear';
 import ProtectedRoute from '@components/ProtectedRoute';
 import '@styles/styles.css';
 
@@ -36,7 +37,13 @@ const router = createBrowserRouter([
   {
     path: '/register',
     element: <Register/>
-  }
+  },
+  {
+    path: '/quiz',
+    element: <QuizCrear/>
+  },
+
+
 ])
 
 ReactDOM.createRoot(document.getElementById('root')).render(
