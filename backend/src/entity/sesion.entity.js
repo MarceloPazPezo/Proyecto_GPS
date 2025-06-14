@@ -15,7 +15,7 @@ const SesionSchema = new EntitySchema({
             nullable:false,
             primary: true,
         },
-            fechaHora: {
+        fechaHora: {
             type: "timestamp with time zone",
             default: () => "CURRENT_TIMESTAMP",
             nullable: false,
