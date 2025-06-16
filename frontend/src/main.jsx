@@ -6,6 +6,7 @@ import Users from '@pages/Users';
 import Register from '@pages/Register';
 import Error404 from '@pages/Error404';
 import Root from '@pages/Root';
+import QuizCrear from '@pages/QuizCrear';
 import Join from './pages/Join';
 import Salas from "./pages/Salas"
 import { io } from 'socket.io-client';
@@ -50,7 +51,11 @@ const router = createBrowserRouter([
   },
   {
     path: '/register',
-    element: <Register />
+    element: <Register/>
+  },
+  {
+    path: '/quizcrear',
+    element: <QuizCrear/>
   },
   {
     path:"/join",
