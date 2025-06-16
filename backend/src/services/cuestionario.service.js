@@ -70,7 +70,7 @@ export async function updateCuestionarioService(query, body) {
             where: [{ idUser }, { id: id }, { nombre: nombre }]
         });
         if (!cuestFound) return [null, "El cuestionario no existe"];
-        
+
         const cuestUpdate = {
             idUser: body.idUser,
             nombre: body.nombre
@@ -78,7 +78,7 @@ export async function updateCuestionarioService(query, body) {
 
         await cuestRepository.update({ id: cuestFound.id }, cuestUpdate);
 
-        const updatedCuest = await cuestRepository.findOne({where:[ {id: cuestFound.id} ]});
+        const updatedCuest = await cuestRepository.findOne({ where: [{ id: cuestFound.id }] });
 
         if (!updatedCuest) return [null, "No se encontro tras actualizacion"];
 
@@ -106,3 +106,86 @@ export async function deleteCuestionarioService(data) {
         return [null, "Error interno del servidor"];
     }
 }
+
+//Jerson 
+
+import Respuesta from "../entity/respuesta.entity.js";
+import Pregunta from "../entity/preguntas.entity.js";
+
+export async function addLotepPreguntasService({ preguntas }) {
+    const preguntaRepository = AppDataSource.getRepository(Pregunta);
+    const respuestaRepository = AppDataSource.getRepository(Respuesta);
+
+    const queryRunner = AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+        // 1. Insertar todas las preguntas
+        const preguntasToSave = preguntas.map(({ texto, idCuestionario }) => ({ texto, idCuestionario }));
+        const preguntasGuardadas = await queryRunner.manager.save(Pregunta, preguntasToSave);
+
+        // 2. Insertar todas las respuestas asociadas a cada pregunta
+        let respuestasToSave = [];
+        preguntasGuardadas.forEach((preguntaGuardada, idx) => {
+            const respuestas = preguntas[idx].Respuestas.map(r => ({
+                ...r,
+                idPreguntas: preguntaGuardada.id // Asocia la respuesta a la pregunta insertada
+            }));
+            respuestasToSave = respuestasToSave.concat(respuestas);
+        });
+
+        const respuestasGuardadas = await queryRunner.manager.save(Respuesta, respuestasToSave);
+
+        await queryRunner.commitTransaction();
+
+        // Puedes devolver las preguntas con sus respuestas asociadas si lo deseas
+        return [{ preguntas: preguntasGuardadas, respuestas: respuestasGuardadas }, null];
+    } catch (error) {
+        await queryRunner.rollbackTransaction();
+        console.error("Error al agregar lote de preguntas y respuestas:", error);
+        return [null, "Error interno del servidor"];
+    } finally {
+        await queryRunner.release();
+    }
+}
+
+
+
+
+
+
+export async function obtenerPreguntasYRespuestas(idCuestionario) {
+    try {
+        const result = await AppDataSource
+            .getRepository('pregunta')
+            .createQueryBuilder('p')
+            .select([
+                'p.id AS id',
+                'p."idCuestionario" AS "idCuestionario"',
+                'p.texto AS texto'
+            ])
+            .addSelect(`
+      json_agg(
+        json_build_object(
+          'textoRespuesta', r."textoRespuesta",
+          'correcta', r.correcta,
+          'id', r.id,
+          'idPreguntas', r."idPreguntas"
+        )
+      )`, 'Respuestas')
+            .innerJoin('respuesta', 'r', 'r."idPreguntas" = p.id')
+            .where('p."idCuestionario" = :idCuestionario', { idCuestionario })
+            .groupBy('p.id')
+            .getRawMany();
+
+        
+         return [result, null]
+    }
+    catch (error) {
+        console.error("Error al obtener preguntas y respuestas:", error);
+       return [null, "Error interno del servidor"];
+    }
+}
+
+
