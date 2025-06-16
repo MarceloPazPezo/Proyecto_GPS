@@ -2,12 +2,16 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import tailwindcss from '@tailwindcss/vite'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+        react(),
+        tailwindcss(),
+      ],
   preview: {port:443, host:true},
   resolve: {
     alias: {
@@ -19,6 +23,14 @@ export default defineConfig({
       '@styles': path.resolve(__dirname, './src/styles'),
       '@assets': path.resolve(__dirname, './src/assets'),
       '@helpers': path.resolve(__dirname, './src/helpers')
+    }
+  },
+  server: {
+    proxy: {
+      '/socket.io': {
+        target: 'ws://localhost:3000',
+        ws: true,
+      },
     }
   }
 });

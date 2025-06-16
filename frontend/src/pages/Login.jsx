@@ -69,6 +69,7 @@ const Login = () => {
                     </p>
                 }
             />
+            <p><a href="/join">Unirse a una actividad</a></p>
         </main>
     );
 };
