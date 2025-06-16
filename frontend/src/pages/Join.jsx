@@ -22,15 +22,17 @@ const Join = () => {
     }, []);
 
     const handleSubmit = (data) => {
-    console.log(data);
+    //console.log(data);
     socket.emit("join", data);
-    navigate("/quiz");
+    //navigate("/quiz");
   };
 
    const receiveMessage = (message) =>{
     console.log(message);
-    if(message.id){
+    if(message.sala){
+        sessionStorage.setItem('sala',message);
         navigate("/quiz");
+
     }
     //console.log("Mensaje recibido");
   }
@@ -42,7 +44,7 @@ const Join = () => {
                 fields={[
                     {
                         label: "Codigo de la sala",
-                        name: "codigo",
+                        name: "sala",
                         fieldType: 'input',
                         type: "String",
                         required: true,
@@ -52,7 +54,7 @@ const Join = () => {
                     },
                     {
                         label: "Elije un apodo para que los demas te vean",
-                        name: "name",
+                        name: "nickname",
                         fieldType: 'input',
                         type: "String",
                         required: true,
