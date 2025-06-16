@@ -20,7 +20,7 @@ async function setupServer() {
 
     const server = http.createServer(app);
 
-    const io = new Server(server, {
+      const io = new Server(server, {
       connectionStateRecovery: {
         maxDisconnectionDuration: 10 * 60 * 1000
       }

@@ -10,6 +10,7 @@ const Quiz = () => {
     const [pregunta,setPregunta]=useState('');
     
     const recieveTime=(data)=>{
+        console.log(data);
         setTimer(data.time);
     }
 
