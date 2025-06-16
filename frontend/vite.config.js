@@ -24,5 +24,13 @@ export default defineConfig({
       '@assets': path.resolve(__dirname, './src/assets'),
       '@helpers': path.resolve(__dirname, './src/helpers')
     }
+  },
+  server: {
+    proxy: {
+      '/socket.io': {
+        target: 'ws://localhost:3000',
+        ws: true,
+      },
+    }
   }
 });
