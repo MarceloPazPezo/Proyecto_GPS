@@ -69,7 +69,7 @@ const Login = () => {
                     </p>
                 }
             />
-            <p><a href="/join">Unirse a una actividad</a></p>
+            <p><a className='border-2 border-zinc-500 p-2 w-full text-black bg-white' href="/join">Unirse a una actividad</a></p>
         </main>
     );
 };

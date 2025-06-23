@@ -14,6 +14,7 @@ import Quiz from './pages/Quiz';
 import Host from './pages/Host';
 import ProtectedRoute from '@components/ProtectedRoute';
 import '@styles/styles.css';
+import WaitingRoom from './pages/WaitingRoom';
 
 export const socket = io("/");
 
@@ -64,6 +65,10 @@ const router = createBrowserRouter([
   {
     path:'/quiz',
     element:<Quiz/>
+  },
+  {
+    path:'/espera',
+    element:<WaitingRoom/>
   }
 ])
 
