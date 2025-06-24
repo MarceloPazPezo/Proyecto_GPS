@@ -13,6 +13,8 @@ import { io } from 'socket.io-client';
 import Quiz from './pages/Quiz';
 import Host from './pages/Host';
 import ProtectedRoute from '@components/ProtectedRoute';
+import PizarraIdeas from './pages/pizarraIdeas';
+import HostIdeas from './pages/hostIdeas';
 import '@styles/styles.css';
 import WaitingRoom from './pages/WaitingRoom';
 
@@ -37,12 +39,16 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path:"/room",
-        element:<Salas/>
+        path: "/room",
+        element: <Salas />
       },
       {
-        path:"/host",
-        element:<Host/>
+        path: "/host",
+        element: <Host />
+      },
+      {
+        path: "/hostIdeas",
+        element: <HostIdeas/>
       }
     ]
   },
@@ -52,23 +58,27 @@ const router = createBrowserRouter([
   },
   {
     path: '/register',
-    element: <Register/>
+    element: <Register />
   },
   {
     path: '/quizcrear',
-    element: <QuizCrear/>
+    element: <QuizCrear />
   },
   {
-    path:"/join",
-    element:<Join/>
+    path: "/join",
+    element: <Join />
   },
   {
-    path:'/quiz',
-    element:<Quiz/>
+    path: '/quiz',
+    element: <Quiz />
   },
   {
     path:'/espera',
     element:<WaitingRoom/>
+  },
+  {
+    path: "/ideas",
+    element: <PizarraIdeas />
   }
 ])
 
