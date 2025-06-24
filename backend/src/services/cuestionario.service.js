@@ -7,7 +7,10 @@ export async function createCuestionarioService(data) {
     try {
         const { idUser, nombre } = data;
         const existing = await cuestRepository.findOne({
-            where: [{ idUser: idUser }, { nombre: nombre }]
+            where: {
+                idUser: idUser,
+                nombre: nombre
+            }
         });
 
         const createErrorMessage = (dataInfo, message) => ({

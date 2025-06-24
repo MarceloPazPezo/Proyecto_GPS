@@ -55,12 +55,13 @@ export async function getPreguntas(req, res) {
 export async function createPregunta(req, res) {
     try {
         const { texto, idCuestionario } = req.body;
-        
+        const fileData = req.file;
+
         const { error } = questionBodyValidation.validate({ texto, idCuestionario });
         if (error) return handleErrorClient(res, 400, "Error de validación", error.message);
 
         
-        const [newPregunta, errorPregunta] = await createPreguntaService({ texto, idCuestionario });
+        const [newPregunta, errorPregunta] = await createPreguntaService({ texto, idCuestionario }, fileData);
         if (errorPregunta) return res.status(500).json({ error: errorPregunta });   
         if (!newPregunta) return res.status(400).send();
 
@@ -82,8 +83,8 @@ export async function updatePregunta(req, res) {
         const { errorbody } = questionBodyValidation.validate({ texto });
         if (errorbody) return handleErrorClient(res, 400, "Error de validación", errorbody.message);
 
-
-        const [updatedPregunta, errorPregunta] = await updatePreguntaService({ id, texto });
+        const fileData = req.file;
+        const [updatedPregunta, errorPregunta] = await updatePreguntaService({ id, texto }, fileData);
         if (errorPregunta) return res.status(404).json({ error: errorPregunta });
         if (!updatedPregunta) return res.status(400).send();
 

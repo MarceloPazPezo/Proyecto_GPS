@@ -1,6 +1,7 @@
 "use strict";
 import { Router } from "express";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
+import upload from "../middlewares/upload.middleware.js";
 
 import{
     createPregunta,
@@ -15,8 +16,8 @@ router
   .use(authenticateJwt) 
   .get("/cuestionario/:idCuestionario", getPreguntas)
   .get("/:id", getPregunta)
-  .post("/", createPregunta)
-  .patch("/update/:id", updatePregunta)
+  .post("/", upload.single('imagenPregunta'), createPregunta)
+  .patch("/update/:id", upload.single('imagenPregunta'), updatePregunta)
   .delete("/del/:id", deletePregunta)
 
 
