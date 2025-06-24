@@ -6,12 +6,15 @@ import Users from '@pages/Users';
 import Register from '@pages/Register';
 import Error404 from '@pages/Error404';
 import Root from '@pages/Root';
+import QuizCrear from '@pages/QuizCrear';
 import Join from './pages/Join';
 import Salas from "./pages/Salas"
 import { io } from 'socket.io-client';
 import Quiz from './pages/Quiz';
 import Host from './pages/Host';
 import ProtectedRoute from '@components/ProtectedRoute';
+import PizarraIdeas from './pages/pizarraIdeas';
+import HostIdeas from './pages/hostIdeas';
 import '@styles/styles.css';
 
 export const socket = io("/");
@@ -35,12 +38,16 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path:"/room",
-        element:<Salas/>
+        path: "/room",
+        element: <Salas />
       },
       {
-        path:"/host",
-        element:<Host/>
+        path: "/host",
+        element: <Host />
+      },
+      {
+        path: "/hostIdeas",
+        element: <HostIdeas/>
       }
     ]
   },
@@ -53,12 +60,20 @@ const router = createBrowserRouter([
     element: <Register />
   },
   {
-    path:"/join",
-    element:<Join/>
+    path: '/quizcrear',
+    element: <QuizCrear />
   },
   {
-    path:'/quiz',
-    element:<Quiz/>
+    path: "/join",
+    element: <Join />
+  },
+  {
+    path: '/quiz',
+    element: <Quiz />
+  },
+  {
+    path: "/ideas",
+    element: <PizarraIdeas />
   }
 ])
 

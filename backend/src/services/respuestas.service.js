@@ -90,3 +90,20 @@ export async function deleteRespuestaService(id) {
     }
 }
 
+export async function addLotepRespuestasService(query) {
+    try {
+        console.log("Datos recibidos para agregar respuestas:", query);
+        const {respuestas} = query;
+
+        const respuestaRepository = AppDataSource.getRepository(Respuesta);
+        const nuevasRespuestas = respuestaRepository.create(respuestas);
+        const savedRespuestas = await respuestaRepository.save(nuevasRespuestas);
+
+        return [savedRespuestas, null];
+    }
+    catch (error) {
+        console.error("Error al agregar respuestas:", error);
+        return [null, "Error interno del servidor"];
+    }
+}
+

@@ -12,6 +12,15 @@ const Join = () => {
     const {handleInputChange}=useLogin();
 
     const navigate=useNavigate();
+    const receiveMessage = (message) =>{
+        console.log(message);
+        if(message.sala){
+            sessionStorage.setItem('sala',message);
+            navigate("/ideas");
+    
+        }
+        //console.log("Mensaje recibido");
+    }
 
     useEffect(() => {
         socket.on("message", receiveMessage)
@@ -19,21 +28,14 @@ const Join = () => {
         return () => {
             socket.off("message", receiveMessage);
         };
-    }, []);
+    }, [ ]);
 
     const handleSubmit = (data) => {
-    console.log(data);
+    //console.log(data);
     socket.emit("join", data);
-    navigate("/quiz");
-  };
+    //navigate("/quiz");
+};
 
-   const receiveMessage = (message) =>{
-    console.log(message);
-    if(message.id){
-        navigate("/quiz");
-    }
-    //console.log("Mensaje recibido");
-  }
 
     return (
         <main className="container">
@@ -42,7 +44,7 @@ const Join = () => {
                 fields={[
                     {
                         label: "Codigo de la sala",
-                        name: "codigo",
+                        name: "sala",
                         fieldType: 'input',
                         type: "String",
                         required: true,
@@ -52,7 +54,7 @@ const Join = () => {
                     },
                     {
                         label: "Elije un apodo para que los demas te vean",
-                        name: "name",
+                        name: "nickname",
                         fieldType: 'input',
                         type: "String",
                         required: true,
