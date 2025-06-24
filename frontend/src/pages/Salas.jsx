@@ -47,6 +47,11 @@ const Salas = () => {
         navigate("/host");
     }
 
+    const ideaspizarraAct = () =>{
+        navigate("/hostIdeas");
+    }
+
+
     return (
         <main className="container">
             {!sessionStorage.getItem('sala') ? <Form
@@ -77,9 +82,18 @@ const Salas = () => {
                 <p>Nombre de la sala:</p>
                 <h1>{id}</h1>
                 <button
-                    onClick={iniciarAct}
-                >Iniciar Actividad</button>
-                <button onClick={cancelarAct}>Cancelar</button>
+                    onClick={iniciarAct}>
+                    Iniciar Actividad
+                </button>
+
+                <button
+                    onClick={ideaspizarraAct}>
+                    Ideas pizarra
+                </button>
+                <button 
+                    onClick={cancelarAct}>
+                    Cancelar
+                </button>
             </div>}
         </main>
     )

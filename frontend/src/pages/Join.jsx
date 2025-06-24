@@ -12,6 +12,15 @@ const Join = () => {
     const {handleInputChange}=useLogin();
 
     const navigate=useNavigate();
+    const receiveMessage = (message) =>{
+        console.log(message);
+        if(message.sala){
+            sessionStorage.setItem('sala',message);
+            navigate("/ideas");
+    
+        }
+        //console.log("Mensaje recibido");
+    }
 
     useEffect(() => {
         socket.on("message", receiveMessage)
@@ -19,23 +28,14 @@ const Join = () => {
         return () => {
             socket.off("message", receiveMessage);
         };
-    }, []);
+    }, [ ]);
 
     const handleSubmit = (data) => {
     //console.log(data);
     socket.emit("join", data);
     //navigate("/quiz");
-  };
+};
 
-   const receiveMessage = (message) =>{
-    console.log(message);
-    if(message.sala){
-        sessionStorage.setItem('sala',message);
-        navigate("/quiz");
-
-    }
-    //console.log("Mensaje recibido");
-  }
 
     return (
         <main className="container">
