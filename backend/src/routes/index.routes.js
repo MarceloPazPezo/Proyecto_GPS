@@ -13,6 +13,7 @@ router
     .use("/user", userRoutes)
     .use("/preguntas", preguntasRoutes)
     .use("/respuestas", respuestasRoutes)
+    .use("/cuestionario", quizRoutes)
     .use("/quiz",quizRoutes);
 
 export default router;
