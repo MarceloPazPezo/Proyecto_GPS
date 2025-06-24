@@ -1,5 +1,5 @@
 import { socket } from "../main";
-import { useState, useEffect } from "react";
+import { useState, useEffect, act } from "react";
 import { useNavigate } from "react-router-dom";
 import useLogin from "../hooks/auth/useLogin.jsx";
 import Form from "../components/Form";
@@ -45,13 +45,15 @@ const Salas = () => {
     const { handleInputChange } = useLogin();
 
     const iniciarAct = () => {
+    
         sessionStorage.setItem("participantes",participantes);
         socket.emit("start",{actividad:actividad});
+        if (actividad == 'quiz'){
         navigate("/host");
-    }
-
-    const ideaspizarraAct = () =>{
-        navigate("/hostIdeas");
+        }
+        if (actividad == 'pizarra'){
+            navigate("/hostIdeas");
+        }
     }
 
 
@@ -82,7 +84,7 @@ const Salas = () => {
                 buttonText={"Iniciar"}
                 onSubmit={createRoom}
             /> :
-             <div>
+            <div>
                 <div>
                     <p className="p-2 text-white bg-black">Conectados:</p>
                     <ul className="border-2 border-zinc-500 p-2 w-full text-black bg-white">
@@ -94,20 +96,6 @@ const Salas = () => {
                 <p>Nombre de la sala:</p>
                 <h1>{id}</h1>
                 <button
-/*
-                    onClick={iniciarAct}>
-                    Iniciar Actividad
-                </button>
-
-                <button
-                    onClick={ideaspizarraAct}>
-                    Ideas pizarra
-                </button>
-                <button 
-                    onClick={cancelarAct}>
-                    Cancelar
-                </button>
-*/
                     //onMouseOver={"bg-yellow"}
                     onClick={iniciarAct}
                     disabled={participantes.length===0}

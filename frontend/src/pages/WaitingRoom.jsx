@@ -4,12 +4,12 @@ import { useNavigate } from "react-router-dom";
 const WaitingRoom=()=>{
     //const[participantes,setParticipantes]=useState([]);
     const navigate=useNavigate();
-     const iniciarAct = (message) => {
+    const iniciarAct = (message) => {
         if (message.actividad === 'quiz') {
             navigate("/quiz");
         }
         if (message.actividad === 'pizarra') {
-            navigate("/pizarra");
+            navigate("/ideas");
         }
     }
 

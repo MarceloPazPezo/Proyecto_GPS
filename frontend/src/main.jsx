@@ -68,14 +68,13 @@ const router = createBrowserRouter([
     path: "/join",
     element: <Join />
   },
-  
-  {
-    path: "/ideas",
-    element: <PizarraIdeas />
-  },
   {
     path:'/quiz',
     element:<Quiz/>
+  },
+  {
+    path: "/ideas",
+    element: <PizarraIdeas />
   },
   {
     path:'/espera',

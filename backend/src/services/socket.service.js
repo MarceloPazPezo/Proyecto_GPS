@@ -61,6 +61,11 @@ export function socketEvents(socket) {
         socket.to(socket.room).emit("answer", data);
     });
 
+    //reiniciarPizarraIdeas
+    socket.on("reiniciar",() =>{
+        socket.to(socket.room).emit("reiniciar","¿Confirmas?")
+    })
+
 
     socket.on("timer", (body) => {
         //console.log(body);
