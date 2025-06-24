@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 // ICONOS
-import { FaRegImage, FaPlus, FaMinus, FaTrash, FaRegCopy, FaExclamationCircle } from 'react-icons/fa'; 
+import { FaRegImage, FaPlus, FaMinus, FaTrash, FaRegCopy, FaExclamationCircle, FaCheck } from 'react-icons/fa'; 
 import { MdFlashOn } from 'react-icons/md';
 import { GiCrystalBars } from 'react-icons/gi';
 import { TbWorld } from 'react-icons/tb';
 import { PiPuzzlePieceFill } from 'react-icons/pi';
 import { BsPentagonFill, BsStarFill } from 'react-icons/bs';
 
+// --- IMPORTACIÓN DE SERVICIOS ---
+ import { crearQuiz, addQuizPreguntas } from '../services/quiz.service.js'; // Ajusta la ruta si es necesario
+
 // --- COMPONENTES REUTILIZABLES ---
 
-// Componente AnswerOption (sin cambios)
-const AnswerOption = ({ color, Icon, placeholder, value, onChange, isOptional = false }) => (
+// Componente AnswerOption ahora incluye un checkbox para la respuesta correcta
+const AnswerOption = ({ color, Icon, placeholder, value, isCorrect, onChange, onToggleCorrect, isOptional = false }) => (
     <div className={`flex items-center ${color} rounded-lg shadow-sm p-2 space-x-2`}>
         <div className={`flex-shrink-0 flex items-center justify-center w-12 h-12 md:w-16 md:h-16 rounded-md ${color}`}>
             <Icon className="text-white text-2xl md:text-3xl" />
@@ -24,15 +27,20 @@ const AnswerOption = ({ color, Icon, placeholder, value, onChange, isOptional = 
                 className="w-full bg-transparent focus:outline-none p-2 text-white placeholder-white text-sm md:text-base"
             />
         </div>
+        {/* Checkbox para marcar la respuesta correcta */}
+        <div 
+            onClick={onToggleCorrect}
+            className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full cursor-pointer transition-colors ${
+                isCorrect ? 'bg-green-500' : 'bg-white/30 hover:bg-white/50'
+            }`}
+            title="Marcar como respuesta correcta"
+        >
+            {isCorrect && <FaCheck className="text-white" />}
+        </div>
     </div>
 );
 
-// --- COMPONENTE DE VISTA PREVIA DE DIAPOSITIVA (MODIFICADO) ---
 const SlidePreview = ({ slideNumber, type, questionText, answers, isActive, onSelect, onDelete }) => {
-    
-    // --- NUEVA LÓGICA ---
-    // Determina si se debe mostrar el icono de advertencia.
-    // Solo se muestra si es un 'Quiz', no tiene texto de pregunta, pero sí tiene al menos una respuesta con texto.
     const showWarningIcon = 
         type === 'Quiz' && 
         !questionText.trim() && 
@@ -51,7 +59,6 @@ const SlidePreview = ({ slideNumber, type, questionText, answers, isActive, onSe
                     />
                 )}
             </div>
-
             <div 
                 onClick={onSelect}
                 className={`w-full bg-white rounded-lg p-2.5 shadow-md cursor-pointer transition-all border-2 ${isActive ? 'border-blue-500' : 'border-transparent'}`}
@@ -68,8 +75,6 @@ const SlidePreview = ({ slideNumber, type, questionText, answers, isActive, onSe
                             <div className="w-8 h-2 bg-gray-200 rounded-full"></div>
                         </div>
                     )}
-                    
-                    {/* Renderizado condicional del icono de advertencia */}
                     {showWarningIcon && (
                         <div className="absolute -top-2 -right-2 bg-yellow-500 text-white w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">
                             <FaExclamationCircle size={12} />
@@ -81,14 +86,13 @@ const SlidePreview = ({ slideNumber, type, questionText, answers, isActive, onSe
     );
 };
 
-
 // --- ESTRUCTURAS DE DATOS Y FUNCIONES AUXILIARES ---
 
 const createDefaultAnswers = () => [
-    { placeholder: "Respuesta 1", text: "", color: "bg-orange-600/80", Icon: MdFlashOn, isOptional: false },
-    { placeholder: "Respuesta 2", text: "", color: "bg-purple-700/80", Icon: GiCrystalBars, isOptional: false },
-    { placeholder: "Respuesta 3", text: "", color: "bg-amber-500/80", Icon: TbWorld, isOptional: true },
-    { placeholder: "Respuesta 4", text: "", color: "bg-cyan-700/80", Icon: PiPuzzlePieceFill, isOptional: true },
+    { placeholder: "Respuesta 1", text: "", color: "bg-orange-600/80", Icon: MdFlashOn, isOptional: false, isCorrect: true }, // La primera es correcta por defecto
+    { placeholder: "Respuesta 2", text: "", color: "bg-purple-700/80", Icon: GiCrystalBars, isOptional: false, isCorrect: false },
+    { placeholder: "Respuesta 3", text: "", color: "bg-amber-500/80", Icon: TbWorld, isOptional: true, isCorrect: false },
+    { placeholder: "Respuesta 4", text: "", color: "bg-cyan-700/80", Icon: PiPuzzlePieceFill, isOptional: true, isCorrect: false },
 ];
 
 const createNewQuestion = (type = 'Quiz') => ({
@@ -103,6 +107,8 @@ const createNewQuestion = (type = 'Quiz') => ({
 function QuizCrear() {
     const [questions, setQuestions] = useState([createNewQuestion('Quiz')]);
     const [activeQuestionId, setActiveQuestionId] = useState(questions[0].id);
+    const [isSaving, setIsSaving] = useState(false);
+    const [quizTitle, setQuizTitle] = useState(''); // Estado para el título del cuestionario
 
     const activeQuestion = questions.find(q => q.id === activeQuestionId) || questions[0];
     
@@ -138,9 +144,7 @@ function QuizCrear() {
     const handleQuestionTextChange = (e) => {
         setQuestions(prevQuestions => 
             prevQuestions.map(q => 
-                q.id === activeQuestionId 
-                    ? { ...q, questionText: e.target.value } 
-                    : q
+                q.id === activeQuestionId ? { ...q, questionText: e.target.value } : q
             )
         );
     };
@@ -149,12 +153,24 @@ function QuizCrear() {
         setQuestions(prevQuestions => 
             prevQuestions.map(q => {
                 if (q.id === activeQuestionId) {
-                    const newAnswers = q.answers.map((answer, index) => {
-                        if (index === answerIndex) {
-                            return { ...answer, text: newText };
-                        }
-                        return answer;
-                    });
+                    const newAnswers = [...q.answers];
+                    newAnswers[answerIndex].text = newText;
+                    return { ...q, answers: newAnswers };
+                }
+                return q;
+            })
+        );
+    };
+
+    // Nueva función para marcar una respuesta como correcta (y desmarcar las demás)
+    const handleToggleCorrectAnswer = (clickedAnswerIndex) => {
+        setQuestions(prevQuestions =>
+            prevQuestions.map(q => {
+                if (q.id === activeQuestionId) {
+                    const newAnswers = q.answers.map((answer, index) => ({
+                        ...answer,
+                        isCorrect: index === clickedAnswerIndex
+                    }));
                     return { ...q, answers: newAnswers };
                 }
                 return q;
@@ -169,8 +185,8 @@ function QuizCrear() {
                     const updatedQuestion = { ...q };
                     if (updatedQuestion.answers.length === 4) {
                         const extraAnswers = [
-                            { placeholder: "Respuesta 5", text: "", color: "bg-teal-500/80", Icon: BsPentagonFill, isOptional: true },
-                            { placeholder: "Respuesta 6", text: "", color: "bg-pink-500/80", Icon: BsStarFill, isOptional: true },
+                            { placeholder: "Respuesta 5", text: "", color: "bg-teal-500/80", Icon: BsPentagonFill, isOptional: true, isCorrect: false },
+                            { placeholder: "Respuesta 6", text: "", color: "bg-pink-500/80", Icon: BsStarFill, isOptional: true, isCorrect: false },
                         ];
                         updatedQuestion.answers = [...updatedQuestion.answers, ...extraAnswers];
                     } else {
@@ -183,20 +199,91 @@ function QuizCrear() {
         );
     };
 
+    // --- LÓGICA DE GUARDADO ---
+    const handleSave = async () => {
+        // Validación 1: Título del Quiz
+        if (!quizTitle.trim()) {
+            alert("Por favor, introduce un título para el cuestionario en la sección de Configuraciones.");
+            return;
+        }
+
+        // Validación 2: Cada pregunta debe tener una respuesta correcta
+        const questionsWithInvalidAnswers = questions
+            .filter(q => q.type === 'Quiz')
+            .filter(q => q.answers.filter(a => a.isCorrect).length !== 1);
+
+        if (questionsWithInvalidAnswers.length > 0) {
+            alert(`La pregunta "${questionsWithInvalidAnswers[0].questionText || 'sin título'}" debe tener exactamente UNA respuesta marcada como correcta.`);
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            // PASO 1: Crear el Quiz usando el título del estado
+            const quizInfo = {
+                nombre: quizTitle,
+                idUser: 1 // Este valor podría venir de un contexto de usuario, etc.
+            };
+            const createdQuizResponse = await crearQuiz(quizInfo);
+            // Simulación de respuesta
+            //const createdQuizResponse = { status: 'Success', data: { id: Math.floor(Math.random() * 1000) } };
+
+            if (createdQuizResponse?.status !== 'Success' || !createdQuizResponse.data?.id) {
+                throw new Error("No se pudo crear el quiz.");
+            }
+
+            const newQuizId = createdQuizResponse.data.id;
+            
+            // PASO 2: Formatear y añadir las preguntas
+            const formattedQuestions = questions
+                .filter(q => q.type === 'Quiz' && q.questionText.trim() !== '')
+                .map(q => ({
+                    texto: q.questionText,
+                    Respuestas: q.answers
+                        .filter(ans => ans.text.trim() !== '')
+                        .map(ans => ({
+                            textoRespuesta: ans.text,
+                            correcta: ans.isCorrect // Usamos el valor del estado
+                        }))
+                }));
+
+            if (formattedQuestions.length === 0) {
+                alert("No hay preguntas válidas para guardar. Añade texto a tus preguntas.");
+                setIsSaving(false);
+                return;
+            }
+
+            await addQuizPreguntas(formattedQuestions, newQuizId);
+            console.log("Enviando a la API...", { quizId: newQuizId, questions: formattedQuestions });
+            
+            alert("¡Quiz guardado exitosamente! (Simulación)");
+
+        } catch (error) {
+            console.error("Error en el proceso de guardado:", error);
+            alert(`Error al guardar: ${error.message || 'Revisa la consola.'}`);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     // --- RENDERIZADO DEL COMPONENTE ---
     return (
         <div className="h-screen bg-gray-100 font-sans flex flex-col">
-            
             <header className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-center bg-white p-3 sm:p-2 shadow-sm border-b gap-2 sm:gap-4 z-20">
                 <h1 className="text-2xl md:text-3xl font-bold text-purple-800">Freehoot!</h1>
                 <div className="flex items-center space-x-2">
                     <button className="bg-gray-200 text-gray-700 rounded-md px-3 py-2 text-sm sm:text-base font-semibold hover:bg-gray-300">Salir</button>
-                    <button className="bg-green-600 text-white rounded-md px-3 py-2 text-sm sm:text-base font-bold hover:bg-green-700">Guardar</button>
+                    <button 
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="bg-green-600 text-white rounded-md px-3 py-2 text-sm sm:text-base font-bold hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed"
+                    >
+                        {isSaving ? 'Guardando...' : 'Guardar'}
+                    </button>
                 </div>
             </header>
 
             <div className="flex-grow flex flex-col lg:flex-row overflow-hidden">
-                
                 <div className="order-first w-full lg:w-72 flex-shrink-0 bg-gray-50 border-r flex flex-col overflow-hidden">
                     <div className="flex-grow overflow-y-auto p-2">
                         {questions.map((q, index) => (
@@ -205,7 +292,7 @@ function QuizCrear() {
                                 slideNumber={index + 1}
                                 type={q.type}
                                 questionText={q.questionText}
-                                answers={q.answers} // Se pasa el array de respuestas para la validación del icono
+                                answers={q.answers}
                                 isActive={q.id === activeQuestionId}
                                 onSelect={() => handleSelectQuestion(q.id)}
                                 onDelete={questions.length > 1 ? () => handleDeleteQuestion(q.id) : null}
@@ -251,6 +338,7 @@ function QuizCrear() {
                                                     {...answer}
                                                     value={answer.text}
                                                     onChange={(e) => handleAnswerTextChange(index, e.target.value)}
+                                                    onToggleCorrect={() => handleToggleCorrectAnswer(index)}
                                                 />
                                             ))}
                                         </div>
@@ -272,7 +360,19 @@ function QuizCrear() {
                 <aside className="w-full lg:w-80 bg-white p-4 border-t lg:border-t-0 lg:border-l flex-shrink-0 overflow-y-auto order-last lg:order-3">
                     <h2 className="text-xl font-bold mb-4">Configuraciones</h2>
                     <div className="space-y-4">
-                        <p className="text-gray-600 text-center lg:text-left">Opciones de la pregunta...</p>
+                        {/* Campo para el título del cuestionario */}
+                        <div className="p-4 bg-gray-50 rounded-lg border">
+                            <label htmlFor="quiz-title" className="block text-sm font-medium text-gray-700">Título del Cuestionario</label>
+                            <input 
+                                type="text"
+                                id="quiz-title"
+                                value={quizTitle}
+                                onChange={(e) => setQuizTitle(e.target.value)}
+                                placeholder="Ej: Capitales del Mundo"
+                                className="mt-1 block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                            />
+                        </div>
+
                         <div className="p-4 bg-gray-50 rounded-lg border">
                             <label htmlFor="time-limit" className="block text-sm font-medium text-gray-700">Límite de tiempo</label>
                             <select id="time-limit" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">

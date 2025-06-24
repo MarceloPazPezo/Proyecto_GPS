@@ -7,16 +7,14 @@ export async function createCuestionarioService(data) {
     try {
         const { idUser, nombre } = data;
         const existing = await cuestRepository.findOne({
-            where: [{ idUser: idUser }, { nombre: nombre }]
+            where: { idUser: idUser, nombre: nombre }
         });
-
         const createErrorMessage = (dataInfo, message) => ({
             dataInfo,
             message
         });
-
         if (existing) {
-            return [null, createErrorMessage("nombre", "Ese cuestionario ya existe")];
+            return [null, createErrorMessage("nombre", "Ya existe un cuestionario con ese nombre para este usuario")];
         }
 
         const newCuest = cuestRepository.create({
