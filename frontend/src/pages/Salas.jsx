@@ -6,11 +6,13 @@ import Form from "../components/Form";
 
 const Salas = () => {
     const navigate = useNavigate();
+    const [actividad,setActividad]=useState('');
     const [id, setId] = useState("");
     const [participantes, setParticipantes] = useState([])
 
     const createRoom = (data) => {
-        socket.emit("create", { sala: data.sala });
+        socket.emit("create", { sala: data.sala});
+        setActividad(data.actividad);
     }
 
     const receiveMessage = (message) => {
@@ -29,21 +31,22 @@ const Salas = () => {
 
     const onJoin = (data) => {
         console.log(data);
-        setParticipantes([data]);
-        console.log(participantes);
+        //participantes.push(data.nickname);
+        setParticipantes((state)=>[data, ...state]);
+        //console.log(participantes);
     }
 
     useEffect(() => {
         socket.on("message", receiveMessage);
         socket.on("join", onJoin);
-        return () => {
-            socket.off("message", receiveMessage);
-        };
+        //return () => {    socket.off("message", receiveMessage);};
     }, []);
 
     const { handleInputChange } = useLogin();
 
     const iniciarAct = () => {
+        sessionStorage.setItem("participantes",participantes);
+        socket.emit("start",{actividad:actividad});
         navigate("/host");
     }
 
@@ -54,7 +57,8 @@ const Salas = () => {
 
     return (
         <main className="container">
-            {!sessionStorage.getItem('sala') ? <Form
+            {!sessionStorage.getItem('sala') ? 
+            <Form
                 title={`Crear una sala`}
                 fields={[
                     {
@@ -67,21 +71,30 @@ const Salas = () => {
                         maxLength: 20,
                         onChange: (e) => handleInputChange('String', e.target.value),
                     },
+                    {
+                        label:"Tipo de actividad",
+                        fieldType:'select',
+                        name:"actividad",
+                        required:true,
+                        options: [{label:"Quiz",value:'quiz'},{label:"Pizarra",value:'pizarra'}]
+                    }
                 ]}
                 buttonText={"Iniciar"}
                 onSubmit={createRoom}
-            /> : <div>
+            /> :
+             <div>
                 <div>
-                    <p>Conectados:</p>
-                    <ul>
-                        {participantes.map((nickname, index) => {
-                            <li key={index}>{index}{nickname}</li>
-                        })}
+                    <p className="p-2 text-white bg-black">Conectados:</p>
+                    <ul className="border-2 border-zinc-500 p-2 w-full text-black bg-white">
+                        {participantes.map((participante, index) => (
+                            <li key={index}><b>{participante.nickname}</b></li>
+                        ))}
                     </ul>
                 </div>
                 <p>Nombre de la sala:</p>
                 <h1>{id}</h1>
                 <button
+/*
                     onClick={iniciarAct}>
                     Iniciar Actividad
                 </button>
@@ -94,6 +107,17 @@ const Salas = () => {
                     onClick={cancelarAct}>
                     Cancelar
                 </button>
+*/
+                    //onMouseOver={"bg-yellow"}
+                    onClick={iniciarAct}
+                    disabled={participantes.length===0}
+                    className="border-2 border-zinc-500 p-2 w-full text-black bg-white"
+                >Iniciar Actividad</button>
+                <button 
+                onClick={cancelarAct} 
+                className="border-2 border-zinc-500 p-2 w-full text-black bg-white"
+                >Cancelar</button>
+
             </div>}
         </main>
     )

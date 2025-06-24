@@ -2,15 +2,14 @@ let rooms = [];
 let users = [];
 
 export function socketEvents(socket) {
-    //console.log("Usuario conectado");
-    //console.log(socket.id);
-    //console.log(socket)
-    //crear sala
+    console.log("Usuario conectado: ", socket.id);
     socket.on("create", (body) => {
+        console.log(body)
         if (users.indexOf(socket.id) < 0) {
             if (rooms.indexOf(body.sala) < 0) {
                 socket.join(body.sala);
                 socket.room = body.sala;
+                socket.host = true;
                 //console.log(socket.room);
                 rooms.push(body.sala);
                 users.push(socket.id);
@@ -23,8 +22,6 @@ export function socketEvents(socket) {
         } else {
             socket.emit("message", { body: "Ya se encuentra en una sala" });
         }
-        //console.log(users);
-        //console.log(rooms);
     });
 
     //entrar a sala
@@ -44,40 +41,38 @@ export function socketEvents(socket) {
                 body: "La sala ingresada no existe"
             })
         }
-        console.log(users);
-        console.log(rooms);
+    });
+
+    socket.on("start", (data) => {
+        console.log(data);
+
+        socket.to(socket.room).emit("start", data);
     });
 
     //finalizar sesion
     socket.on("finnish", (body) => {
+        socket.to(socket.room).emit("finnish");
         socket.leave(body.sala);
         rooms.splice(rooms.indexOf(body.sala));
         //console.log(rooms);
     });
 
     socket.on("answer", (data) => {
-
+        socket.to(socket.room).emit("answer", data);
     });
 
-    //mensajes
-    socket.on("message", (body) => {
-        socket.broadcast.emit("message", {
-            body: body.body,
-            from: body.from
-        });
-    });
 
     socket.on("timer", (body) => {
-        console.log(body);
+        //console.log(body);
         socket.to(socket.room).emit("timer", { time: body.time })
     })
 
     //desconexion
     socket.on('disconnect', (reason) => {
-        //console.log(socket.id);
-        console.log("Usuario desconectado");
-        //console.log(reason);
+        if(socket.host){
+            socket.to(socket.room).emit("finnish");
+        }
+        console.log("Usuario desconectado: ", socket.id);
         users.splice(users.indexOf(socket.id));
-        // console.log(users);
     })
 }

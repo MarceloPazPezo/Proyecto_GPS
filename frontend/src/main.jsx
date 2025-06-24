@@ -16,6 +16,7 @@ import ProtectedRoute from '@components/ProtectedRoute';
 import PizarraIdeas from './pages/pizarraIdeas';
 import HostIdeas from './pages/hostIdeas';
 import '@styles/styles.css';
+import WaitingRoom from './pages/WaitingRoom';
 
 export const socket = io("/");
 
@@ -67,13 +68,18 @@ const router = createBrowserRouter([
     path: "/join",
     element: <Join />
   },
-  {
-    path: '/quiz',
-    element: <Quiz />
-  },
+  
   {
     path: "/ideas",
     element: <PizarraIdeas />
+  },
+  {
+    path:'/quiz',
+    element:<Quiz/>
+  },
+  {
+    path:'/espera',
+    element:<WaitingRoom/>
   }
 ])
 
