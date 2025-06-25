@@ -15,6 +15,7 @@ import Host from './pages/Host';
 import ProtectedRoute from '@components/ProtectedRoute';
 import PizarraIdeas from './pages/pizarraIdeas';
 import HostIdeas from './pages/hostIdeas';
+import QuizActualizar from './pages/QuizActualizar';
 import '@styles/styles.css';
 
 export const socket = io("/");
@@ -75,6 +76,13 @@ const router = createBrowserRouter([
     path: "/ideas",
     element: <PizarraIdeas />
   }
+  ,
+  {
+    path: '/quizactualizar/:id',
+    element: <QuizActualizar />
+  },
+  
+
 ])
 
 ReactDOM.createRoot(document.getElementById('root')).render(

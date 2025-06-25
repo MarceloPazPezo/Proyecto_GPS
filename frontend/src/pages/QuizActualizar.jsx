@@ -1,76 +1,103 @@
-import React, { useState } from 'react';
-import { useQuizBuilder } from '../hooks/crearQuiz/useQuizBuilder.js';
-import { crearQuiz, addQuizPreguntas } from '../services/quiz.service.js';
-import SlidePreview from '../components/SlidePreview.jsx';
-import QuizEditor from '../components/QuizEditor.jsx';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom'; // Necesitarás react-router-dom
 
-function QuizCrear() {
+// Servicios y Helpers
+//import { getQuizByIdLote, updateQuiz } from '../services/quiz.service.js'; // Asumo que tienes un servicio `updateQuiz`
+import { getQuizByIdLote } from '../services/quiz.service.js';
+import { transformApiDataToSlides } from '../helpers/quizDataMapper.js';
+
+// Componentes y Hooks
+import { useQuizBuilder } from '../hooks/crearQuiz/useQuizBuilder.js';
+import QuizEditor from '../components/QuizEditor.jsx';
+import SlidePreview from '../components/SlidePreview.jsx';
+
+// Este es el mismo JSX que antes, pero ahora vive en un componente separado
+// Puedes crear un archivo `QuizBuilderUI.jsx` y ponerlo ahí, o dejarlo aquí.
+// Por simplicidad para este ejemplo, lo dejo aquí.
+
+function QuizActualizar() {
+    const { id: quizId } = useParams(); // Obtiene el 'id' de la URL
+    
+    // Estado para la carga inicial y el título
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [quizTitle, setQuizTitle] = useState('');
+    
     const {
         slides,
         activeSlide,
         activeSlideId,
         setActiveSlideId,
+        setAllSlides, // Usaremos este para cargar los datos
         addSlide,
         deleteSlide,
         handleQuestionTextChange,
         handleAnswerTextChange,
         handleToggleCorrectAnswer,
         toggleExtraAnswers,
-    } = useQuizBuilder();
+    } = useQuizBuilder(); // Inicia el hook en un estado vacío
 
-    const [isSaving, setIsSaving] = useState(false);
-    const [quizTitle, setQuizTitle] = useState('');
+    const [isUpdating, setIsUpdating] = useState(false);
 
-    const handleSave = async () => {
-        if (!quizTitle.trim()) {
-            alert("Por favor, introduce un título para el cuestionario.");
+    // useEffect para buscar los datos del quiz cuando el componente se monta
+    useEffect(() => {
+        if (!quizId) {
+            setError("No se proporcionó un ID de quiz.");
+            setIsLoading(false);
             return;
         }
 
-        const questionsToSave = slides.filter(s => s.type === 'Quiz');
-        const invalidQuestion = questionsToSave.find(q => q.answers.filter(a => a.isCorrect).length !== 1);
+        const fetchQuizData = async () => {
+            try {
+                const response = await getQuizByIdLote(quizId);
+                if (response.status === 'Success' && response.data) {
+                    // Mapeamos los datos de la API a nuestro formato interno
+                    const initialSlides = transformApiDataToSlides(response.data);
+                    setAllSlides(initialSlides); // Cargamos los datos en nuestro hook
+                    // Aquí podrías obtener el título del quiz de otro endpoint si lo tuvieras
+                    // setQuizTitle(response.quizTitle);
+                } else {
+                    throw new Error(response.message || "No se pudieron obtener los datos del quiz.");
+                }
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchQuizData();
+    }, [quizId, setAllSlides]); // El effect depende del ID del quiz
+
+    // Lógica para el botón "Actualizar"
+    const handleUpdate = async () => {
+        // ... (Aquí irían tus validaciones, similares a handleSave) ...
         
-        if (invalidQuestion) {
-            alert(`La pregunta "${invalidQuestion.questionText || 'sin título'}" debe tener exactamente UNA respuesta correcta.`);
-            return;
-        }
-
-        setIsSaving(true);
+        setIsUpdating(true);
         try {
-            const quizInfo = { nombre: quizTitle, idUser: 1 };
-            const createdQuiz = await crearQuiz(quizInfo);
-            const newQuizId = createdQuiz.data.id;
-            
-            const formattedQuestions = questionsToSave
-                .filter(q => q.questionText.trim() !== '')
-                .map(q => ({
-                    texto: q.questionText,
-                    Respuestas: q.answers
-                        .filter(a => a.text.trim() !== '')
-                        .map(a => ({ textoRespuesta: a.text, correcta: a.isCorrect }))
-                }));
-
-            if (formattedQuestions.length === 0) throw new Error("No hay preguntas válidas para guardar.");
-
-            await addQuizPreguntas(formattedQuestions, newQuizId);
-            alert("¡Quiz guardado exitosamente!");
-
+            // La lógica de actualización iría aquí, llamando a un servicio
+            // await updateQuiz(quizId, { title: quizTitle, slides });
+            console.log("Actualizando Quiz:", { quizId, title: quizTitle, slides });
+            alert("¡Quiz actualizado exitosamente! (Simulación)");
         } catch (error) {
-            console.error("Error al guardar:", error);
-            alert(`Error: ${error.message}`);
+            alert(`Error al actualizar: ${error.message}`);
         } finally {
-            setIsSaving(false);
+            setIsUpdating(false);
         }
     };
+    
+    if (isLoading) return <div className="flex items-center justify-center h-screen text-2xl">Cargando editor...</div>;
+    if (error) return <div className="flex items-center justify-center h-screen text-2xl text-red-500">Error: {error}</div>;
 
+    // El resto es la misma UI que en QuizCrear, pero con el botón y la lógica de "Actualizar"
     return (
         <div className="h-screen bg-gray-100 font-sans flex flex-col">
             <header className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-center bg-white p-3 sm:p-2 shadow-sm border-b gap-2 sm:gap-4 z-20">
-                <h1 className="text-2xl md:text-3xl font-bold text-purple-800">Freehoot!</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-purple-800">Editando Quiz</h1>
                 <div className="flex items-center space-x-2">
                     <button className="bg-gray-200 text-gray-700 rounded-md px-3 py-2 text-sm sm:text-base font-semibold hover:bg-gray-300">Salir</button>
-                    <button onClick={handleSave} disabled={isSaving} className="bg-green-600 text-white rounded-md px-3 py-2 text-sm sm:text-base font-bold hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed">
-                        {isSaving ? 'Guardando...' : 'Guardar'}
+                    <button onClick={handleUpdate} disabled={isUpdating} className="bg-blue-600 text-white rounded-md px-3 py-2 text-sm sm:text-base font-bold hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed">
+                        {isUpdating ? 'Actualizando...' : 'Actualizar'}
                     </button>
                 </div>
             </header>
@@ -112,12 +139,6 @@ function QuizCrear() {
                             <label htmlFor="quiz-title" className="block text-sm font-medium text-gray-700">Título del Cuestionario</label>
                             <input type="text" id="quiz-title" value={quizTitle} onChange={(e) => setQuizTitle(e.target.value)} placeholder="Ej: Capitales del Mundo" className="mt-1 block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" />
                         </div>
-                        <div className="p-4 bg-gray-50 rounded-lg border">
-                            <label htmlFor="time-limit" className="block text-sm font-medium text-gray-700">Límite de tiempo</label>
-                            <select id="time-limit" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                                <option>20 segundos</option>
-                            </select>
-                        </div>
                     </div>
                 </aside>
             </div>
@@ -125,4 +146,4 @@ function QuizCrear() {
     );
 }
 
-export default QuizCrear;
+export default QuizActualizar;
