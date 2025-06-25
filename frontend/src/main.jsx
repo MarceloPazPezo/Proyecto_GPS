@@ -17,6 +17,7 @@ import PizarraIdeas from './pages/pizarraIdeas';
 import HostIdeas from './pages/hostIdeas';
 import QuizActualizar from './pages/QuizActualizar';
 import '@styles/styles.css';
+import WaitingRoom from './pages/WaitingRoom';
 
 export const socket = io("/");
 
@@ -71,6 +72,10 @@ const router = createBrowserRouter([
   {
     path: '/quiz',
     element: <Quiz />
+  },
+  {
+    path:'/espera',
+    element:<WaitingRoom/>
   },
   {
     path: "/ideas",
