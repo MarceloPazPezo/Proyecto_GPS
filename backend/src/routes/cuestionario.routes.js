@@ -2,6 +2,7 @@ import { Router } from "express";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import {
     createCuestionario,
+    getCuestionariosByUser,
     getCuestionario,
     getCuestionarios,
     deleteCuestionario,
@@ -17,7 +18,7 @@ const router=Router();
 
 router.use(authenticateJwt);
 router.get("/",getCuestionario);
-router.get("/:idUser",getCuestionario);
+router.get("/user/:idUser",getCuestionariosByUser);
 router.get("/all",getCuestionarios);
 router.post("/",createCuestionario);
 router.patch("/",updateCuestionario);

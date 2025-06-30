@@ -9,7 +9,7 @@ const WaitingRoom=()=>{
             navigate("/quiz");
         }
         if (message.actividad === 'pizarra') {
-            navigate("/pizarra");
+            navigate("/ideas");
         }
     }
 

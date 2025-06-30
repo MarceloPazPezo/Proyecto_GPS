@@ -57,6 +57,7 @@ const Navbar = () => {
       <>
         <NavLink to="/home" className={getNavLinkClass}>Inicio</NavLink>
         <NavLink to="/room" className={getNavLinkClass}>Actividades</NavLink>
+        <NavLink to="Biblioteca" className={getNavLinkClass}>Biblioteca</NavLink>
         {userRole === 'administrador' && (
             <NavLink to="/users" className={getNavLinkClass}>Usuarios</NavLink>
         )}

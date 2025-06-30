@@ -1,39 +1,39 @@
-import { useState, useEffect } from "react";
-import { getComaprtidos } from "../services/compartido.service.js";
-import { getCuestionarios } from "../services/cuestionario.service.js";
+import useQuizzes from "../hooks/crearQuiz/getQuiz.js";
 import Table from "../components/Table.jsx"
+import { useNavigate } from "react-router-dom";
 const Cuestionarios = () => {
-    const idUser = sessionStorage.getItem('usuario').id;
-    const [quizzes, setQuizzes] = useState([]);
+    const { fetchQuizzes, quizzes } = useQuizzes();
+    //console.log(idUser);
+    const navigate = useNavigate();
+    const columns = [
+        { title: "Nombre", field: "nombre", width: 350, responsive: 0 },
+        { title: "Creado por:", field: "usuario", width: 200, responsive: 2 },
+    ];
 
-    const cuestionarios = async () => {
-        try {
-            const cuest = await getCuestionarios(idUser)
-            setQuizzes((state) => [state, ...cuest]);
-        } catch (error) {
-            console.error(error);
-        }
+    const crearQuiz = () => {
+        navigate("/createQuiz");
     }
-
-    const comaprtidos = async () => {
-        try {
-            const comp = await getComaprtidos(idUser);
-            setQuizzes((state) => [state, ...comp])
-        } catch (error) {
-            console.error(error);
-        }
+    const click = () => {
+        console.log(quizzes);
     }
-
-    useEffect(() => {
-        getComaprtidos;
-    }, [])
     return (
-        <div className="container">
-            <Table
-            /*columns={}
-            data={}
-            filter={}*/
-            ></Table>
-        </div>
+        <main>
+            <div>
+                <button className="w-150 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
+                 onClick={crearQuiz}>Crear Cuestionario</button>
+            </div>
+            <div className="mt-8 p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg rounded-2xl">
+
+                <Table
+                    columns={columns}
+                    data={quizzes}
+                    dataToFilter={'nombre'}
+                    initialSortName={'nombre'}
+                ></Table>
+                <button onClick={click}>Boton</button>
+            </div>
+        </main>
     )
 }
+
+export default Cuestionarios;

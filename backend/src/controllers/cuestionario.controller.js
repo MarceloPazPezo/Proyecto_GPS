@@ -18,8 +18,17 @@ import {
 
 import {
     quizBodyValidation,
-    quizQueryValidation
+    quizQueryValidation,
+    quizUserValidation
 } from "../validations/cuestionario.validation.js";
+
+import { 
+    questionBodyValidation, 
+} from "../validations/preguntas.validation.js";
+
+import {
+    LoteBodyValidation,
+} from "../validations/respuestas.validation.js";
 
 export async function createCuestionario(req, res) {
     try {
@@ -57,11 +66,13 @@ export async function getCuestionario(req, res) {
 
 export async function getCuestionariosByUser(req, res) {
     try {
-        const {error}=quizQueryValidation.validate({idUser});
+        const {idUser}=req.params;
+        
+        const {error}=quizUserValidation.validate({idUser});
         
         if (error) return handleErrorClient(res, 400, "Error de validación", error.message);
         
-        const [quiz,errorQuiz]= await getCuestionariosByUserService(req.params);
+        const [quiz,errorQuiz]= await getCuestionariosByUserService(idUser);
 
         if (errorQuiz) return handleErrorClient(res, 404, errorQuiz);
         handleSuccess(res, 200, "Cuestionario encontrado", quiz);
@@ -124,16 +135,6 @@ export async function deleteCuestionario(req, res) {
         handleErrorServer(res, 500, error.message);
     }
 }
-
-
-
-import { 
-    questionBodyValidation, 
-} from "../validations/preguntas.validation.js";
-
-import {
-    LoteBodyValidation,
-} from "../validations/respuestas.validation.js";
 
 export async function addLotepPreguntas(req, res) {
     try {

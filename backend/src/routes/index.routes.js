@@ -6,6 +6,7 @@ import preguntasRoutes from "./preguntas.routes.js";
 import respuestasRoutes from "./respuestas.routes.js";
 import quizRoutes from "./cuestionario.routes.js";
 import shareRoutes from "./compartido.routes.js"
+import EXRoutes from "./EX.routes.js"
 
 const router = Router();
 
@@ -15,6 +16,6 @@ router
     .use("/preguntas", preguntasRoutes)
     .use("/respuestas", respuestasRoutes)
     .use("/quiz",quizRoutes)
-    .use("/share",shareRoutes);
-
+    .use("/share",shareRoutes)
+    .use("/EX",EXRoutes);
 export default router;

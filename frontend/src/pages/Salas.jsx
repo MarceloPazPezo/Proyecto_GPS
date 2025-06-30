@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import useLogin from "../hooks/auth/useLogin.jsx";
 import Form from "../components/Form";
 
+
 const Salas = () => {
     const navigate = useNavigate();
     const { handleInputChange } = useLogin();
@@ -43,16 +44,17 @@ const Salas = () => {
     const iniciarAct = () => {
         sessionStorage.setItem("participantes",participantes);
         socket.emit("start",{actividad:actividad});
-        navigate("/host");
+        if(actividad==='quiz') navigate("/host");
+        if(actividad==='pizarra') navigate("/hostIdeas");
     }
 
     const ideaspizarraAct = () =>{
-        navigate("/hostIdeas");
+        
     }
 
 
     return (
-        <main className="container">
+        <main >
             {!sessionStorage.getItem('sala') ? 
             <Form
                 title={`Crear una sala`}
@@ -81,23 +83,23 @@ const Salas = () => {
              <div>
                 <div>
                     <p className="p-2 text-white bg-black">Conectados:</p>
-                    <ul className="border-2 border-zinc-500 p-2 w-full text-black bg-white">
+                    <ul className="w-full bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 ">
                         {participantes.map((participante, index) => (
-                            <li key={index}><b>{participante.nickname}</b></li>
+                            <li key={index}><b>{"🟢"+ participante.nickname}</b></li>
                         ))}
                     </ul>
                 </div>
-                <p>Nombre de la sala:</p>
-                <h1>{id}</h1>
+                <p className="text-3xl font-bold text-white mb-8 text-left" >Nombre de la sala:</p>
+                <h1 className="text-3xl font-bold text-white mb-8 text-center">{id}</h1>
                 <button
                     //onMouseOver={"bg-yellow"}
                     onClick={iniciarAct}
                     disabled={participantes.length===0}
-                    className="border-2 border-zinc-500 p-2 w-full text-black bg-white"
+                    className="center w-150 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
                 >Iniciar Actividad</button>
                 <button 
                 onClick={cancelarAct} 
-                className="border-2 border-zinc-500 p-2 w-full text-black bg-white"
+                className="w-150 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
                 >Cancelar</button>
             </div>}
         </main>

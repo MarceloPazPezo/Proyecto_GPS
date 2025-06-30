@@ -1,5 +1,7 @@
 import Cuestionario from "../entity/cuestionario.entity.js";
 import { AppDataSource } from "../config/configDb.js";
+import Respuesta from "../entity/respuesta.entity.js";
+import Pregunta from "../entity/preguntas.entity.js";
 
 const cuestRepository = AppDataSource.getRepository(Cuestionario);
 
@@ -117,9 +119,6 @@ export async function deleteCuestionarioService(data) {
 }
 
 //Jerson 
-
-import Respuesta from "../entity/respuesta.entity.js";
-import Pregunta from "../entity/preguntas.entity.js";
 
 export async function addLotepPreguntasService({ preguntas }) {
     const preguntaRepository = AppDataSource.getRepository(Pregunta);

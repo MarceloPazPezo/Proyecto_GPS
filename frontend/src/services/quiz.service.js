@@ -39,3 +39,23 @@ export async function getQuizByIdLote(quizId) {
         throw error.response?.data || new Error("Error de red o del servidor");
     }
 }
+
+export async function getCuestionarios(idUser) {
+    try {
+        const response = await axios.get(`/quiz/user/${idUser}`)
+        return response.data.data;
+    } catch (error) {
+        if(response.status===404) return ;
+        console.error(error);
+    }
+}
+
+export async function getCuestionariosByUser(idUser) {
+    try {
+        const response = await axios.get(`/EX/quizzes/${idUser}`)
+        return response.data.data;
+    } catch (error) {
+        if(response.status===404) return ;
+        console.error(error);
+    }
+}

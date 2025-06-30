@@ -21,7 +21,8 @@ export async function getCompartidosService(query) {
     try{
         const CompartidoRepository = AppDataSource.getRepository(Compartido);
         const compartidos = await CompartidoRepository.find({where:{idUser:query.idUser}});
-        if(!compartidos || compartidos.length === 0) return [null, "No hay compartidos"];
+        //console.log(compartidos);
+        //if(!compartidos || compartidos.length === 0) return [[], "No hay compartidos"];
         return [compartidos,null];
     } catch (error){
         console.error("Error al obtener todos los compartidos:", error);

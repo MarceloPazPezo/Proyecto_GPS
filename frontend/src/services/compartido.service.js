@@ -1,10 +1,13 @@
 import axios from "./root.service.js";
 
-export async function getComaprtidos(idUser) {
+export async function getCompartidos(idUser) {
     try {
-        const { data } = await axios.get(`/share/${idUser}`);
-        return data;
+        const response = await axios.get(`/share/${idUser}`);
+        return response.data.data;
     } catch (error) {
-        console.error(error.data);
+        if(error.status===404){
+            return [];
+        }
+        //console.error(error);
     }
 }

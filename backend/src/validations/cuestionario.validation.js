@@ -58,8 +58,26 @@ export const quizQueryValidation = Joi.object({
             "string.pattern.base":
                 "El nombre solo puede contener letras y espacios.",
         }),
-}).or("id","idUser","nombre")
+}).or("id", "idUser", "nombre")
     .and("idUser", "nombre")
+    .unknown(false)
+    .messages({
+        "object.unknown": "No se permiten propiedades adicionales.",
+        "object.missing":
+            "Debes proporcionar idUser y nombre o id del cuestionario.",
+    });
+
+export const quizUserValidation = Joi.object({
+    idUser: Joi.number()
+        .integer()
+        .positive()
+        .messages({
+            "number.base": "La id debe ser un numero",
+            "number.integer": "La id debe ser un entero",
+            "number.positive": "La id debe ser positivo"
+        }),
+
+})
     .unknown(false)
     .messages({
         "object.unknown": "No se permiten propiedades adicionales.",
