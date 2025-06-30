@@ -7,7 +7,8 @@ import {
     deleteCuestionario,
     updateCuestionario,
     addLotepPreguntas,
-    obtenerPreguntasYRespuestasController
+    obtenerPreguntasYRespuestasController,
+    actualizarPreguntasYRespuestasController
 } from "../controllers/cuestionario.controller.js";
 
 
@@ -23,5 +24,7 @@ router.patch("/",updateCuestionario);
 router.delete("/",deleteCuestionario);
 router.post("/addLote/:idCuestionario", addLotepPreguntas);
 router.get("/lote/:idCuestionario", obtenerPreguntasYRespuestasController);
+router.patch("/lote/:idCuestionario", actualizarPreguntasYRespuestasController);
+
 
 export default router;

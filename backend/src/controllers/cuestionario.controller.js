@@ -6,6 +6,7 @@ import {
     deleteCuestionarioService,
     addLotepPreguntasService,
     obtenerPreguntasYRespuestas,
+    ModLotepPreguntasService,
     getCuestionariosByUserService
 } from "../services/cuestionario.service.js";
 
@@ -193,9 +194,42 @@ export async function obtenerPreguntasYRespuestasController(req, res) {
     }
 }
 
+//actualizar quiz enterito
+export async function actualizarPreguntasYRespuestasController(req, res) {
+    try {
+        const { idCuestionario } = req.params;
+        const { preguntas } = req.body;
+
+        console.log("ID Cuestionario:", idCuestionario);
+        console.log("Preguntas recibidas:", preguntas);
+
+        if (!Array.isArray(preguntas) || preguntas.length === 0) {
+            return handleErrorClient(res, 400, "No se recibieron preguntas para actualizar");
+        }
+
+        // Asegura que cada pregunta tenga el idCuestionario correcto
+        const preguntasConId = preguntas.map(p => ({
+            ...p,
+            idCuestionario: Number(idCuestionario)
+        }));
+
+        // Llama al service modificado
+        console.log("antes de ejecutar el service");
+        const [result, errorPreguntas] = await ModLotepPreguntasService({ preguntas: preguntasConId, idCuestionario });
+
+        if (errorPreguntas) return res.status(500).json({ error: errorPreguntas });
+        if (!result || result.length === 0) return res.status(400).send();
+
+        handleSuccess(res, 200, "Preguntas y respuestas actualizadas exitosamente", result);
+
+    } catch (error) {
+        console.error("Error al actualizar las preguntas y respuestas:", error);
+        handleErrorServer(res, 500, error.message);
+    }
+}
 
 
-        
 
 
-        
+
+

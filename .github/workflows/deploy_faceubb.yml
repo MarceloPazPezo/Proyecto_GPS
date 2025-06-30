@@ -1,9 +1,7 @@
 name: Despliegue a face-ubb
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   deploy:

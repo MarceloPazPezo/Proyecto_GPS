@@ -30,7 +30,7 @@ export async function loginService(user) {
     }
 
     const payload = {
-      id:userFound.id,
+      id: userFound.id,
       nombreCompleto: userFound.nombreCompleto,
       email: userFound.email,
       rut: userFound.rut,

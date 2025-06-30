@@ -15,6 +15,18 @@ const PreguntasSchema = new EntitySchema({
             length: 2000,
             nullable: false,
         },
+        imagenUrl:{
+            type: "varchar",
+            length: 255,
+            nullable: true,
+            default: null
+        },
+        imagenKey:{
+            type: "varchar",
+            length: 255,
+            nullable: true,
+            default: null
+        },
         idCuestionario:{
             type:"int",
             nullable: false,

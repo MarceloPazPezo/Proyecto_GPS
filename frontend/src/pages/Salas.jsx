@@ -46,6 +46,11 @@ const Salas = () => {
         navigate("/host");
     }
 
+    const ideaspizarraAct = () =>{
+        navigate("/hostIdeas");
+    }
+
+
     return (
         <main className="container">
             {!sessionStorage.getItem('sala') ? 
