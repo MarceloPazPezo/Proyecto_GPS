@@ -6,6 +6,7 @@ import Form from "../components/Form";
 
 const Salas = () => {
     const navigate = useNavigate();
+    const { handleInputChange } = useLogin();
     const [actividad,setActividad]=useState('');
     const [id, setId] = useState("");
     const [participantes, setParticipantes] = useState([])
@@ -20,7 +21,7 @@ const Salas = () => {
             setId(message.sala);
             sessionStorage.setItem('sala', JSON.stringify({ sala: message.sala, name: 'host' }));
         }
-        console.log(sessionStorage.getItem('sala'));
+        //console.log(sessionStorage.getItem('sala'));
     }
 
     const cancelarAct = () => {
@@ -30,19 +31,14 @@ const Salas = () => {
     }
 
     const onJoin = (data) => {
-        console.log(data);
-        //participantes.push(data.nickname);
+        //console.log(data);
         setParticipantes((state)=>[data, ...state]);
-        //console.log(participantes);
     }
 
     useEffect(() => {
         socket.on("message", receiveMessage);
         socket.on("join", onJoin);
-        //return () => {    socket.off("message", receiveMessage);};
     }, []);
-
-    const { handleInputChange } = useLogin();
 
     const iniciarAct = () => {
         sessionStorage.setItem("participantes",participantes);

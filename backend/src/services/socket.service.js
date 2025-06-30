@@ -69,7 +69,7 @@ export function socketEvents(socket) {
 
     //desconexion
     socket.on('disconnect', (reason) => {
-        if(socket.host){
+        if (socket.host) {
             socket.to(socket.room).emit("finnish");
         }
         console.log("Usuario desconectado: ", socket.id);

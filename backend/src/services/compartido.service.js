@@ -1,6 +1,6 @@
 "use strict";
 import Compartido from "../entity/compartido.entity.js";
-import { AppDataSource } from "../config/configDb";
+import { AppDataSource } from "../config/configDb.js";
 
 export async function getCompartidoService(query) { 
     try{
@@ -17,10 +17,10 @@ export async function getCompartidoService(query) {
     }
 }
 
-export async function getCompartidosService() {
+export async function getCompartidosService(query) {
     try{
         const CompartidoRepository = AppDataSource.getRepository(Compartido);
-        const compartidos = await CompartidoRepository.find();
+        const compartidos = await CompartidoRepository.find({where:{idUser:query.idUser}});
         if(!compartidos || compartidos.length === 0) return [null, "No hay compartidos"];
         return [compartidos,null];
     } catch (error){

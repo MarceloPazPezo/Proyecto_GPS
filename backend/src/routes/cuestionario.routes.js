@@ -16,6 +16,7 @@ const router=Router();
 
 router.use(authenticateJwt);
 router.get("/",getCuestionario);
+router.get("/:idUser",getCuestionario);
 router.get("/all",getCuestionarios);
 router.post("/",createCuestionario);
 router.patch("/",updateCuestionario);

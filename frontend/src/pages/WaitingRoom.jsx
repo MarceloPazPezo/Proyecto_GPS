@@ -25,7 +25,7 @@ const WaitingRoom=()=>{
     return(
         <div>
             <main className="container">
-                <h1>Espere mientras se conectan los demas participantes</h1>
+                <h1 className="bg-white">Espere mientras se conectan los demas participantes</h1>
             </main>
             
         </div>

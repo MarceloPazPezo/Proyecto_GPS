@@ -5,7 +5,8 @@ import {
     updateCuestionarioService,
     deleteCuestionarioService,
     addLotepPreguntasService,
-    obtenerPreguntasYRespuestas
+    obtenerPreguntasYRespuestas,
+    getCuestionariosByUserService
 } from "../services/cuestionario.service.js";
 
 import {
@@ -47,6 +48,21 @@ export async function getCuestionario(req, res) {
 
         if (errorQuiz) return handleErrorClient(res, 404, errorQuiz);
 
+        handleSuccess(res, 200, "Cuestionario encontrado", quiz);
+    } catch (error) {
+        handleErrorServer(res, 500, error.message);
+    }
+}
+
+export async function getCuestionariosByUser(req, res) {
+    try {
+        const {error}=quizQueryValidation.validate({idUser});
+        
+        if (error) return handleErrorClient(res, 400, "Error de validación", error.message);
+        
+        const [quiz,errorQuiz]= await getCuestionariosByUserService(req.params);
+
+        if (errorQuiz) return handleErrorClient(res, 404, errorQuiz);
         handleSuccess(res, 200, "Cuestionario encontrado", quiz);
     } catch (error) {
         handleErrorServer(res, 500, error.message);
