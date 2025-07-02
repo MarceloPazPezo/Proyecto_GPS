@@ -20,17 +20,17 @@ const Cuestionarios = () => {
         <main>
             <div>
                 <button className="w-150 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
-                 onClick={crearQuiz}>Crear Cuestionario</button>
+                    onClick={crearQuiz}>Crear Cuestionario</button>
             </div>
             <div className="mt-8 p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg rounded-2xl">
-
+                <button className="w-40 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
+                    onClick={click}>Compartir</button>
                 <Table
                     columns={columns}
                     data={quizzes}
                     dataToFilter={'nombre'}
                     initialSortName={'nombre'}
                 ></Table>
-                <button onClick={click}>Boton</button>
             </div>
         </main>
     )

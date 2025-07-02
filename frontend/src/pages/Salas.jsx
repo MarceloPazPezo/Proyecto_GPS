@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useLogin from "../hooks/auth/useLogin.jsx";
 import Form from "../components/Form";
+import useQuizzes from "../hooks/crearQuiz/getQuiz.js";
+
 
 
 const Salas = () => {
@@ -10,7 +12,9 @@ const Salas = () => {
     const { handleInputChange } = useLogin();
     const [actividad,setActividad]=useState('');
     const [id, setId] = useState("");
-    const [participantes, setParticipantes] = useState([])
+    const [participantes, setParticipantes] = useState([]);
+    const {quizzes,fetchQuizzes}=useQuizzes();
+    const [idQuiz,setIdQuiz]=useState(0);
 
     const createRoom = (data) => {
         socket.emit("create", { sala: data.sala});
@@ -48,9 +52,6 @@ const Salas = () => {
         if(actividad==='pizarra') navigate("/hostIdeas");
     }
 
-    const ideaspizarraAct = () =>{
-        
-    }
 
 
     return (
@@ -82,7 +83,7 @@ const Salas = () => {
             /> :
              <div>
                 <div>
-                    <p className="p-2 text-white bg-black">Conectados:</p>
+                    <p className="p-2 text-white bg-black w-30">Conectados:</p>
                     <ul className="w-full bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 ">
                         {participantes.map((participante, index) => (
                             <li key={index}><b>{"🟢"+ participante.nickname}</b></li>
@@ -91,10 +92,30 @@ const Salas = () => {
                 </div>
                 <p className="text-3xl font-bold text-white mb-8 text-left" >Nombre de la sala:</p>
                 <h1 className="text-3xl font-bold text-white mb-8 text-center">{id}</h1>
+                {
+                    actividad==='quiz'?
+                    <div>
+                        <ul>
+                            {quizzes.map((quiz)=>(
+                                <div key={quiz.idquiz}>
+                                    <input type="radius" 
+                                    onClick={(e)=>{setIdQuiz(e.target.id)}}
+                                    id={quiz.idquiz} 
+                                    readOnly={true}
+                                    name={quiz.nombre} 
+                                    value={" "+quiz.nombre+" por: "+quiz.usuario}
+                                    className="center w-150 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
+                                    />
+                                </div>
+                       ))}
+                        </ul>
+                    </div>
+                    :<></>
+                }
                 <button
                     //onMouseOver={"bg-yellow"}
                     onClick={iniciarAct}
-                    disabled={participantes.length===0}
+                    disabled={participantes.length===0||(actividad==='quiz'&& idQuiz===0)}
                     className="center w-150 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
                 >Iniciar Actividad</button>
                 <button 
