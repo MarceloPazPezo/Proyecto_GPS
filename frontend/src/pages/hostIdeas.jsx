@@ -1,44 +1,71 @@
 import { useState, useEffect } from "react"
 import { socket } from "../main";
 
-const hostIdeas = () => {
-    let listaRespuesta = [];
-
-    const recibirRespuestas = (data) => {
-        listaRespuesta.push(data.responder);
-        console.log(data.responder);
-        console.log(listaRespuesta.length);
-    };
-
-    useEffect(() => {
-        socket.on("answer", recibirRespuestas)
-    }
-        , []);
-
-    const reiniciar = () => {
-        setPreg(false)
-        setMessage("")
-        socket.emit("reiniciar")
-
-        //console.log("enviado")
-    }
-
+const HostIdeas = () => {
+    const [respuestas, setRespuestas] = useState({});
     const [message, setMessage] = useState("");
     const [preg, setPreg] = useState(false);
+
+    const recibirRespuestas = (data) => {
+        setRespuestas((prev) => {
+            const nueva = { ...prev };
+            const palabra = data.responder.toLowerCase(); // para agrupar bien
+            nueva[palabra] = (nueva[palabra] || 0) + 1;
+            return nueva;
+        });
+    };
+
+
+    const palabrasOrdenadas = Object.entries(respuestas)
+        .sort((a, b) => b[1] - a[1]);
+
+    useEffect(() => {
+        socket.on("answer", recibirRespuestas);
+
+        return () => {
+            socket.off("answer", recibirRespuestas); // Limpieza
+        };
+    }, []);
+
+    const reiniciar = () => {
+        setPreg(false);
+        setMessage("");
+        setRespuestas({});
+        socket.emit("reiniciar");
+    };
+
     const handleSubmit = (event) => {
         event.preventDefault();
-        //console.log(message);
-        socket.emit("comenzar")
+        socket.emit("comenzar");
         setPreg(true);
+    };
 
-    }
     return (
-        <div className="container">
+        <div className="bg-blue-950 min-h-screen flex flex-col justify-center items-center">
             {preg ? (
-                <div className="flex flex-col min-h-screen px-4 pt-10">
-                    <div className="flex-1 flex items-start justify-center">
-                        <h5 className="text-8xl text-center">{message}</h5>
+                <div className="flex-1 flex flex-col px-4 pt-10">
+                    <div className="mb-8">
+                        <h5 className="text-4xl text-center text-white">{message}</h5>
                     </div>
+                    <div className="flex-1 flex items-center justify-center">
+                        <div className="relative flex justify-center items-center flex-wrap gap-4 max-w-5xl mx-auto">
+                            {Object.entries(respuestas)
+                                .sort((a, b) => b[1] - a[1])
+                                .map(([palabra, cantidad], index) => (
+                                    <span
+                                        key={palabra}
+                                        className="text-blue-600 font-bold text-center transition-all"
+                                        style={{
+                                            fontSize: `${Math.min(16 + cantidad * 10, 72)}px`,
+                                            zIndex: Object.entries(respuestas).length - index,
+                                        }}
+                                    >
+                                        {palabra}
+                                    </span>
+                                ))}
+                        </div>
+                    </div>
+
                     <button
                         onClick={reiniciar}
                         className="w-full max-w-xs mx-auto mb-8 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition duration-300 shadow-md"
@@ -47,7 +74,7 @@ const hostIdeas = () => {
                     </button>
                 </div>
             ) : (
-                <form onSubmit={handleSubmit} className="bg-zinc-900 p-10">
+                <form onSubmit={handleSubmit} className="p-10 min-h-screen flex flex-col justify-center">
                     <h1 className="text-2xl font-bold my-2 text-amber-50">Pregunta</h1>
                     <input
                         name="message"
@@ -61,7 +88,7 @@ const hostIdeas = () => {
                 </form>
             )}
         </div>
-    )
+    );
 }
 
-export default hostIdeas
+    export default HostIdeas;
