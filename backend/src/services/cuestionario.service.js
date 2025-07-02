@@ -1,5 +1,7 @@
 import Cuestionario from "../entity/cuestionario.entity.js";
 import { AppDataSource } from "../config/configDb.js";
+import Respuesta from "../entity/respuesta.entity.js";
+import Pregunta from "../entity/preguntas.entity.js";
 
 const cuestRepository = AppDataSource.getRepository(Cuestionario);
 
@@ -7,16 +9,14 @@ export async function createCuestionarioService(data) {
     try {
         const { idUser, nombre } = data;
         const existing = await cuestRepository.findOne({
-            where: [{ idUser: idUser }, { nombre: nombre }]
+            where: { idUser: idUser, nombre: nombre }
         });
-
         const createErrorMessage = (dataInfo, message) => ({
             dataInfo,
             message
         });
-
         if (existing) {
-            return [null, createErrorMessage("nombre", "Ese cuestionario ya existe")];
+            return [null, createErrorMessage("nombre", "Ya existe un cuestionario con ese nombre para este usuario")];
         }
 
         const newCuest = cuestRepository.create({
@@ -43,6 +43,17 @@ export async function getCuestionariosService() {
         return [cuestFound, null];
     } catch (error) {
         console.error("Error al buscar", error);
+        return [null, "Error interno del servidor"];
+    }
+}
+
+export async function getCuestionariosByUserService(idUser) {
+    try {
+        const quizFound=await cuestRepository.find({where:{idUser:idUser}})
+        if(!quizFound) return [null, "No se encontraron cuestionarios"];
+        return [quizFound, null];
+    } catch (error) {
+        console.error("Error al buscar",error);
         return [null, "Error interno del servidor"];
     }
 }
@@ -108,9 +119,6 @@ export async function deleteCuestionarioService(data) {
 }
 
 //Jerson 
-
-import Respuesta from "../entity/respuesta.entity.js";
-import Pregunta from "../entity/preguntas.entity.js";
 
 export async function addLotepPreguntasService({ preguntas }) {
     const preguntaRepository = AppDataSource.getRepository(Pregunta);
@@ -188,4 +196,45 @@ export async function obtenerPreguntasYRespuestas(idCuestionario) {
     }
 }
 
+export async function ModLotepPreguntasService({ preguntas, idCuestionario }) {
+    try {
+        const preguntaRepository = AppDataSource.getRepository(Pregunta);
+        const respuestaRepository = AppDataSource.getRepository(Respuesta);
+
+        // 1. Actualizar las preguntas
+        for (const pregunta of preguntas) {
+            const { id, texto } = pregunta;
+            if (id && texto !== undefined) {
+                await preguntaRepository.update(id, { texto });
+            }
+        }
+
+        // 2. Actualizar las respuestas de cada pregunta
+        for (const pregunta of preguntas) {
+            if (Array.isArray(pregunta.Respuestas)) {
+                for (const respuesta of pregunta.Respuestas) {
+                    const { id, idPreguntas, textoRespuesta, correcta } = respuesta;
+                    if (
+                        id &&
+                        idPreguntas !== undefined &&
+                        textoRespuesta !== undefined &&
+                        correcta !== undefined
+                    ) {
+                        await respuestaRepository.update(
+                            { id, idPreguntas },
+                            { textoRespuesta, correcta }
+                        );
+                    }
+                }
+            }
+        }
+
+        // Opcional: puedes devolver las preguntas actualizadas consultando de nuevo la BD si lo necesitas
+        return [preguntas, null];
+
+    } catch (error) {
+        console.error("Error al modificar lote de preguntas y respuestas:", error);
+        return [null, "Error interno del servidor"];
+    }
+}
 

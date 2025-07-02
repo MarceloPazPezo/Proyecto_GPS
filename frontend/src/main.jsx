@@ -15,8 +15,10 @@ import Host from './pages/Host';
 import ProtectedRoute from '@components/ProtectedRoute';
 import PizarraIdeas from './pages/pizarraIdeas';
 import HostIdeas from './pages/hostIdeas';
+import QuizActualizar from './pages/QuizActualizar';
 import '@styles/styles.css';
 import WaitingRoom from './pages/WaitingRoom';
+import Cuestionarios from './pages/Cuestionarios.jsx'
 
 export const socket = io("/");
 
@@ -48,7 +50,19 @@ const router = createBrowserRouter([
       },
       {
         path: "/hostIdeas",
-        element: <HostIdeas/>
+        element: <HostIdeas />
+      },
+      {
+        path: "/createQuiz",
+        element: <QuizCrear />
+      },
+      {
+        path: '/updateQuiz',
+        element: <QuizActualizar />
+      },
+      {
+        path:'/biblioteca',
+        element:<Cuestionarios/>
       }
     ]
   },
@@ -61,24 +75,20 @@ const router = createBrowserRouter([
     element: <Register />
   },
   {
-    path: '/quizcrear',
-    element: <QuizCrear />
-  },
-  {
     path: "/join",
     element: <Join />
   },
   {
-    path:'/quiz',
-    element:<Quiz/>
+    path: '/quiz',
+    element: <Quiz />
+  },
+  {
+    path: '/espera',
+    element: <WaitingRoom />
   },
   {
     path: "/ideas",
     element: <PizarraIdeas />
-  },
-  {
-    path:'/espera',
-    element:<WaitingRoom/>
   }
 ])
 

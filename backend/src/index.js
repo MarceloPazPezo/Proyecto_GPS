@@ -8,6 +8,7 @@ import passport from "passport";
 import express, { json, urlencoded } from "express";
 import { cookieKey, HOST, PORT } from "./config/configEnv.js";
 import { connectDB } from "./config/configDb.js";
+import { initializeMinio } from "./config/configMinio.js";
 import { createUsers } from "./config/initialSetup.js";
 import { passportJwtSetup } from "./auth/passport.auth.js";
 import http from 'http'
@@ -85,6 +86,7 @@ async function setupServer() {
 async function setupAPI() {
   try {
     await connectDB();
+    //await initializeMinio();
     await setupServer();
     await createUsers();
   } catch (error) {

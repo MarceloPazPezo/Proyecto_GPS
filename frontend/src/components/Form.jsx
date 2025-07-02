@@ -23,17 +23,18 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
 
     return (
         <form
-            className="form"
+            className="bg-white/30 backdrop-blur-lg border border-white/20 shadow-xl p-8 sm:p-10 rounded-2xl mb-6"
+                
             style={{ backgroundColor: backgroundColor }}
             onSubmit={handleSubmit(onFormSubmit)}
             autoComplete="off"
         >
-            <h1>{title}</h1>
+            <h1 className="text-3xl font-bold text-white mb-8 text-center">{title}</h1>
             {fields.map((field, index) => (
-                <div className="container_inputs" key={index}>
-                    {field.label && <label htmlFor={field.name}>{field.label}</label>}
+                <div className="w-full space-y-5" key={index}>
+                    {field.label && <label className="block text-sm font-semibold text-slate-200 mb-2" htmlFor={field.name}>{field.label}</label>}
                     {field.fieldType === 'input' && (
-                        <input
+                        <input className="w-full p-3 bg-white/10 border border-white/30 rounded-lg text-white placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-white/50 transition"
                             {...register(field.name, {
                                 required: field.required ? 'Este campo es obligatorio' : false,
                                 minLength: field.minLength ? { value: field.minLength, message: `Debe tener al menos ${field.minLength} caracteres` } : false,
@@ -68,7 +69,7 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
                         />
                     )}
                     {field.fieldType === 'select' && (
-                        <select
+                        <select className="w-full p-3 bg-white/10 border border-white/30 rounded-lg text-black placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-white/50 transition"
                             {...register(field.name, {
                                 required: field.required ? 'Este campo es obligatorio' : false,
                                 validate: field.validate || {},
@@ -78,7 +79,7 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
                             disabled={field.disabled}
                             onChange={field.onChange}
                         >
-                            <option value="">Seleccionar opción</option>
+                            <option  value="">Seleccionar opción</option>
                             {field.options && field.options.map((option, optIndex) => (
                                 <option className="options-class" key={optIndex} value={option.value}>
                                     {option.label}
@@ -87,7 +88,7 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
                         </select>
                     )}
                     {field.type === 'password' && field.name === 'password' && (
-                        <span className="toggle-password-icon" onClick={togglePasswordVisibility}>
+                        <span className="toggle-password-icon " onClick={togglePasswordVisibility}>
                             <img src={showPassword ? ViewIcon : HideIcon} />
                         </span>
                     )}
@@ -101,8 +102,8 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
                     </div>
                 </div>
             ))}
-            {buttonText && <button type="submit">{buttonText}</button>}
-            {footerContent && <div className="footerContent">{footerContent}</div>}
+            {buttonText && <button className="w-full bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5" type="submit">{buttonText}</button>}
+            {footerContent && <div className='text-sky-300 text-xs font-semibold mt-1 h-5'>{footerContent}</div>}
         </form>
     );
 };
