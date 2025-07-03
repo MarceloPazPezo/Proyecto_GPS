@@ -5,9 +5,31 @@ export async function getCompartidos(idUser) {
         const response = await axios.get(`/share/${idUser}`);
         return response.data.data;
     } catch (error) {
-        if(error.status===404){
+        if (error.status === 404) {
             return [];
+        }//console.error(error);
+    }
+}
+
+export async function shareQuiz(idQuiz, idUser) {
+    try {
+        console.log(idQuiz,idUser)
+        const response = await axios.post(`/share/`, { idCuestionario: idQuiz, idUser: idUser })
+        return response.data;
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+export async function shareQuizMany(idQuiz, users) {
+    try {
+        //console.log(idQuiz,users)
+        const response=[users.length];
+        for (let i = 0; i < users.length; i++) {
+            response[i] = await axios.post(`/share/`, { idCuestionario: idQuiz, idUser: users[i] })
         }
-        //console.error(error);
+        return response;
+    } catch (error) {
+        console.error(error);
     }
 }

@@ -17,7 +17,7 @@ export async function crearQuiz(data) {
 export async function addQuizPreguntas(quizData, quizId) {
     try {
         const response = await axios.post(`/quiz/addLote/${quizId}`, quizData);
-        console.log("Respuesta de addQuizPreguntas:", response.data);
+        //console.log("Respuesta de addQuizPreguntas:", response.data);
         return response.data;
 
     } catch (error) {
@@ -28,13 +28,13 @@ export async function addQuizPreguntas(quizData, quizId) {
 
 export async function getQuizByIdLote(quizId) {
     try {
-        console.log("Obteniendo quiz con ID:", quizId);
+        //console.log("Obteniendo quiz con ID:", quizId);
         const response = await axios.get(`/quiz/lote/${quizId}`);
-        console.log("Respuesta de getQuizByIdLote:", response.data);
+        //console.log("Respuesta de getQuizByIdLote:", response.data);
         return response.data; // Devolvemos el cuerpo de la respuesta.
 
     } catch (error) {
-        console.log("Error al obtener el quiz por ID:", error);
+        //console.log("Error al obtener el quiz por ID:", error);
         console.error("Error en getQuizByIdLote:", error.response?.data || error.message);
         throw error.response?.data || new Error("Error de red o del servidor");
     }
@@ -45,7 +45,6 @@ export async function getCuestionarios(idUser) {
         const response = await axios.get(`/quiz/user/${idUser}`)
         return response.data.data;
     } catch (error) {
-        if(response.status===404) return ;
         console.error(error);
     }
 }
@@ -55,7 +54,16 @@ export async function getCuestionariosByUser(idUser) {
         const response = await axios.get(`/EX/quizzes/${idUser}`)
         return response.data.data;
     } catch (error) {
-        if(response.status===404) return ;
-        console.error(error);
+        console.error(error.status);
+    }
+}
+
+export async function eliminarQuiz(Quiz){
+    try {
+        const response= await axios.delete("/quiz/",{idUser:Quiz.idUser,nombre:Quiz.nombre,id:Quiz.id});
+        return response.data;
+    } catch (error) {
+        console.error(error)
+        return;
     }
 }

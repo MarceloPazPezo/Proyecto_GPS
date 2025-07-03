@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useLogin from "../hooks/auth/useLogin.jsx";
 import Form from "../components/Form";
-import useQuizzes from "../hooks/crearQuiz/getQuiz.js";
+import useQuizzes from "../hooks/crearQuiz/getQuiz.jsx";
 
 
 

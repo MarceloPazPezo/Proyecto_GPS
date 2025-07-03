@@ -7,7 +7,7 @@ import { getQuizByIdLote } from '../services/quiz.service.js';
 import { transformApiDataToSlides } from '../helpers/quizDataMapper.js';
 
 // Componentes y Hooks
-import { useQuizBuilder } from '../hooks/crearQuiz/useQuizBuilder.js';
+import { useQuizBuilder } from '../hooks/crearQuiz/useQuizBuilder.jsx';
 import QuizEditor from '../components/QuizEditor.jsx';
 import SlidePreview from '../components/SlidePreview.jsx';
 

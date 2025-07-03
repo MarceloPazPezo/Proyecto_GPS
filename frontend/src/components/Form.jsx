@@ -27,7 +27,7 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
                 
             style={{ backgroundColor: backgroundColor }}
             onSubmit={handleSubmit(onFormSubmit)}
-            autoComplete="off"
+            autoComplete="on"
         >
             <h1 className="text-3xl font-bold text-white mb-8 text-center">{title}</h1>
             {fields.map((field, index) => (
