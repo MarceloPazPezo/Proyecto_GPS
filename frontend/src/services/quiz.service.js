@@ -25,3 +25,17 @@ export async function addQuizPreguntas(quizData, quizId) {
         throw error.response?.data || new Error("Error de red o del servidor");
     }
 }
+
+export async function getQuizByIdLote(quizId) {
+    try {
+        console.log("Obteniendo quiz con ID:", quizId);
+        const response = await axios.get(`/quiz/lote/${quizId}`);
+        console.log("Respuesta de getQuizByIdLote:", response.data);
+        return response.data; // Devolvemos el cuerpo de la respuesta.
+
+    } catch (error) {
+        console.log("Error al obtener el quiz por ID:", error);
+        console.error("Error en getQuizByIdLote:", error.response?.data || error.message);
+        throw error.response?.data || new Error("Error de red o del servidor");
+    }
+}

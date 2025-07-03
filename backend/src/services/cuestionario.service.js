@@ -186,4 +186,45 @@ export async function obtenerPreguntasYRespuestas(idCuestionario) {
     }
 }
 
+export async function ModLotepPreguntasService({ preguntas, idCuestionario }) {
+    try {
+        const preguntaRepository = AppDataSource.getRepository(Pregunta);
+        const respuestaRepository = AppDataSource.getRepository(Respuesta);
+
+        // 1. Actualizar las preguntas
+        for (const pregunta of preguntas) {
+            const { id, texto } = pregunta;
+            if (id && texto !== undefined) {
+                await preguntaRepository.update(id, { texto });
+            }
+        }
+
+        // 2. Actualizar las respuestas de cada pregunta
+        for (const pregunta of preguntas) {
+            if (Array.isArray(pregunta.Respuestas)) {
+                for (const respuesta of pregunta.Respuestas) {
+                    const { id, idPreguntas, textoRespuesta, correcta } = respuesta;
+                    if (
+                        id &&
+                        idPreguntas !== undefined &&
+                        textoRespuesta !== undefined &&
+                        correcta !== undefined
+                    ) {
+                        await respuestaRepository.update(
+                            { id, idPreguntas },
+                            { textoRespuesta, correcta }
+                        );
+                    }
+                }
+            }
+        }
+
+        // Opcional: puedes devolver las preguntas actualizadas consultando de nuevo la BD si lo necesitas
+        return [preguntas, null];
+
+    } catch (error) {
+        console.error("Error al modificar lote de preguntas y respuestas:", error);
+        return [null, "Error interno del servidor"];
+    }
+}
 

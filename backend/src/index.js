@@ -86,7 +86,7 @@ async function setupServer() {
 async function setupAPI() {
   try {
     await connectDB();
-    await initializeMinio();
+    //await initializeMinio();
     await setupServer();
     await createUsers();
   } catch (error) {
