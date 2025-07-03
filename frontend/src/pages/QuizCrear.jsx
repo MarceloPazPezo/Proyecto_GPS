@@ -37,7 +37,7 @@ function QuizCrear() {
 
         setIsSaving(true);
         try {
-            const quizInfo = { nombre: quizTitle, idUser: 1 };
+            const quizInfo = { nombre: quizTitle, idUser: JSON.parse(sessionStorage.getItem('usuario')).id};
             const createdQuiz = await crearQuiz(quizInfo);
             const newQuizId = createdQuiz.data.id;
             

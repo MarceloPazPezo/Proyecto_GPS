@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '@services/auth.service.js';   // Asegúrate de que esta ruta sea correcta
 import useLogin from '@hooks/auth/useLogin.jsx';     // Asegúrate de que esta ruta sea correcta

@@ -18,6 +18,7 @@ import HostIdeas from './pages/hostIdeas';
 import QuizActualizar from './pages/QuizActualizar';
 import '@styles/styles.css';
 import WaitingRoom from './pages/WaitingRoom';
+import Cuestionarios from './pages/Cuestionarios.jsx'
 
 export const socket = io("/");
 
@@ -49,7 +50,19 @@ const router = createBrowserRouter([
       },
       {
         path: "/hostIdeas",
-        element: <HostIdeas/>
+        element: <HostIdeas />
+      },
+      {
+        path: "/createQuiz",
+        element: <QuizCrear />
+      },
+      {
+        path: '/updateQuiz',
+        element: <QuizActualizar />
+      },
+      {
+        path:'/biblioteca',
+        element:<Cuestionarios/>
       }
     ]
   },
@@ -62,10 +75,6 @@ const router = createBrowserRouter([
     element: <Register />
   },
   {
-    path: '/quizcrear',
-    element: <QuizCrear />
-  },
-  {
     path: "/join",
     element: <Join />
   },
@@ -74,20 +83,13 @@ const router = createBrowserRouter([
     element: <Quiz />
   },
   {
-    path:'/espera',
-    element:<WaitingRoom/>
+    path: '/espera',
+    element: <WaitingRoom />
   },
   {
     path: "/ideas",
     element: <PizarraIdeas />
   }
-  ,
-  {
-    path: '/quizactualizar/:id',
-    element: <QuizActualizar />
-  },
-  
-
 ])
 
 ReactDOM.createRoot(document.getElementById('root')).render(

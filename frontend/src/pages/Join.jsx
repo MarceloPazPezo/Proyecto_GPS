@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 //import io from "socket.io-client";
 import { socket } from "../main.jsx";
 import useLogin from "../hooks/auth/useLogin.jsx";
+import fondoSVG from '../assets/fondo_azul.svg'; 
 
 //const socket=io("/");
 
@@ -30,7 +31,12 @@ const Join = () => {
     }
 
     return (
-        <main className="container">
+        <main className="flex items-center justify-center min-h-screen w-full p-4 font-sans"
+                    style={{
+                        backgroundImage: `url(${fondoSVG})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                    }}>
             <div>{/*sessionStorage.getItem('sala')?<div>
                 <h1>Esperando que inicie la actividad</h1>
             </div>:*/
