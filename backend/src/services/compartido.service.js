@@ -31,7 +31,7 @@ export async function getCompartidosService(query) {
     
 }
 
-export async function createCompartidoService(Compartido) {
+export async function createCompartidoService(compartido) {
     try{
         const CompartidoRepository = AppDataSource.getRepository(Compartido);
         const { idCuestionario, idUser } = compartido;
