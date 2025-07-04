@@ -13,7 +13,7 @@ const Salas = () => {
     const [actividad,setActividad]=useState('');
     const [id, setId] = useState("");
     const [participantes, setParticipantes] = useState([]);
-    const {quizzes,fetchQuizzes}=useQuizzes();
+    const {quizzes}=useQuizzes();
     const [idQuiz,setIdQuiz]=useState(0);
 
     const createRoom = (data) => {
@@ -48,7 +48,7 @@ const Salas = () => {
     const iniciarAct = () => {
         sessionStorage.setItem("participantes",participantes);
         socket.emit("start",{actividad:actividad});
-        if(actividad==='quiz') navigate("/host");
+        if(actividad==='quiz') navigate(`/host/${idQuiz}`);
         if(actividad==='pizarra') navigate("/hostIdeas");
     }
 
@@ -91,19 +91,19 @@ const Salas = () => {
                     </ul>
                 </div>
                 <p className="text-3xl font-bold text-white mb-8 text-left" >Nombre de la sala:</p>
-                <h1 className="text-3xl font-bold text-white mb-8 text-center">{id}</h1>
+                <h1 className="text-5xl font-bold text-white mb-8 text-center">{id}</h1>
                 {
                     actividad==='quiz'?
                     <div>
                         <ul>
-                            {quizzes.map((quiz)=>(
-                                <div key={quiz.idquiz}>
+                            {quizzes.map((quiz,index)=>(
+                                <div key={index}>
                                     <input type="radius" 
                                     onClick={(e)=>{setIdQuiz(e.target.id)}}
                                     id={quiz.idquiz} 
                                     readOnly={true}
                                     name={quiz.nombre} 
-                                    value={" "+quiz.nombre+" por: "+quiz.usuario}
+                                    value={"    '"+quiz.nombre+"' por: "+quiz.usuario}
                                     className="center w-150 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
                                     />
                                 </div>

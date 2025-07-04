@@ -71,6 +71,7 @@ export function socketEvents(socket) {
     socket.on('disconnect', (reason) => {
         if (socket.host) {
             socket.to(socket.room).emit("finnish");
+            rooms.splice(rooms.indexOf(socket.room));
         }
         console.log("Usuario desconectado: ", socket.id);
         users.splice(users.indexOf(socket.id));

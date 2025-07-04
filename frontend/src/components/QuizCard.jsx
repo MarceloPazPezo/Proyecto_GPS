@@ -1,13 +1,17 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEdit, FaTrash, FaShareAlt, FaPlay } from 'react-icons/fa';
+import { showErrorAlert } from '../helpers/sweetAlert';
 
 const QuizCard = ({ quiz, onDelete, onShare }) => {
   const navigate = useNavigate();
 
   // Navega a la página de edición del cuestionario.
   const handleEdit = () => {
-    navigate(`/updateQuiz/${quiz.idquiz}`);
+    if(quiz.iduser==JSON.parse(sessionStorage.getItem("usuario")).id){
+      navigate(`/updateQuiz/${quiz.idquiz}`);
+    }else{
+      showErrorAlert("Acceso denegado","Debe ser el propietario para editar un cuestionario.");
+    }
   };
 
   // Navega para iniciar una sesión con este cuestionario.

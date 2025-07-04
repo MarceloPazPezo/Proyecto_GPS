@@ -7,7 +7,7 @@ import { shareQuiz,shareQuizMany } from "../services/compartido.service.js"
 import { eliminarQuiz } from "../services/quiz.service.js";
 import useUsers from "../hooks/users/useGetUsers.jsx"
 import { useState } from "react";
-const Cuestionarios = () => {
+const Biblioteca = () => {
     const { fetchQuizzes, quizzes } = useQuizzes();
     const {users} = useUsers();
     const navigate = useNavigate();
@@ -87,4 +87,4 @@ const Cuestionarios = () => {
     )
 }
 
-export default Cuestionarios;
+export default Biblioteca;
