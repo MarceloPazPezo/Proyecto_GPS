@@ -1,5 +1,7 @@
 import Cuestionario from "../entity/cuestionario.entity.js";
 import { AppDataSource } from "../config/configDb.js";
+import Respuesta from "../entity/respuesta.entity.js";
+import Pregunta from "../entity/preguntas.entity.js";
 
 const cuestRepository = AppDataSource.getRepository(Cuestionario);
 
@@ -41,6 +43,17 @@ export async function getCuestionariosService() {
         return [cuestFound, null];
     } catch (error) {
         console.error("Error al buscar", error);
+        return [null, "Error interno del servidor"];
+    }
+}
+
+export async function getCuestionariosByUserService(idUser) {
+    try {
+        const quizFound=await cuestRepository.find({where:{idUser:idUser}})
+        if(!quizFound) return [null, "No se encontraron cuestionarios"];
+        return [quizFound, null];
+    } catch (error) {
+        console.error("Error al buscar",error);
         return [null, "Error interno del servidor"];
     }
 }
@@ -107,9 +120,6 @@ export async function deleteCuestionarioService(data) {
 
 //Jerson 
 
-import Respuesta from "../entity/respuesta.entity.js";
-import Pregunta from "../entity/preguntas.entity.js";
-
 export async function addLotepPreguntasService({ preguntas }) {
     const preguntaRepository = AppDataSource.getRepository(Pregunta);
     const respuestaRepository = AppDataSource.getRepository(Respuesta);
@@ -147,11 +157,6 @@ export async function addLotepPreguntasService({ preguntas }) {
         await queryRunner.release();
     }
 }
-
-
-
-
-
 
 export async function obtenerPreguntasYRespuestas(idCuestionario) {
     try {

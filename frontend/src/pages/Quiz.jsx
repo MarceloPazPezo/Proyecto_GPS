@@ -3,10 +3,9 @@ import { useEffect } from 'react';
 //import io from "socket.io-client";
 import { socket } from "../main.jsx";
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 
 const Quiz = () => {
-    const navigate=useNavigate();
-
     const [timer, setTimer] = useState(0);
     const [options,setOptions]=useState([]);
     const [pregunta,setPregunta]=useState('');

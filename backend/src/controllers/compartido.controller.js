@@ -36,9 +36,9 @@ export async function getCompartido(req,res) {
     }   
 }
 
-export async function getCompartidos(res) {
+export async function getCompartidos(req,res) {
     try{
-        const [ Compartidos, errorCompartidos ] = await getCompartidosService();
+        const [ Compartidos, errorCompartidos ] = await getCompartidosService(req.params);
         if (errorCompartidos) return handleErrorClient(res,404,errorCompartidos);
         if (Compartidos.length === 0) return handleErrorClient(res,404,errorCompartidos);
         handleSuccess(res,200,"Registros de compartidos encontrados",Compartidos);

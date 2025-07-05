@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '@services/auth.service.js';   // Asegúrate de que esta ruta sea correcta
 import useLogin from '@hooks/auth/useLogin.jsx';     // Asegúrate de que esta ruta sea correcta
@@ -114,14 +113,6 @@ const Login = () => {
                         Iniciar Sesión
                     </button>
                     
-                    <div className="mt-6 text-center text-sm text-slate-200">
-                        <p>
-                            ¿No tienes cuenta?
-                            <a href="/register" className="font-semibold text-white hover:text-sky-300 ml-1 transition-colors">
-                                ¡Regístrate aquí!
-                            </a>
-                        </p>
-                    </div>
                 </form>
                 
 

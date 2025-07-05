@@ -61,6 +61,15 @@ export function socketEvents(socket) {
         socket.to(socket.room).emit("answer", data);
     });
 
+    //reiniciarPizarraIdeas
+    socket.on("reiniciar",() =>{
+        socket.to(socket.room).emit("reiniciar","¿Confirmas?")
+    })
+
+    //ComenzarEscribirIdeas
+    socket.on("comenzar",()=>{
+        socket.to(socket.room).emit("comenzar","comenzando")
+    })
 
     socket.on("timer", (body) => {
         //console.log(body);
@@ -69,8 +78,9 @@ export function socketEvents(socket) {
 
     //desconexion
     socket.on('disconnect', (reason) => {
-        if(socket.host){
+        if (socket.host) {
             socket.to(socket.room).emit("finnish");
+            rooms.splice(rooms.indexOf(socket.room));
         }
         console.log("Usuario desconectado: ", socket.id);
         users.splice(users.indexOf(socket.id));

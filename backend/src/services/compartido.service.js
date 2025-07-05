@@ -1,6 +1,6 @@
 "use strict";
 import Compartido from "../entity/compartido.entity.js";
-import { AppDataSource } from "../config/configDb";
+import { AppDataSource } from "../config/configDb.js";
 
 export async function getCompartidoService(query) { 
     try{
@@ -17,11 +17,12 @@ export async function getCompartidoService(query) {
     }
 }
 
-export async function getCompartidosService() {
+export async function getCompartidosService(query) {
     try{
         const CompartidoRepository = AppDataSource.getRepository(Compartido);
-        const compartidos = await CompartidoRepository.find();
-        if(!compartidos || compartidos.length === 0) return [null, "No hay compartidos"];
+        const compartidos = await CompartidoRepository.find({where:{idUser:query.idUser}});
+        //console.log(compartidos);
+        //if(!compartidos || compartidos.length === 0) return [[], "No hay compartidos"];
         return [compartidos,null];
     } catch (error){
         console.error("Error al obtener todos los compartidos:", error);
@@ -30,7 +31,7 @@ export async function getCompartidosService() {
     
 }
 
-export async function createCompartidoService(Compartido) {
+export async function createCompartidoService(compartido) {
     try{
         const CompartidoRepository = AppDataSource.getRepository(Compartido);
         const { idCuestionario, idUser } = compartido;

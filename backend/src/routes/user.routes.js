@@ -13,10 +13,10 @@ const router = Router();
 
 router
   .use(authenticateJwt)
+  .get("/", getUsers)
   .use(isAdmin);
 
 router
-  .get("/", getUsers)
   .get("/detail/", getUser)
   .patch("/detail/", updateUser)
   .delete("/detail/", deleteUser);

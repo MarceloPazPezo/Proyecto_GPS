@@ -6,7 +6,8 @@ import {
     deleteCuestionarioService,
     addLotepPreguntasService,
     obtenerPreguntasYRespuestas,
-    ModLotepPreguntasService
+    ModLotepPreguntasService,
+    getCuestionariosByUserService
 } from "../services/cuestionario.service.js";
 
 import {
@@ -17,8 +18,17 @@ import {
 
 import {
     quizBodyValidation,
-    quizQueryValidation
+    quizQueryValidation,
+    quizUserValidation
 } from "../validations/cuestionario.validation.js";
+
+import { 
+    questionBodyValidation, 
+} from "../validations/preguntas.validation.js";
+
+import {
+    LoteBodyValidation,
+} from "../validations/respuestas.validation.js";
 
 export async function createCuestionario(req, res) {
     try {
@@ -48,6 +58,23 @@ export async function getCuestionario(req, res) {
 
         if (errorQuiz) return handleErrorClient(res, 404, errorQuiz);
 
+        handleSuccess(res, 200, "Cuestionario encontrado", quiz);
+    } catch (error) {
+        handleErrorServer(res, 500, error.message);
+    }
+}
+
+export async function getCuestionariosByUser(req, res) {
+    try {
+        const {idUser}=req.params;
+        
+        const {error}=quizUserValidation.validate({idUser});
+        
+        if (error) return handleErrorClient(res, 400, "Error de validación", error.message);
+        
+        const [quiz,errorQuiz]= await getCuestionariosByUserService(idUser);
+
+        if (errorQuiz) return handleErrorClient(res, 404, errorQuiz);
         handleSuccess(res, 200, "Cuestionario encontrado", quiz);
     } catch (error) {
         handleErrorServer(res, 500, error.message);
@@ -93,7 +120,7 @@ export async function updateCuestionario(req, res) {
 
 export async function deleteCuestionario(req, res) {
     try {
-        const { idUser, nombre, id } = req.query
+        const { idUser, nombre, id } = req.body
 
         const { errorQuery } = quizQueryValidation.validate({ idUser, nombre, id });
 
@@ -108,16 +135,6 @@ export async function deleteCuestionario(req, res) {
         handleErrorServer(res, 500, error.message);
     }
 }
-
-
-
-import { 
-    questionBodyValidation, 
-} from "../validations/preguntas.validation.js";
-
-import {
-    LoteBodyValidation,
-} from "../validations/respuestas.validation.js";
 
 export async function addLotepPreguntas(req, res) {
     try {
