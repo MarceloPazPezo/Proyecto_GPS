@@ -18,7 +18,8 @@ import HostIdeas from './pages/hostIdeas';
 import QuizActualizar from './pages/QuizActualizar';
 import '@styles/styles.css';
 import WaitingRoom from './pages/WaitingRoom';
-import Biblioteca from './pages/Biblioteca.jsx'
+import Biblioteca from './pages/Biblioteca.jsx';
+import StickyHost from './pages/stickyNotesHost.jsx';
 
 export const socket = io("/");
 
@@ -63,6 +64,10 @@ const router = createBrowserRouter([
       {
         path:'/biblioteca',
         element:<Biblioteca/>
+      },
+      {
+        path: '/stickyHost',
+        element:<StickyHost/>
       }
     ]
   },
