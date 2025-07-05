@@ -18,7 +18,7 @@ import HostIdeas from './pages/hostIdeas';
 import QuizActualizar from './pages/QuizActualizar';
 import '@styles/styles.css';
 import WaitingRoom from './pages/WaitingRoom';
-import Cuestionarios from './pages/Cuestionarios.jsx'
+import Biblioteca from './pages/Biblioteca.jsx'
 
 export const socket = io("/");
 
@@ -45,7 +45,7 @@ const router = createBrowserRouter([
         element: <Salas />
       },
       {
-        path: "/host",
+        path: "/host/:id",
         element: <Host />
       },
       {
@@ -57,12 +57,12 @@ const router = createBrowserRouter([
         element: <QuizCrear />
       },
       {
-        path: '/updateQuiz',
+        path: '/updateQuiz/:id',
         element: <QuizActualizar />
       },
       {
         path:'/biblioteca',
-        element:<Cuestionarios/>
+        element:<Biblioteca/>
       }
     ]
   },

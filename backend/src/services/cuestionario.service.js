@@ -158,11 +158,6 @@ export async function addLotepPreguntasService({ preguntas }) {
     }
 }
 
-
-
-
-
-
 export async function obtenerPreguntasYRespuestas(idCuestionario) {
     try {
         const result = await AppDataSource

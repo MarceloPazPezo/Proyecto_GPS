@@ -120,7 +120,7 @@ export async function updateCuestionario(req, res) {
 
 export async function deleteCuestionario(req, res) {
     try {
-        const { idUser, nombre, id } = req.query
+        const { idUser, nombre, id } = req.body
 
         const { errorQuery } = quizQueryValidation.validate({ idUser, nombre, id });
 

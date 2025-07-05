@@ -1,20 +1,17 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEdit, FaTrash, FaShareAlt, FaPlay } from 'react-icons/fa';
+import { showErrorAlert } from '../helpers/sweetAlert';
 
-/**
- * Componente de tarjeta para mostrar un cuestionario.
- *
- * @param {object} quiz - El objeto del cuestionario a mostrar.
- * @param {function} onDelete - La función a llamar cuando se hace clic en el botón de eliminar.
- * @param {function} onShare - La función a llamar cuando se hace clic en el botón de compartir.
- */
 const QuizCard = ({ quiz, onDelete, onShare }) => {
   const navigate = useNavigate();
 
   // Navega a la página de edición del cuestionario.
   const handleEdit = () => {
-    navigate(`/quiz/actualizar/${quiz.id}`);
+    if(quiz.iduser==JSON.parse(sessionStorage.getItem("usuario")).id){
+      navigate(`/updateQuiz/${quiz.idquiz}`);
+    }else{
+      showErrorAlert("Acceso denegado","Debe ser el propietario para editar un cuestionario.");
+    }
   };
 
   // Navega para iniciar una sesión con este cuestionario.
@@ -34,9 +31,9 @@ const QuizCard = ({ quiz, onDelete, onShare }) => {
     <div className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col justify-between transition-transform transform hover:-translate-y-2 duration-300 ease-in-out">
       {/* Contenido de la tarjeta */}
       <div className="p-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-2 truncate">{quiz.titulo}</h3>
+        <h3 className="text-xl font-bold text-gray-900 mb-2 truncate">{quiz.nombre}</h3>
         <p className="text-gray-600 text-sm h-16">
-          {truncateDescription(quiz.descripcion, 90) || 'Este cuestionario no tiene descripción.'}
+          {truncateDescription("Creado por " +quiz.usuario, 90) || 'Este cuestionario no tiene descripción.'}
         </p>
       </div>
 
@@ -52,14 +49,14 @@ const QuizCard = ({ quiz, onDelete, onShare }) => {
             <FaEdit size={18} />
           </button>
           <button
-            onClick={() => onDelete(quiz.id, quiz.titulo)}
+            onClick={() => onDelete(quiz)}
             className="text-gray-500 hover:text-red-600 transition-colors duration-200"
             title="Eliminar Cuestionario"
           >
             <FaTrash size={18} />
           </button>
           <button
-            onClick={() => onShare(quiz.id)}
+            onClick={() => onShare(quiz.idquiz)}
             className="text-gray-500 hover:text-green-600 transition-colors duration-200"
             title="Compartir"
           >

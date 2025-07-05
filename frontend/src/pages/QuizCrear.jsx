@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuizBuilder } from '../hooks/crearQuiz/useQuizBuilder.js';
+import { useQuizBuilder } from '../hooks/crearQuiz/useQuizBuilder.jsx';
 import { crearQuiz, addQuizPreguntas } from '../services/quiz.service.js';
 import SlidePreview from '../components/SlidePreview.jsx';
 import QuizEditor from '../components/QuizEditor.jsx';
