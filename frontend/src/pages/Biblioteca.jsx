@@ -62,7 +62,7 @@ const Biblioteca = () => {
                 <button className="w-150 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
                     onClick={crearQuiz}>Crear Cuestionario</button>
             </div>
-            <div className="bg-white/30 backdrop-blur-lg border border-white/20 shadow-xl p-8 sm:p-10 rounded-2xl mb-6">
+            <div className="bg-white/30 backdrop-blur-lg border border-white/20 shadow-xl p-8 sm:p-10 rounded-2xl mb-6 mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {
                     quizzes.map((quiz,index) => (
                         <QuizCard
