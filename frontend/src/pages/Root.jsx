@@ -35,7 +35,7 @@ function PageRoot() {
       <main className="pt-16">
         
         {/* Contenedor opcional para centrar y añadir espaciado lateral al contenido. */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex min-h-[calc(100vh-4rem)] items-center justify-center">
           {/* 5. El Outlet renderizará aquí el contenido de la página actual (Home, Users, etc.). */}
           <Outlet />
         </div>

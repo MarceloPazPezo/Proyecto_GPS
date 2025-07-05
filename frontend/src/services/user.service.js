@@ -30,3 +30,12 @@ export async function deleteUser(rut) {
         return error.response.data;
     }
 }
+
+export async function importUsers(users) {
+    try {
+        const response = await axios.post('/user/import', { users });
+        return response.data;
+    } catch (error) {
+        return error.response?.data || error;
+    }
+}

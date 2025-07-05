@@ -1,22 +1,29 @@
 import Table from '@components/Table';
+import { format as formatDate, parseISO } from 'date-fns';
 import useUsers from '@hooks/users/useGetUsers.jsx';
-import Search from '../components/Search';
 import Popup from '../components/Popup';
-import DeleteIcon from '../assets/deleteIcon.svg';
-import UpdateIcon from '../assets/updateIcon.svg';
-import UpdateIconDisable from '../assets/updateIconDisabled.svg';
-import DeleteIconDisable from '../assets/deleteIconDisabled.svg';
-import { useCallback, useState } from 'react';
-import '@styles/users.css';
+import { useState } from 'react';
 import useEditUser from '@hooks/users/useEditUser';
 import useDeleteUser from '@hooks/users/useDeleteUser';
+import ImportUsersPopup from '@components/ImportUsersPopup.jsx';
+import { useImportUsers } from '@hooks/users/useImportUsers.jsx';
+import { MdUploadFile, MdEdit, MdDelete } from 'react-icons/md';
 
 const Users = () => {
   const { users, fetchUsers, setUsers } = useUsers();
-  const [filterRut, setFilterRut] = useState('');
+  const [showImport, setShowImport] = useState(false);
+  const { handleImport, loading } = useImportUsers({
+    onSuccess: () => {
+      fetchUsers();
+      setShowImport(false);
+    }
+  });
+
+  const handleImportFile = ({ name, data }) => {
+    handleImport(data);
+  };
 
   const {
-    handleClickUpdate,
     handleUpdate,
     isPopupOpen,
     setIsPopupOpen,
@@ -26,55 +33,102 @@ const Users = () => {
 
   const { handleDelete } = useDeleteUser(fetchUsers, setDataUser);
 
-  const handleRutFilterChange = (e) => {
-    setFilterRut(e.target.value);
-  };
-
-  const handleSelectionChange = useCallback((selectedUsers) => {
-    setDataUser(selectedUsers);
-  }, [setDataUser]);
-
   const columns = [
-    { title: "Nombre", field: "nombreCompleto", width: 350, responsive: 0 },
-    { title: "Correo electrónico", field: "email", width: 300, responsive: 3 },
-    { title: "Rut", field: "rut", width: 150, responsive: 2 },
-    { title: "Rol", field: "rol", width: 200, responsive: 2 },
-    { title: "Creado", field: "createdAt", width: 200, responsive: 2 }
+    {
+      accessorKey: 'rut',
+      header: 'Rut',
+      size: 100,
+      sticky: 'left',
+    },
+    {
+      accessorKey: 'nombreCompleto',
+      header: 'Nombre completo',
+      size: 200,
+    },
+    {
+      accessorKey: 'email',
+      header: 'Correo electrónico',
+      size: 200,
+    },
+    {
+      accessorKey: 'rol',
+      header: 'Rol',
+      size: 150,
+      filterType: 'select',
+      filterOptions: [
+        { value: 'Administrador', label: 'Admin' },
+        { value: 'Usuario', label: 'Usuario' }
+      ]
+    },
+    {
+      accessorKey: 'createdAt',
+      header: 'Creado',
+      size: 150,
+      // Muestra la fecha en formato chileno dd-MM-yyyy
+      cell: info => {
+        const value = info.getValue();
+        if (!value) return '';
+        try {
+          return formatDate(parseISO(value), 'dd-MM-yyyy');
+        } catch {
+          return value;
+        }
+      },
+      filterType: 'date',
+      // Para el filtro, compara usando yyyy-MM-dd extraído del ISO
+      filterFn: (row, columnId, filterValue) => {
+        const value = row.getValue(columnId);
+        if (!filterValue) return true;
+        if (!value) return false;
+        try {
+          return formatDate(parseISO(value), 'yyyy-MM-dd') === filterValue;
+        } catch {
+          return false;
+        }
+      },
+    },
   ];
 
   return (
-    <div className='main-container'>
-      <div className='table-container'>
-        <div className='top-table'>
-          <h1 className='title-table'>Usuarios</h1>
-          <div className='filter-actions'>
-            <Search value={filterRut} onChange={handleRutFilterChange} placeholder={'Filtrar por rut'} />
-            <button onClick={handleClickUpdate} disabled={dataUser.length === 0}>
-              {dataUser.length === 0 ? (
-                <img src={UpdateIconDisable} alt="edit-disabled" />
-              ) : (
-                <img src={UpdateIcon} alt="edit" />
-              )}
-            </button>
-            <button className='delete-user-button' disabled={dataUser.length === 0} onClick={() => handleDelete(dataUser)}>
-              {dataUser.length === 0 ? (
-                <img src={DeleteIconDisable} alt="delete-disabled" />
-              ) : (
-                <img src={DeleteIcon} alt="delete" />
-              )}
-            </button>
-          </div>
+    <div className="flex flex-col justify-center items-center w-full bg-gradient-to-br font-sans bg-white backdrop-blur-lg border border-white/20 shadow-xl p-8 sm:p-10 rounded-2xl mb-6">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center w-full max-w-7xl px-4 sm:px-6 lg:px-8 mb-6">
+        <h1 className="text-[#003366] font-bold text-3xl drop-shadow">Usuarios</h1>
+        <div className="flex gap-2 items-center">
+          <button
+            className="bg-white border border-blue-200 shadow-md p-2 rounded-lg hover:bg-blue-100 transition"
+            title="Importar usuarios desde Excel"
+            onClick={() => setShowImport(true)}
+          >
+            <MdUploadFile size={24} color="#2563eb" />
+          </button>
         </div>
-        <Table
-          data={users}
-          columns={columns}
-          filter={filterRut}
-          dataToFilter={'rut'}
-          initialSortName={'nombreCompleto'}
-          onSelectionChange={handleSelectionChange}
-        />
+      </div>
+      <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="overflow-x-auto">
+          <Table
+            data={users}
+            columns={columns}
+            pageSize={5}
+            onEdit={row => { setDataUser([row]); setIsPopupOpen(true); }}
+            onDelete={row => handleDelete([row])}
+            onView={row => alert('Ver usuario: ' + row.nombreCompleto)}
+            renderActions={({ row }) => (
+              <div className="flex gap-2">
+                <button title="Editar" className="text-yellow-600 hover:bg-yellow-100 p-1 rounded" onClick={() => { setDataUser([row]); setIsPopupOpen(true); }}>
+                  <MdEdit size={20} />
+                </button>
+                <button title="Eliminar" className="text-red-600 hover:bg-red-100 p-1 rounded" onClick={() => handleDelete([row])}>
+                  <MdDelete size={20} />
+                </button>
+              </div>
+            )}
+          />
+        </div>
       </div>
       <Popup show={isPopupOpen} setShow={setIsPopupOpen} data={dataUser} action={handleUpdate} />
+      {showImport && (
+        <ImportUsersPopup show={showImport} setShow={setShowImport} onFile={handleImportFile} loading={loading} />
+      )}
     </div>
   );
 };
