@@ -4,10 +4,12 @@ import {
   getUserService,
   getUsersService,
   updateUserService,
+  importUsersService
 } from "../services/user.service.js";
 import {
   userBodyValidation,
   userQueryValidation,
+  userCreateValidation
 } from "../validations/user.validation.js";
 import {
   handleErrorClient,
@@ -119,6 +121,46 @@ export async function deleteUser(req, res) {
     if (errorUserDelete) return handleErrorClient(res, 404, "Error eliminado al usuario", errorUserDelete);
 
     handleSuccess(res, 200, "Usuario eliminado correctamente", userDelete);
+  } catch (error) {
+    handleErrorServer(res, 500, error.message);
+  }
+}
+
+export async function importUsers(req, res) {
+  try {
+    const { users } = req.body;
+
+    if (!Array.isArray(users) || users.length === 0) {
+      return handleErrorClient(res, 400, "Debes enviar un array de usuarios");
+    }
+
+    const validUsers = [];
+    const invalidUsers = [];
+    console.log("Validando usuarios para importar...", users);
+    for (let i = 0; i < users.length; i++) {
+      const user = users[i];
+      const { value, error } = userCreateValidation.validate(user);
+      if (error) {
+        invalidUsers.push({ index: i, user, error: error.message });
+        continue;
+      }
+      validUsers.push(value);
+    }
+
+    if (validUsers.length === 0) {
+      return handleErrorClient(res, 400, {
+        message: "Ningún usuario es válido para importar",
+        invalidUsers,
+      });
+    }
+
+    const [importedUsers, error] = await importUsersService(validUsers);
+    if (error) return handleErrorClient(res, 400, error);
+
+    handleSuccess(res, 201, "Usuarios importados correctamente", {
+      imported: importedUsers,
+      invalidUsers,
+    });
   } catch (error) {
     handleErrorServer(res, 500, error.message);
   }

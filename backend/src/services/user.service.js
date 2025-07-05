@@ -127,3 +127,58 @@ export async function deleteUserService(query) {
     return [null, "Error interno del servidor"];
   }
 }
+
+export async function importUsersService(usersArray) {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+
+    const validUsers = [];
+    const invalidUsers = [];
+
+    for (let i = 0; i < usersArray.length; i++) {
+      const user = usersArray[i];
+
+      // Verificar unicidad de rut y email
+      const existingRut = await userRepository.findOne({ where: { rut: user.rut } });
+      if (existingRut) {
+        invalidUsers.push({ index: i, user, error: "Rut duplicado" });
+        continue;
+      }
+
+      const existingEmail = await userRepository.findOne({ where: { email: user.email } });
+      if (existingEmail) {
+        invalidUsers.push({ index: i, user, error: "Email duplicado" });
+        continue;
+      }
+
+      user.password = await encryptPassword(user.password);
+
+      validUsers.push(user);
+    }
+
+    if (validUsers.length === 0) {
+      return [null, "Ningún usuario es válido para importar"];
+    }
+
+    const createdUsers = [];
+
+    for (const user of validUsers) {
+      const newUser = userRepository.create({
+        nombreCompleto: user.nombreCompleto,
+        rut: user.rut,
+        email: user.email,
+        password: user.password,
+        rol: "usuario",
+      });
+
+      const savedUser = await userRepository.save(newUser);
+      const { password, ...userWithoutPassword } = savedUser; // Excluir la contraseña
+      createdUsers.push(userWithoutPassword);
+    }
+
+    return [createdUsers, { invalidUsers }];
+  } catch (error) {
+    console.error("Error al importar usuarios:", error);
+    return [null, "Error interno del servidor al importar usuarios."];
+  }
+}
