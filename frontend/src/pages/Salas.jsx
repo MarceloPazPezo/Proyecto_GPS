@@ -60,33 +60,33 @@ const Salas = () => {
 
     return (
         <main >
-            {!sessionStorage.getItem('sala') ?
-                <Form
-                    title={`Crear una sala`}
-                    fields={[
-                        {
-                            label: "Nombre de la sala",
-                            name: "sala",
-                            fieldType: 'input',
-                            type: "String",
-                            required: true,
-                            minLength: 5,
-                            maxLength: 20,
-                            onChange: (e) => handleInputChange('String', e.target.value),
-                        },
-                        {
-                            label: "Tipo de actividad",
-                            fieldType: 'select',
-                            name: "actividad",
-                            required: true,
-                            options: [{ label: "Quiz", value: 'quiz' }, { label: "Pizarra", value: 'pizarra' }]
-                        }
-                    ]}
-                    buttonText={"Iniciar"}
-                    onSubmit={createRoom}
-                /> :
+            {!sessionStorage.getItem('sala') ? 
+            <Form
+                title={`Crear una sala`}
+                fields={[
+                    {
+                        label: "Nombre de la sala",
+                        name: "sala",
+                        fieldType: 'input',
+                        type: "String",
+                        required: true,
+                        minLength: 5,
+                        maxLength: 20,
+                        onChange: (e) => handleInputChange('String', e.target.value),
+                    },
+                    {
+                        label:"Tipo de actividad",
+                        fieldType:'select',
+                        name:"actividad",
+                        required:true,
+                        options: [{label:"Quiz",value:'quiz'},{label:"Pizarra",value:'pizarra'}]
+                    }
+                ]}
+                buttonText={"Iniciar"}
+                onSubmit={createRoom}
+            /> :
+             <div>
                 <div>
-
                     <p className="p-2 text-white bg-black w-30">Conectados:</p>
                     <ul className="w-full bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 ">
                         {participantes.map((participante, index) => (
@@ -114,39 +114,19 @@ const Salas = () => {
                        ))}
                         </ul>
                     </div>
-                    <p className="text-3xl font-bold text-white mb-8 text-left" >Nombre de la sala:</p>
-                    <h1 className="text-3xl font-bold text-white mb-8 text-center">{id}</h1>
-                    {
-                        actividad === 'quiz' ?
-                            <div>
-                                <ul>
-                                    {quizzes.map((quiz) => (
-                                        <div key={quiz.idquiz}>
-                                            <input type="radius"
-                                                onClick={(e) => { setIdQuiz(e.target.id) }}
-                                                id={quiz.idquiz}
-                                                readOnly={true}
-                                                name={quiz.nombre}
-                                                value={" " + quiz.nombre + " por: " + quiz.usuario}
-                                                className="center w-150 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
-                                            />
-                                        </div>
-                                    ))}
-                                </ul>
-                            </div>
-                            : <></>
-                    }
-                    <button
-                        //onMouseOver={"bg-yellow"}
-                        onClick={iniciarAct}
-                        disabled={participantes.length === 0 || (actividad === 'quiz' && idQuiz === 0)}
-                        className="center w-150 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
-                    >Iniciar Actividad</button>
-                    <button
-                        onClick={cancelarAct}
-                        className="w-150 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
-                    >Cancelar</button>
-                </div>}
+                    :<></>
+                }
+                <button
+                    //onMouseOver={"bg-yellow"}
+                    onClick={iniciarAct}
+                    disabled={participantes.length===0||(actividad==='quiz'&& idQuiz===0)}
+                    className="center w-150 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
+                >Iniciar Actividad</button>
+                <button 
+                onClick={cancelarAct} 
+                className="w-150 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
+                >Cancelar</button>
+            </div>}
         </main>
     )
 }
