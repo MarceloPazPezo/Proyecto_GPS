@@ -1,5 +1,5 @@
 import { socket } from "../main";
-import { useState, useEffect } from "react";
+import { useState, useEffect, act } from "react";
 import { useNavigate } from "react-router-dom";
 import useLogin from "../hooks/auth/useLogin.jsx";
 import Form from "../components/Form";
@@ -10,14 +10,16 @@ import useQuizzes from "../hooks/crearQuiz/getQuiz.jsx";
 const Salas = () => {
     const navigate = useNavigate();
     const { handleInputChange } = useLogin();
-    const [actividad,setActividad]=useState('');
+    const [actividad, setActividad] = useState('');
     const [id, setId] = useState("");
     const [participantes, setParticipantes] = useState([]);
+
     const {quizzes}=useQuizzes();
     const [idQuiz,setIdQuiz]=useState(0);
 
+
     const createRoom = (data) => {
-        socket.emit("create", { sala: data.sala});
+        socket.emit("create", { sala: data.sala });
         setActividad(data.actividad);
     }
 
@@ -37,7 +39,7 @@ const Salas = () => {
 
     const onJoin = (data) => {
         //console.log(data);
-        setParticipantes((state)=>[data, ...state]);
+        setParticipantes((state) => [data, ...state]);
     }
 
     useEffect(() => {
@@ -46,10 +48,12 @@ const Salas = () => {
     }, []);
 
     const iniciarAct = () => {
+
         sessionStorage.setItem("participantes",participantes);
         socket.emit("start",{actividad:actividad});
         if(actividad==='quiz') navigate(`/host/${idQuiz}`);
         if(actividad==='pizarra') navigate("/hostIdeas");
+
     }
 
 
