@@ -139,6 +139,8 @@ jobs:
             
             # 6. Instalar dependencias y contruir frontend
             cd "$APP_DIR/frontend"
+            rm -rf node_modules/
+            rm -rf package-lock.json
             npm ci
             npm run build
 
