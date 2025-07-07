@@ -11,6 +11,9 @@ const WaitingRoom=()=>{
         if (message.actividad === 'pizarra') {
             navigate("/ideas");
         }
+        if (message.actividad === 'notas'){
+            navigate("/notas")
+        }
     }
 
     const cancelarAct=()=>{

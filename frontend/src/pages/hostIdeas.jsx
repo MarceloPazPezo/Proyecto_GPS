@@ -20,7 +20,7 @@ const HostIdeas = () => {
         .sort((a, b) => b[1] - a[1]);
 
     useEffect(() => {
-        socket.on("answer", recibirRespuestas);
+            socket.on("answer", recibirRespuestas);
 
         return () => {
             socket.off("answer", recibirRespuestas); 

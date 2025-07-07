@@ -1,46 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { DndContext } from "@dnd-kit/core";
 import DraggableNote from "../components/DraggableNote";
 import { socket } from "../main";
 
 const StickyNotesHost = () => {
-    const [notes, setNotes] = useState([
-        {
-            id: "note-1",
-            title: "Título 1",
-            text: "Primera nota",
-            color: "#fef08a", 
-            position: { x: 0, y: 0 },
-        },
-    ]);
+    const [notes, setNotes] = useState([]);
+    const noteCounter = useRef(1);
 
     const addNote = () => {
-        const newId = `note-${notes.length + 1}`;
-        setNotes([
-            ...notes,
-            {
-                id: newId,
-                title: `Título ${notes.length + 1}`,
-                text: `Nueva nota ${notes.length + 1}`,
-                color: "#fef08a",
-                position: { x: 0, y: 0 },
-            },
-        ]);
+        const newId = `note-${noteCounter.current++}`;
+        const newNote = {
+            id: newId,
+            title: "Título",
+            text: "Nueva nota",
+            color: "#fef08a",
+            position: { x: 0, y: 0 },
+        };
+        setNotes((prev) => [...prev, newNote]);
+        socket.emit("addNoteWithId", newNote); // solo enviar ya con ID
     };
 
     const handleDragEnd = (event) => {
         const { active, delta } = event;
 
-        setNotes((notes) =>
-            notes.map((note) => {
+        setNotes((prevNotes) =>
+            prevNotes.map((note) => {
                 if (note.id === active.id) {
-                    return {
-                        ...note,
-                        position: {
-                            x: note.position.x + delta.x,
-                            y: note.position.y + delta.y,
-                        },
+                    const newPosition = {
+                        x: note.position.x + delta.x,
+                        y: note.position.y + delta.y,
                     };
+                    socket.emit("moveNote", { id: note.id, position: newPosition });
+                    return { ...note, position: newPosition };
                 }
                 return note;
             })
@@ -48,22 +39,63 @@ const StickyNotesHost = () => {
     };
 
     const updateNote = (id, changes) => {
-        setNotes((prev) =>
-            prev.map((note) => (note.id === id ? { ...note, ...changes } : note))
-        );
+        setNotes((prev) => {
+            const updatedNotes = prev.map((note) =>
+                note.id === id ? { ...note, ...changes } : note
+            );
+            const updatedNote = updatedNotes.find((note) => note.id === id);
+            socket.emit("updateNote", updatedNote);
+            return updatedNotes;
+        });
     };
 
     const deleteNote = (id) => {
-        setNotes((notes) => notes.filter((note) => note.id !== id));
+        setNotes((prev) => prev.filter((note) => note.id !== id));
+        socket.emit("deleteNote", id);
     };
 
-    const handleTextChange = (id, newText) => {
-        setNotes((notes) =>
-            notes.map((note) =>
-                note.id === id ? { ...note, text: newText } : note
-            )
-        );
-    };
+    useEffect(() => {
+        // Cuando un invitado solicita crear una nota (sin ID)
+        socket.on("addNote", (noteWithoutId) => {
+            const newId = `note-${noteCounter.current++}`;
+            const noteWithId = { ...noteWithoutId, id: newId };
+            setNotes((prev) => [...prev, noteWithId]);
+            socket.emit("addNoteWithId", noteWithId); // reenviar con ID oficial
+        });
+
+        // Cuando alguien recibe una nota con ID ya asignada
+        socket.on("addNoteWithId", (note) => {
+            setNotes((prev) => [...prev, note]);
+        });
+
+        socket.on("updateNote", (updatedNote) => {
+            setNotes((prev) =>
+                prev.map((note) =>
+                    note.id === updatedNote.id ? { ...note, ...updatedNote } : note
+                )
+            );
+        });
+
+        socket.on("deleteNote", (id) => {
+            setNotes((prev) => prev.filter((note) => note.id !== id));
+        });
+
+        socket.on("moveNote", ({ id, position }) => {
+            setNotes((prev) =>
+                prev.map((note) =>
+                    note.id === id ? { ...note, position } : note
+                )
+            );
+        });
+
+        return () => {
+            socket.off("addNote");
+            socket.off("addNoteWithId");
+            socket.off("updateNote");
+            socket.off("deleteNote");
+            socket.off("moveNote");
+        };
+    }, []);
 
     return (
         <DndContext onDragEnd={handleDragEnd}>

@@ -20,6 +20,7 @@ import '@styles/styles.css';
 import WaitingRoom from './pages/WaitingRoom';
 import Biblioteca from './pages/Biblioteca.jsx';
 import StickyHost from './pages/stickyNotesHost.jsx';
+import StickyNotesGuest from './pages/StickyNotesGuest.jsx';
 
 export const socket = io("/");
 
@@ -94,6 +95,10 @@ const router = createBrowserRouter([
   {
     path: "/ideas",
     element: <PizarraIdeas />
+  },
+  {
+    path: "/notas",
+    element:<StickyNotesGuest/>
   }
 ])
 
