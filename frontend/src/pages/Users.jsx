@@ -38,7 +38,6 @@ const Users = () => {
       accessorKey: 'rut',
       header: 'Rut',
       size: 100,
-      sticky: 'left',
     },
     {
       accessorKey: 'nombreCompleto',
@@ -90,16 +89,16 @@ const Users = () => {
   ];
 
   return (
-    <div className="flex flex-col justify-center items-center w-full bg-gradient-to-br font-sans bg-white backdrop-blur-lg border border-white/20 shadow-xl p-8 sm:p-10 rounded-2xl mb-6">
+    <div className="flex flex-col justify-center items-center w-full font-sans bg-white/30 backdrop-blur-lg border border-white/20 shadow-xl p-8 sm:p-10 rounded-2xl mb-6">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center w-full max-w-7xl px-4 sm:px-6 lg:px-8 mb-6">
-        <h1 className="text-[#003366] font-bold text-3xl drop-shadow">Usuarios</h1>
+        <h1 className="text-white font-bold text-3xl mb-2 text-center md:text-left">Usuarios</h1>
         <div className="flex gap-2 items-center">
           <button
-            className="bg-white border border-blue-200 shadow-md p-2 rounded-lg hover:bg-blue-100 transition"
+            className="bg-white/20 border border-white/30 shadow-md p-2 rounded-lg hover:bg-white/30 transition text-white"
             title="Importar usuarios desde Excel"
             onClick={() => setShowImport(true)}
           >
-            <MdUploadFile size={24} color="#2563eb" />
+            <MdUploadFile size={24} color="#fff" />
           </button>
         </div>
       </div>
@@ -114,10 +113,10 @@ const Users = () => {
             onView={row => alert('Ver usuario: ' + row.nombreCompleto)}
             renderActions={({ row }) => (
               <div className="flex gap-2">
-                <button title="Editar" className="text-yellow-600 hover:bg-yellow-100 p-1 rounded" onClick={() => { setDataUser([row]); setIsPopupOpen(true); }}>
+                <button title="Editar" className="text-yellow-300 hover:bg-yellow-400/20 p-1 rounded transition" onClick={() => { setDataUser([row]); setIsPopupOpen(true); }}>
                   <MdEdit size={20} />
                 </button>
-                <button title="Eliminar" className="text-red-600 hover:bg-red-100 p-1 rounded" onClick={() => handleDelete([row])}>
+                <button title="Eliminar" className="text-red-400 hover:bg-red-400/20 p-1 rounded transition" onClick={() => handleDelete([row])}>
                   <MdDelete size={20} />
                 </button>
               </div>
