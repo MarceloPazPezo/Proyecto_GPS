@@ -65,6 +65,7 @@ const Login = () => {
                 backgroundImage: `url(${fondoSVG})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
+                backgroundColor: '#1e3046', // fallback por si no carga el SVG
             }}
         >
             <div className="w-full max-w-md">
@@ -72,9 +73,9 @@ const Login = () => {
                 {/* aqui ta la cosa pa moodificar que tanto de glass el white/(numerito)  */}
                 <form 
                     onSubmit={handleSubmit} 
-                    className="bg-white/30 backdrop-blur-lg border border-white/20 shadow-xl p-8 sm:p-10 rounded-2xl mb-6"
+                    className="bg-[#ECEDF2] backdrop-blur-lg border border-white/20 shadow-xl p-8 sm:p-10 rounded-2xl mb-6"
                 >
-                    <h1 className="text-3xl font-bold text-white mb-8 text-center">
+                    <h1 className="text-3xl font-bold text-[#2C3E50] mb-8 text-center">
                         Bienvenido
                     </h1>
                     
@@ -83,7 +84,7 @@ const Login = () => {
                             <div key={field.name}>
                                 <label 
                                     htmlFor={field.name} 
-                                    className="block text-sm font-semibold text-slate-200 mb-2"
+                                    className="block text-sm font-semibold text-[#2C3E50] mb-2"
                                 >
                                     {field.label}
                                 </label>
@@ -97,7 +98,7 @@ const Login = () => {
                                     maxLength={field.maxLength}
                                     pattern={field.pattern?.source}
                                     onChange={field.onChange}
-                                    className="w-full p-3 bg-white/10 border border-white/30 rounded-lg text-white placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-white/50 transition"
+                                    className="w-full p-3 bg-white/10 border border-white/30 rounded-lg text-[#2C3E50] placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-white/50 transition"
                                 />
                                 <p className="text-sky-300 text-xs font-semibold mt-1 h-5">
                                     {field.errorMessageData}
@@ -108,7 +109,7 @@ const Login = () => {
 
                     <button 
                         type="submit" 
-                        className="w-full bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
+                        className="w-full bg-[#4EB9FA] border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-[#5EBFFA] hover:-translate-y-0.5"
                     >
                         Iniciar Sesión
                     </button>
@@ -118,7 +119,7 @@ const Login = () => {
 
                 <a 
                     href="/join" 
-                    className="block w-full text-center p-3 rounded-lg border-2 border-white/40 text-white font-semibold transition-colors duration-200 hover:bg-white/10"
+                    className="block w-full text-center bg-gray-800 p-3 rounded-lg border-2 border-white/40 text-white font-semibold transition-colors duration-200 hover:bg-gray-900 hover:border-white/60 hover:-translate-y-0.5"
                 >
                     Unirse a una actividad
                 </a>
