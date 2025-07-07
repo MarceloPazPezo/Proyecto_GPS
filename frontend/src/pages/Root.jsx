@@ -1,47 +1,36 @@
 import { Outlet } from 'react-router-dom';
-import Navbar from '@components/Navbar';
+import Sidebar from '@components/Sidebar';
 import { AuthProvider } from '@context/AuthContext';
+import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 
-// 1. Importa tu fondo SVG aquí, en la parte superior del archivo.
-import fondoSVG from '../assets/fondo_azul.svg'; // Asegúrate de que la ruta sea correcta
-
-// Este componente se mantiene igual. ¡Perfecto!
-function Root()  {
+function Root() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
     <AuthProvider>
-      <PageRoot/>
+      <PageRoot sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
     </AuthProvider>
   );
 }
 
-// Aquí es donde aplicamos el diseño.
-function PageRoot() {
+function PageRoot({ sidebarOpen, setSidebarOpen }) {
   return (
-    // 2. Este es el contenedor principal que aplica el fondo a toda la aplicación.
-    <div 
-      className="min-h-screen w-full bg-slate-900" // Un color de fondo por si el SVG no carga
-      style={{
-        backgroundImage: `url(${fondoSVG})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-      }}
-    >
-      {/* 3. Tu Navbar se renderiza aquí, como ya lo tenías. */}
-      <Navbar />
-
-      {/* 4. El <main> envuelve al <Outlet> y añade el padding superior. */}
-      {/* pt-16 (padding-top: 4rem) empuja el contenido hacia abajo, evitando que quede tras la Navbar. */}
-      <main className="pt-16">
-        
-        {/* Contenedor opcional para centrar y añadir espaciado lateral al contenido. */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* 5. El Outlet renderizará aquí el contenido de la página actual (Home, Users, etc.). */}
-          <Outlet />
+    <div className="min-h-screen w-full bg-[#ECEDF2] flex">
+      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <main className={`flex-1 flex items-center justify-center min-h-screen transition-all duration-300 ${sidebarOpen ? 'ml-56' : ''}`}>
+        <div className="w-full h-full flex items-center justify-center">
+          <div className="bg-[#f7f7fb] w-full max-w-7xl rounded-xl shadow p-9">
+            <Outlet />
+          </div>
         </div>
       </main>
     </div>
   );
 }
+
+PageRoot.propTypes = {
+  sidebarOpen: PropTypes.bool.isRequired,
+  setSidebarOpen: PropTypes.func.isRequired,
+};
 
 export default Root;

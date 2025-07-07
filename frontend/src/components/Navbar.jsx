@@ -42,15 +42,15 @@ const Navbar = () => {
     const getNavLinkClass = ({ isActive }) => 
         `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
             isActive 
-            ? 'bg-white/20 text-white' 
-            : 'text-slate-300 hover:bg-white/10 hover:text-white'
+            ? 'bg-[#4EB9FA]/60 text-[#2C3E50]' 
+            : 'text-[#2C3E50] hover:bg-[#4EB9FA]/30 hover:text-white'
         }`;
 
     const getMobileNavLinkClass = ({ isActive }) => 
         `block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
             isActive 
-            ? 'bg-sky-400/30 text-white' 
-            : 'text-slate-300 hover:bg-white/10 hover:text-white'
+            ? 'bg-[#4EB9FA]/60 text-[#2C3E50]' 
+            : 'text-[#2C3E50] hover:bg-[#4EB9FA]/30 hover:text-white'
         }`;
 
     const navLinks = (
@@ -65,12 +65,12 @@ const Navbar = () => {
     );
 
     return (
-        <nav className="fixed top-0 left-0 w-full z-50 bg-white/10 backdrop-blur-lg border-b border-white/10 shadow-md">
+        <nav className="fixed top-0 left-0 w-full z-50 bg-[#ECEDF2] backdrop border-b border-white/10 ">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo o Nombre de la App */}
                     <div className="flex-shrink-0">
-                        <NavLink to="/home" className="text-white font-bold text-xl">
+                        <NavLink to="/home" className="text-[#2C3E50] font-bold text-xl">
                             GPS App
                         </NavLink>
                     </div>
@@ -80,7 +80,7 @@ const Navbar = () => {
                         {navLinks}
                         <button 
                             onClick={logoutSubmit} 
-                            className="text-slate-300 hover:bg-red-500/50 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                            className="text-[#2C3E50] hover:bg-red-500/70 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
                         >
                             Cerrar sesión
                         </button>
@@ -88,7 +88,7 @@ const Navbar = () => {
 
                     {/* Botón de Hamburguesa (se muestra en pantallas pequeñas) */}
                     <div className="lg:hidden flex items-center">
-                        <button onClick={() => setMenuOpen(!menuOpen)} className="p-2 rounded-md text-slate-300 hover:text-white hover:bg-white/10 focus:outline-none">
+                        <button onClick={() => setMenuOpen(!menuOpen)} className="p-2 rounded-md text-[#2C3E50] hover:text-white hover:bg-white/10 focus:outline-none">
                             {menuOpen ? <CloseIcon className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
                         </button>
                     </div>
@@ -107,7 +107,7 @@ const Navbar = () => {
                         )}
                         <button 
                             onClick={logoutSubmit} 
-                            className="w-full text-left text-slate-300 hover:bg-red-500/50 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+                            className="w-full text-left text-[#2C3E50] hover:bg-red-500/50 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
                         >
                             Cerrar sesión
                         </button>

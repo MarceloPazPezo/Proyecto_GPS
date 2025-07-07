@@ -3,6 +3,7 @@ import{
     createCompartidoService,
     getCompartidoService,
     getCompartidosService,
+    deleteCompartidoService
 } from "../services/compartido.service.js";
 
 //recuerda usar los validations cuando 
@@ -47,3 +48,13 @@ export async function getCompartidos(req,res) {
     }
 }
 
+export async function deleteCompartido(req, res) {
+     try{
+        const { idCuestionario , idUser } = req.body;
+        const [ Compartido, errorCompartido ] = await deleteCompartidoService({ idCuestionario , idUser });
+        if(errorCompartido) return handleErrorClient(res,404,errorCompartido);
+        handleSuccess(res,200,"Eliminado de biblioteca",Compartido);
+    }catch(error){
+        handleErrorServer(res,500,error.message);
+    }   
+}
