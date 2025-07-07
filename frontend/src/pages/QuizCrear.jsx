@@ -29,7 +29,7 @@ function QuizCrear() {
 
         const questionsToSave = slides.filter(s => s.type === 'Quiz');
         const invalidQuestion = questionsToSave.find(q => q.answers.filter(a => a.isCorrect).length !== 1);
-        
+
         if (invalidQuestion) {
             alert(`La pregunta "${invalidQuestion.questionText || 'sin título'}" debe tener exactamente UNA respuesta correcta.`);
             return;
@@ -37,10 +37,10 @@ function QuizCrear() {
 
         setIsSaving(true);
         try {
-            const quizInfo = { nombre: quizTitle, idUser: JSON.parse(sessionStorage.getItem('usuario')).id};
+            const quizInfo = { nombre: quizTitle, idUser: JSON.parse(sessionStorage.getItem('usuario')).id };
             const createdQuiz = await crearQuiz(quizInfo);
             const newQuizId = createdQuiz.data.id;
-            
+
             const formattedQuestions = questionsToSave
                 .filter(q => q.questionText.trim() !== '')
                 .map(q => ({
@@ -64,19 +64,9 @@ function QuizCrear() {
     };
 
     return (
-        <div className="h-screen bg-gray-100 font-sans flex flex-col">
-            <header className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-center bg-white p-3 sm:p-2 shadow-sm border-b gap-2 sm:gap-4 z-20">
-                <h1 className="text-2xl md:text-3xl font-bold text-purple-800">Freehoot!</h1>
-                <div className="flex items-center space-x-2">
-                    <button className="bg-gray-200 text-gray-700 rounded-md px-3 py-2 text-sm sm:text-base font-semibold hover:bg-gray-300">Salir</button>
-                    <button onClick={handleSave} disabled={isSaving} className="bg-green-600 text-white rounded-md px-3 py-2 text-sm sm:text-base font-bold hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed">
-                        {isSaving ? 'Guardando...' : 'Guardar'}
-                    </button>
-                </div>
-            </header>
-
+        <div className="h-screen w-screen bg-[#ECEDF2] font-sans flex flex-col">
             <div className="flex-grow flex flex-col lg:flex-row overflow-hidden">
-                <div className="order-first w-full lg:w-72 flex-shrink-0 bg-gray-50 border-r flex flex-col overflow-hidden">
+                <div className="order-first w-full lg:w-72 flex-shrink-0 bg-[#ECEDF2] border-r flex flex-col overflow-hidden">
                     <div className="flex-grow overflow-y-auto p-2">
                         {slides.map((slide, index) => (
                             <SlidePreview
@@ -89,14 +79,14 @@ function QuizCrear() {
                             />
                         ))}
                     </div>
-                    <div className="flex-shrink-0 p-4 space-y-2 border-t bg-gray-50">
-                        <button onClick={() => addSlide('Quiz')} className="w-full bg-blue-600 text-white font-bold py-2.5 px-4 rounded-lg hover:bg-blue-700">Añadir pregunta</button>
-                        <button onClick={() => addSlide('Diapositiva')} className="w-full bg-gray-200 text-gray-800 font-bold py-2.5 px-4 rounded-lg hover:bg-gray-300">Añadir diapositiva</button>
+                    <div className="flex-shrink-0 p-4 space-y-2 border-t ">
+                        <button onClick={() => addSlide('Quiz')} className="w-full bg-[#FF9233]/80 text-[#2C3E50] font-bold py-2.5 px-4 rounded-lg hover:bg-[#FF9233]">Añadir pregunta</button>
+                        <button onClick={() => addSlide('Diapositiva')} className="w-full bg-gray-200 text-[#2C3E50] font-bold py-2.5 px-4 rounded-lg hover:bg-gray-300">Añadir diapositiva</button>
                     </div>
                 </div>
 
                 <main className="flex-grow p-4 md:p-6 overflow-y-auto order-2 bg-gradient-to-br from-sky-400 to-blue-600">
-                    <QuizEditor 
+                    <QuizEditor
                         slide={activeSlide}
                         onQuestionTextChange={handleQuestionTextChange}
                         onAnswerTextChange={handleAnswerTextChange}
@@ -108,6 +98,10 @@ function QuizCrear() {
                 <aside className="w-full lg:w-80 bg-white p-4 border-t lg:border-t-0 lg:border-l flex-shrink-0 overflow-y-auto order-last lg:order-3">
                     <h2 className="text-xl font-bold mb-4">Configuraciones</h2>
                     <div className="space-y-4">
+                        
+                        <button onClick={handleSave} disabled={isSaving} className="bg-green-600 text-white rounded-md px-3 py-2 text-sm sm:text-base font-bold hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed">
+                            {isSaving ? 'Guardando...' : 'Guardar'}
+                        </button>
                         <div className="p-4 bg-gray-50 rounded-lg border">
                             <label htmlFor="quiz-title" className="block text-sm font-medium text-gray-700">Título del Cuestionario</label>
                             <input type="text" id="quiz-title" value={quizTitle} onChange={(e) => setQuizTitle(e.target.value)} placeholder="Ej: Capitales del Mundo" className="mt-1 block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" />
