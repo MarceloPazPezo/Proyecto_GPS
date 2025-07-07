@@ -141,7 +141,7 @@ jobs:
             cd "$APP_DIR/frontend"
             rm -rf node_modules/
             rm -rf package-lock.json
-            npm ci
+            npm i
             npm run build
 
             # 7. Reiniciar frontend
