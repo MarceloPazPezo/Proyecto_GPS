@@ -65,7 +65,7 @@ const Biblioteca = () => {
     }
 
     return (
-        <main className="min-h-screen bg-[#ECEDF2] py-10 px-2">
+        <main className="max-w-7xl mx-auto w-full px-2">
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
                     <h1 className="text-3xl font-bold text-[#2C3E50]">Mi Biblioteca</h1>
