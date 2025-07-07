@@ -46,3 +46,21 @@ export async function createCompartidoService(compartido) {
         return [null, "Error interno del servidor"];
     }
 }
+
+export async function deleteCompartidoService(query) {
+    try{
+        const { idCuestionario, idUsuario } = query;
+        const CompartidoRepository = AppDataSource.getRepository(Compartido);
+        const compartidoFound = await CompartidoRepository.findOne({
+            where: { idCuestionario:idCuestionario, idUser:idUsuario },
+        });
+        if (!compartidoFound) return [null, "Instancia compartida no encontrada"];
+        const deleted =await CompartidoRepository.delete(compartidoFound);
+
+        if(!deleted) return [null, "Error al borrar"];
+        return [deleted, null];
+    }catch (error){
+        console.error("Error al obtener el archivo compartido",error);
+        return [null,"Error interno del servidor"];
+    }
+}
