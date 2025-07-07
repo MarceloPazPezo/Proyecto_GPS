@@ -4,18 +4,50 @@ import {
   getUserService,
   getUsersService,
   updateUserService,
-  importUsersService
+  importUsersService,
+  createUserService,
 } from "../services/user.service.js";
 import {
   userBodyValidation,
   userQueryValidation,
-  userCreateValidation
+  userCreateValidation,
 } from "../validations/user.validation.js";
 import {
   handleErrorClient,
   handleErrorServer,
   handleSuccess,
 } from "../handlers/responseHandlers.js";
+
+export async function createUser(req, res) {
+  try {
+    const { body } = req;
+    const { error } = userCreateValidation.validate(body);
+    if (error) {
+      // Unificar formato de error para el frontend
+      const details = error.details
+        ? error.details.map(e => ({ field: e.path?.[0] || 'unknown', message: e.message }))
+        : [{ field: 'unknown', message: error.message }];
+      return handleErrorClient(
+        res,
+        400,
+        "Error de validación en los datos enviados",
+        details,
+      );
+    }
+    const [user, errorUser] = await createUserService(body);
+    if (errorUser) {
+      // Si el error viene con details, usar ese formato
+      if (errorUser.details) {
+        return handleErrorClient(res, 400, errorUser.message || "Error creando al usuario", errorUser.details);
+      }
+      // Si es string o cualquier otro formato
+      return handleErrorClient(res, 400, "Error creando al usuario", errorUser);
+    }
+    handleSuccess(res, 201, "Usuario creado correctamente", user);
+  } catch (error) {
+    handleErrorServer(res, 500, error.message);
+  }
+}
 
 export async function getUser(req, res) {
   try {
@@ -45,11 +77,7 @@ export async function getUsers(req, res) {
       ? handleSuccess(res, 204)
       : handleSuccess(res, 200, "Usuarios encontrados", users);
   } catch (error) {
-    handleErrorServer(
-      res,
-      500,
-      error.message,
-    );
+    handleErrorServer(res, 500, error.message);
   }
 }
 
@@ -85,7 +113,13 @@ export async function updateUser(req, res) {
 
     const [user, userError] = await updateUserService({ rut, id, email }, body);
 
-    if (userError) return handleErrorClient(res, 400, "Error modificando al usuario", userError);
+    if (userError)
+      return handleErrorClient(
+        res,
+        400,
+        "Error modificando al usuario",
+        userError,
+      );
 
     handleSuccess(res, 200, "Usuario modificado correctamente", user);
   } catch (error) {
@@ -118,7 +152,13 @@ export async function deleteUser(req, res) {
       email,
     });
 
-    if (errorUserDelete) return handleErrorClient(res, 404, "Error eliminado al usuario", errorUserDelete);
+    if (errorUserDelete)
+      return handleErrorClient(
+        res,
+        404,
+        "Error eliminado al usuario",
+        errorUserDelete,
+      );
 
     handleSuccess(res, 200, "Usuario eliminado correctamente", userDelete);
   } catch (error) {
@@ -136,29 +176,58 @@ export async function importUsers(req, res) {
 
     const validUsers = [];
     const invalidUsers = [];
-    console.log("Validando usuarios para importar...", users);
     for (let i = 0; i < users.length; i++) {
       const user = users[i];
-      const { value, error } = userCreateValidation.validate(user);
+      const { value, error } = userCreateValidation.validate(user, {
+        abortEarly: false,
+      });
       if (error) {
-        invalidUsers.push({ index: i, user, error: error.message });
+        // Mapear cada error a su campo y mensaje
+        const fieldErrors = error.details?.map((e) => ({
+          field: e.path && e.path.length > 0 ? e.path[0] : "unknown",
+          message: e.message,
+        })) || [{ field: "unknown", message: error.message }];
+        invalidUsers.push({ index: i, user, error: fieldErrors });
         continue;
       }
-      validUsers.push(value);
+      validUsers.push({ ...value, __originalIndex: i });
     }
 
     if (validUsers.length === 0) {
-      return handleErrorClient(res, 400, {
-        message: "Ningún usuario es válido para importar",
-        invalidUsers,
-      });
+      return handleErrorClient(
+        res,
+        400,
+        "Ningún usuario es válido para importar",
+        { invalidUsers },
+      );
     }
 
     const [importedUsers, error] = await importUsersService(validUsers);
-    if (error) return handleErrorClient(res, 400, error);
 
-    handleSuccess(res, 201, "Usuarios importados correctamente", {
-      imported: importedUsers,
+    // Si no se importó ninguno, error
+    if (!importedUsers || importedUsers.length === 0) {
+      return handleErrorClient(
+        res,
+        400,
+        error?.invalidUsers
+          ? "Ningún usuario fue importado"
+          : error || "Ningún usuario fue importado",
+        error?.invalidUsers ? { invalidUsers: error.invalidUsers } : undefined,
+      );
+    }
+
+    // Mapear los importados a su índice original
+    const importedWithIndex = (importedUsers || []).map((u) => {
+      // Buscar el índice original usando rut/email
+      const match = validUsers.find(
+        (v) => v.rut === u.rut && v.email === u.email,
+      );
+      return { ...u, index: match ? match.__originalIndex : null };
+    });
+
+    // Siempre responde 201 si hay al menos uno importado
+    return handleSuccess(res, 201, "Usuarios importados correctamente", {
+      imported: importedWithIndex,
       invalidUsers,
     });
   } catch (error) {

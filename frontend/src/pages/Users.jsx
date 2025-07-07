@@ -6,12 +6,21 @@ import { useState } from 'react';
 import useEditUser from '@hooks/users/useEditUser';
 import useDeleteUser from '@hooks/users/useDeleteUser';
 import ImportUsersPopup from '@components/ImportUsersPopup.jsx';
+import CreateUserPopup from '@components/CreateUserPopup.jsx';
 import { useImportUsers } from '@hooks/users/useImportUsers.jsx';
-import { MdUploadFile, MdEdit, MdDelete } from 'react-icons/md';
+import { MdUploadFile, MdEdit, MdDelete, MdPersonAddAlt1 } from 'react-icons/md';
+import useCreateUser from '@hooks/users/useCreateUser.jsx';
 
 const Users = () => {
   const { users, fetchUsers, setUsers } = useUsers();
   const [showImport, setShowImport] = useState(false);
+
+  const {
+    showCreate,
+    setShowCreate,
+    handleCreateUser,
+  } = useCreateUser();
+
   const { handleImport, loading } = useImportUsers({
     onSuccess: () => {
       fetchUsers();
@@ -19,8 +28,8 @@ const Users = () => {
     }
   });
 
-  const handleImportFile = ({ name, data }) => {
-    handleImport(data);
+  const handleImportFile = ({ name, data, onImported }) => {
+    handleImport(data, { onImported });
   };
 
   const {
@@ -89,44 +98,57 @@ const Users = () => {
   ];
 
   return (
-    <div className="flex flex-col justify-center items-center w-full font-sans bg-white/30 backdrop-blur-lg border border-white/20 shadow-xl p-8 sm:p-10 rounded-2xl mb-6">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center w-full max-w-7xl px-4 sm:px-6 lg:px-8 mb-6">
-        <h1 className="text-white font-bold text-3xl mb-2 text-center md:text-left">Usuarios</h1>
-        <div className="flex gap-2 items-center">
+    <div>
+      <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+        <h1 className="text-3xl font-bold text-[#2C3E50]">Usuarios</h1>
+        <div className="flex items-center gap-2">
           <button
-            className="bg-white/20 border border-white/30 shadow-md p-2 rounded-lg hover:bg-white/30 transition text-white"
+            className="bg-[#4EB9FA] hover:bg-[#5EBFFA] text-white font-semibold px-6 py-3 rounded-lg shadow transition-all duration-200 border border-[#4EB9FA] hover:-translate-y-0.5"
             title="Importar usuarios desde Excel"
             onClick={() => setShowImport(true)}
           >
-            <MdUploadFile size={24} color="#fff" />
+            <span className="flex items-center gap-2"><MdUploadFile size={24} />Importar</span>
+          </button>
+          <button
+            className="bg-[#2C3E50] hover:bg-[#34495E] text-white font-semibold px-6 py-3 rounded-lg shadow transition-all duration-200 border border-[#2C3E50] hover:-translate-y-0.5"
+            title="Crear usuario"
+            onClick={() => setShowCreate(true)}
+          >
+            <span className="flex items-center gap-2">
+              <MdPersonAddAlt1 size={22} />
+              Crear usuario
+            </span>
           </button>
         </div>
       </div>
-      <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="overflow-x-auto">
-          <Table
-            data={users}
-            columns={columns}
-            pageSize={5}
-            onEdit={row => { setDataUser([row]); setIsPopupOpen(true); }}
-            onDelete={row => handleDelete([row])}
-            onView={row => alert('Ver usuario: ' + row.nombreCompleto)}
-            renderActions={({ row }) => (
-              <div className="flex gap-2">
-                <button title="Editar" className="text-yellow-300 hover:bg-yellow-400/20 p-1 rounded transition" onClick={() => { setDataUser([row]); setIsPopupOpen(true); }}>
-                  <MdEdit size={20} />
-                </button>
-                <button title="Eliminar" className="text-red-400 hover:bg-red-400/20 p-1 rounded transition" onClick={() => handleDelete([row])}>
-                  <MdDelete size={20} />
-                </button>
-              </div>
-            )}
-          />
-        </div>
+
+      <div className="bg-white/80 backdrop-blur-lg border border-[#4EB9FA]/20 shadow-xl p-8 sm:p-10 rounded-2xl mb-6 overflow-x-auto">
+        <Table
+          data={users}
+          columns={columns}
+          pageSize={5}
+          onEdit={row => { setDataUser([row]); setIsPopupOpen(true); }}
+          onDelete={row => handleDelete([row])}
+          onView={row => alert('Ver usuario: ' + row.nombreCompleto)}
+          renderActions={({ row }) => (
+            <div className="flex gap-2">
+              <button title="Editar" className="text-[#FF9233]/70 hover:text-[#2C3E50] transition-colors duration-200 p-1 rounded" onClick={() => { setDataUser([row]); setIsPopupOpen(true); }}>
+                <MdEdit size={18} />
+              </button>
+              <button title="Eliminar" className="text-red-400 hover:text-[#2C3E50] transition-colors duration-200 p-1 rounded" onClick={() => handleDelete([row])}>
+                <MdDelete size={18} />
+              </button>
+            </div>
+          )}
+        />
       </div>
+
       <Popup show={isPopupOpen} setShow={setIsPopupOpen} data={dataUser} action={handleUpdate} />
       {showImport && (
         <ImportUsersPopup show={showImport} setShow={setShowImport} onFile={handleImportFile} loading={loading} />
+      )}
+      {showCreate && (
+        <CreateUserPopup show={showCreate} setShow={setShowCreate} dataUsers={setUsers} />
       )}
     </div>
   );

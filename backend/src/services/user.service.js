@@ -4,6 +4,43 @@ import { normalizarRut } from "../helpers/rut.helper.js";
 import { AppDataSource } from "../config/configDb.js";
 import { comparePassword, encryptPassword } from "../helpers/bcrypt.helper.js";
 
+export async function createUserService(body) {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    let bodyRut = body.rut ? normalizarRut(body.rut) : undefined;
+    // Buscar duplicados por separado
+    const errors = [];
+    if (bodyRut) {
+      const existingRut = await userRepository.findOne({ where: { rut: bodyRut } });
+      if (existingRut) {
+        errors.push({ field: 'rut', message: 'El rut ya está registrado' });
+      }
+    }
+    if (body.email) {
+      const existingEmail = await userRepository.findOne({ where: { email: body.email } });
+      if (existingEmail) {
+        errors.push({ field: 'email', message: 'El email ya está registrado' });
+      }
+    }
+    if (errors.length > 0) {
+      return [null, { status: 'Client error', message: 'Error creando al usuario', details: errors }];
+    }
+    const newUser = userRepository.create({
+      nombreCompleto: body.nombreCompleto,
+      rut: bodyRut,
+      email: body.email,
+      password: await encryptPassword(body.password),
+      rol: body.rol || "usuario", // Default to 'usuario' if no role is provided
+    });
+    const savedUser = await userRepository.save(newUser);
+    const { password, ...userWithoutPassword } = savedUser; // Exclude the password
+    return [userWithoutPassword, null];
+  } catch (error) {
+    console.error("Error al crear un usuario:", error);
+    return [null, { status: 'Server error', message: 'Error interno del servidor al crear el usuario.' }];
+  }
+}
+
 export async function getUserService(query) {
   try {
     let { rut, id, email } = query;
@@ -140,48 +177,68 @@ export async function importUsersService(usersArray) {
     const validUsers = [];
     const invalidUsers = [];
 
+    // Para marcar duplicados dentro del archivo, primero revisa los ruts/emails repetidos en el array
+    const seenRuts = {};
+    const seenEmails = {};
     for (let i = 0; i < usersArray.length; i++) {
       const user = usersArray[i];
       user.rut = normalizarRut(user.rut);
 
-      // Verificar unicidad de rut y email
-      const existingRut = await userRepository.findOne({ where: { rut: user.rut } });
-      if (existingRut) {
-        invalidUsers.push({ index: i, user, error: "Rut duplicado" });
-        continue;
+      // Verificar duplicados internos en el archivo
+      const fieldErrors = [];
+      if (user.rut && seenRuts[user.rut] !== undefined) {
+        fieldErrors.push({ field: 'rut', message: `Rut duplicado en archivo (fila ${seenRuts[user.rut] + 1})` });
+      } else {
+        seenRuts[user.rut] = i;
+      }
+      if (user.email && seenEmails[user.email] !== undefined) {
+        fieldErrors.push({ field: 'email', message: `Email duplicado en archivo (fila ${seenEmails[user.email] + 1})` });
+      } else {
+        seenEmails[user.email] = i;
       }
 
+      // Verificar duplicados en la base de datos
+      const existingRut = await userRepository.findOne({ where: { rut: user.rut } });
+      if (existingRut) {
+        fieldErrors.push({ field: 'rut', message: 'Rut duplicado en base de datos' });
+      }
       const existingEmail = await userRepository.findOne({ where: { email: user.email } });
       if (existingEmail) {
-        invalidUsers.push({ index: i, user, error: "Email duplicado" });
+        fieldErrors.push({ field: 'email', message: 'Email duplicado en base de datos' });
+      }
+      if (fieldErrors.length > 0) {
+        invalidUsers.push({ index: i, user, error: fieldErrors });
         continue;
       }
 
       user.password = await encryptPassword(user.password);
-
       validUsers.push(user);
-    }
-
-    if (validUsers.length === 0) {
-      return [null, "Ningún usuario es válido para importar"];
     }
 
     const createdUsers = [];
 
-    for (const user of validUsers) {
-      const newUser = userRepository.create({
-        nombreCompleto: user.nombreCompleto,
-        rut: user.rut,
-        email: user.email,
-        password: user.password,
-        rol: "usuario",
-      });
+    if (validUsers.length > 0) {
+      for (const user of validUsers) {
+        const newUser = userRepository.create({
+          nombreCompleto: user.nombreCompleto,
+          rut: user.rut,
+          email: user.email,
+          password: user.password,
+          rol: "usuario",
+        });
 
-      const savedUser = await userRepository.save(newUser);
-      const { password, ...userWithoutPassword } = savedUser; // Excluir la contraseña
-      createdUsers.push(userWithoutPassword);
+        const savedUser = await userRepository.save(newUser);
+        const { password, ...userWithoutPassword } = savedUser; // Excluir la contraseña
+        createdUsers.push(userWithoutPassword);
+      }
     }
 
+    // Si no se creó ningún usuario válido, error
+    if (createdUsers.length === 0) {
+      return [null, { invalidUsers }];
+    }
+
+    // Si hay al menos uno creado, nunca devolver error
     return [createdUsers, { invalidUsers }];
   } catch (error) {
     console.error("Error al importar usuarios:", error);

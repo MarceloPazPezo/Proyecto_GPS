@@ -7,7 +7,8 @@ import {
   getUser,
   getUsers,
   updateUser,
-  importUsers
+  importUsers,
+  createUser,
 } from "../controllers/user.controller.js";
 
 const router = Router();
@@ -18,6 +19,7 @@ router
   .use(isAdmin);
 
 router
+  .post("/", createUser)
   .get("/detail/", getUser)
   .patch("/detail/", updateUser)
   .delete("/detail/", deleteUser)

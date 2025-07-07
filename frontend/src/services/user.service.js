@@ -1,6 +1,15 @@
 import axios from './root.service.js';
 import { formatUserData } from '@helpers/formatData.js';
 
+export async function createUser(userData) {
+    try {
+        const response = await axios.post('/user/', userData);
+        return response.data;
+    } catch (error) {
+        return error.response?.data || error;
+    }
+}
+
 export async function getUsers() {
     try {
         const { data } = await axios.get('/user/');
@@ -14,7 +23,6 @@ export async function getUsers() {
 export async function updateUser(data, rut) {
     try {
         const response = await axios.patch(`/user/detail/?rut=${rut}`, data);
-        console.log(response);
         return response.data.data;
     } catch (error) {
         console.log(error);

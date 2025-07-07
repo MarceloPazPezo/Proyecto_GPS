@@ -9,14 +9,6 @@ import {
   flexRender,
 } from '@tanstack/react-table';
 
-/**
- * Table - Tabla avanzada con TanStack Table
- * Props:
- *   data: array de objetos
- *   columns: definición de columnas (ver ejemplo abajo)
- *   pageSize: tamaño de página inicial
- *   onEdit, onDelete, onView: funciones para acciones por fila
- */
 const Table = ({
   data = [],
   columns: userColumns = [],
@@ -33,7 +25,6 @@ const Table = ({
 
   // Columnas con renderizado personalizado y acciones
   const columns = useMemo(() => {
-    // Columna visual de índice
     const indexCol = {
       id: 'visualIndex',
       header: <span className="font-bold text-slate-700">#</span>,
@@ -45,7 +36,7 @@ const Table = ({
 
     const baseCols = userColumns.map(col => {
       let filterFn = 'includesString';
-      let filterElement = undefined;
+      let filterElement;
       if (col.filterType === 'select' && Array.isArray(col.filterOptions)) {
         filterFn = (row, columnId, filterValue) => {
           if (!filterValue) return true;
@@ -55,7 +46,7 @@ const Table = ({
           <select
             value={column.getFilterValue() || ''}
             onChange={e => column.setFilterValue(e.target.value)}
-            className="mt-1 px-1 py-0.5 border border-blue-200 rounded w-full bg-blue-50 text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-300 transition appearance-none"
+            className="mt-1 px-1 py-0.5 border border-blue-200 rounded w-full bg-blue-50 text-[#4EB9FA] focus:outline-none focus:ring-2 focus:ring-blue-300 transition appearance-none"
             style={{ backgroundImage: 'none' }}
           >
             <option value="">Todos</option>
@@ -92,7 +83,7 @@ const Table = ({
             onChange={e => {
               column.setFilterValue(e.target.value);
             }}
-            className="mt-1 px-1 py-0.5 border border-blue-200 rounded w-full bg-blue-50 text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-300 transition"
+            className="mt-1 px-1 py-0.5 border border-blue-200 rounded w-full bg-blue-50 text-[#4EB9FA] focus:outline-none focus:ring-2 focus:ring-blue-300 transition"
             style={{ colorScheme: 'light' }}
           />
         );
@@ -172,21 +163,21 @@ const Table = ({
                   >
                     {flexRender(header.column.columnDef.header, header.getContext())}
                     {/* Filtro por columna */}
-                  {header.column.getCanFilter() && (
-                    <div>
-                      {header.column.columnDef.filterElement
+                    {header.column.getCanFilter() && (
+                      <div>
+                        {header.column.columnDef.filterElement
                         ? header.column.columnDef.filterElement({ column: header.column })
                         : (
-                          <input
-                            type="text"
-                            value={header.column.getFilterValue() || ''}
-                            onChange={e => header.column.setFilterValue(e.target.value)}
-                            placeholder={`Filtrar...`}
-                            className="mt-1 px-1 py-0.5 border border-blue-200 rounded w-full bg-blue-50 text-blue-400 placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-300 transition"
-                          />
-                        )}
-                    </div>
-                  )}
+                            <input
+                              type="text"
+                              value={header.column.getFilterValue() || ''}
+                              onChange={e => header.column.setFilterValue(e.target.value)}
+                              placeholder={`Filtrar...`}
+                              className="mt-1 px-1 py-0.5 border border-blue-200 rounded w-full bg-blue-50 text-[#4EB9FA] placeholder-[#4EB9FA] focus:outline-none focus:ring-2 focus:ring-blue-300 transition"
+                            />
+                          )}
+                      </div>
+                    )}
                   </th>
                 ))}
               </tr>
@@ -238,8 +229,8 @@ const Table = ({
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mt-4 gap-2">
         {/* Filas por página a la izquierda */}
         <div className="flex items-center gap-2 mb-2 md:mb-0 w-full md:w-auto md:justify-start">
-          <label className="flex items-center gap-1 text-slate-200">
-            <span className="">Filas por página:</span>
+          <label className="flex items-center gap-1 text-[#2C3E50]">
+            <span>Filas por página:</span>
             <select
               value={table.getState().pagination.pageSize}
               onChange={e => table.setPageSize(Number(e.target.value))}
@@ -259,10 +250,23 @@ const Table = ({
         </div>
         {/* Paginación a la derecha */}
         <div className="flex gap-1 items-center w-full md:w-auto md:justify-end">
-          <button onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()} className="px-2 py-1 border border-white/30 rounded bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 cursor-pointer">Primero</button>
-          <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} className="px-2 py-1 border border-white/30 rounded bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 cursor-pointer">Anterior</button>
+          <button onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()} className="px-2 py-1 border border-white/30 rounded bg-white/10 text-[#2C3E50] hover:bg-[#4EB9FA]/30 disabled:opacity-50 cursor-pointer">Primero</button>
+          <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} className="px-2 py-1 border border-white/30 rounded bg-white/10 text-[#2C3E50] hover:bg-[#4EB9FA]/30 disabled:opacity-50 cursor-pointer">Anterior</button>
           {/* Input de página estilo custom con botones - y + a la derecha */}
-          <div className="flex items-center mx-1 border border-white/30 rounded-lg overflow-hidden bg-white/10" style={{ minWidth: '110px', height: '38px' }}>
+          <div className="flex items-center mx-1 border border-white/30 rounded-lg overflow-hidden bg-white/10" style={{ minWidth: '40px', height: '38px' }}>
+            <button
+              type="button"
+              className="w-10 h-full flex items-center justify-center text-2xl text-[#2C3E50] hover:bg-[#4EB9FA]/30 transition disabled:opacity-50 cursor-pointer"
+              disabled={table.getState().pagination.pageIndex + 1 <= 1}
+              onClick={() => {
+                if (table.getState().pagination.pageIndex + 1 > 1) {
+                  table.setPageIndex(table.getState().pagination.pageIndex - 1);
+                }
+              }}
+              aria-label="Página anterior"
+            >
+              –
+            </button>
             <input
               type="text"
               inputMode="numeric"
@@ -276,41 +280,26 @@ const Table = ({
                 let page = val ? Math.max(1, Math.min(Number(val), table.getPageCount())) : 1;
                 table.setPageIndex(page - 1);
               }}
-              className="w-12 px-3 py-1 text-lg text-slate-700 bg-transparent outline-none border-none text-left focus:ring-0 cursor-pointer"
+              className="w-12 text-lg text-slate-700 bg-transparent outline-none border-none text-center focus:ring-0 cursor-pointer"
               disabled={table.getPageCount() === 0}
-              style={{ boxShadow: 'none' }}
+              style={{ boxShadow: 'none',  minWidth: '3rem', maxWidth: '3rem' }}
             />
-            <div className="flex items-center divide-x divide-white/20 h-full">
-              <button
-                type="button"
-                className="w-10 h-full flex items-center justify-center text-2xl text-white hover:bg-white/20 transition disabled:opacity-40 cursor-pointer"
-                disabled={table.getState().pagination.pageIndex + 1 <= 1}
-                onClick={() => {
-                  if (table.getState().pagination.pageIndex + 1 > 1) {
-                    table.setPageIndex(table.getState().pagination.pageIndex - 1);
-                  }
-                }}
-                aria-label="Página anterior"
-              >
-                –
-              </button>
-              <button
-                type="button"
-                className="w-10 h-full flex items-center justify-center text-2xl text-white hover:bg-white/20 transition disabled:opacity-40 cursor-pointer"
-                disabled={table.getState().pagination.pageIndex + 1 >= table.getPageCount()}
-                onClick={() => {
-                  if (table.getState().pagination.pageIndex + 1 < table.getPageCount()) {
-                    table.setPageIndex(table.getState().pagination.pageIndex + 1);
-                  }
-                }}
-                aria-label="Siguiente página"
-              >
-                +
-              </button>
-            </div>
+            <button
+              type="button"
+              className="w-10 h-full flex items-center justify-center text-2xl text-[#2C3E50] hover:bg-[#4EB9FA]/30 transition disabled:opacity-50 cursor-pointer"
+              disabled={table.getState().pagination.pageIndex + 1 >= table.getPageCount()}
+              onClick={() => {
+                if (table.getState().pagination.pageIndex + 1 < table.getPageCount()) {
+                  table.setPageIndex(table.getState().pagination.pageIndex + 1);
+                }
+              }}
+              aria-label="Siguiente página"
+            >
+              +
+            </button>
           </div>
-          <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} className="px-2 py-1 border border-white/30 rounded bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 cursor-pointer">Siguiente</button>
-          <button onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage()} className="px-2 py-1 border border-white/30 rounded bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 cursor-pointer">Último</button>
+          <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} className="px-2 py-1 border border-white/30 rounded bg-white/10 text-[#2C3E50] hover:bg-[#4EB9FA]/30 disabled:opacity-50 cursor-pointer">Siguiente</button>
+          <button onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage()} className="px-2 py-1 border border-white/30 rounded bg-white/10 text-[#2C3E50] hover:bg-[#4EB9FA]/30 disabled:opacity-50 cursor-pointer">Último</button>
         </div>
       </div>
     </div>
