@@ -1,11 +1,13 @@
 "use strict";
 import User from "../entity/user.entity.js";
+import { normalizarRut } from "../helpers/rut.helper.js";
 import { AppDataSource } from "../config/configDb.js";
 import { comparePassword, encryptPassword } from "../helpers/bcrypt.helper.js";
 
 export async function getUserService(query) {
   try {
-    const { rut, id, email } = query;
+    let { rut, id, email } = query;
+    if (rut) rut = normalizarRut(rut);
 
     const userRepository = AppDataSource.getRepository(User);
 
@@ -43,7 +45,8 @@ export async function getUsersService() {
 
 export async function updateUserService(query, body) {
   try {
-    const { id, rut, email } = query;
+    let { id, rut, email } = query;
+    if (rut) rut = normalizarRut(rut);
 
     const userRepository = AppDataSource.getRepository(User);
 
@@ -53,8 +56,9 @@ export async function updateUserService(query, body) {
 
     if (!userFound) return [null, "Usuario no encontrado"];
 
+    let bodyRut = body.rut ? normalizarRut(body.rut) : undefined;
     const existingUser = await userRepository.findOne({
-      where: [{ rut: body.rut }, { email: body.email }],
+      where: [{ rut: bodyRut }, { email: body.email }],
     });
 
     if (existingUser && existingUser.id !== userFound.id) {
@@ -72,7 +76,7 @@ export async function updateUserService(query, body) {
 
     const dataUserUpdate = {
       nombreCompleto: body.nombreCompleto,
-      rut: body.rut,
+      rut: bodyRut,
       email: body.email,
       rol: body.rol,
       updatedAt: new Date(),
@@ -103,7 +107,8 @@ export async function updateUserService(query, body) {
 
 export async function deleteUserService(query) {
   try {
-    const { id, rut, email } = query;
+    let { id, rut, email } = query;
+    if (rut) rut = normalizarRut(rut);
 
     const userRepository = AppDataSource.getRepository(User);
 
@@ -137,6 +142,7 @@ export async function importUsersService(usersArray) {
 
     for (let i = 0; i < usersArray.length; i++) {
       const user = usersArray[i];
+      user.rut = normalizarRut(user.rut);
 
       // Verificar unicidad de rut y email
       const existingRut = await userRepository.findOne({ where: { rut: user.rut } });
