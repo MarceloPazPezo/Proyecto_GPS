@@ -3,7 +3,7 @@ import SharePopUp from "../components/SharePopUp.jsx";
 import { showSuccessAlert, showErrorAlert, deleteDataAlert } from "../helpers/sweetAlert.js"
 import { useNavigate } from "react-router-dom";
 import QuizCard from "../components/QuizCard.jsx";
-import { shareQuizMany } from "../services/compartido.service.js"
+import {shareQuizMany,deleteForMe} from "../services/compartido.service.js"
 import { eliminarQuiz } from "../services/quiz.service.js";
 import useUsers from "../hooks/users/useGetUsers.jsx"
 import { useState } from "react";
@@ -37,7 +37,13 @@ const Biblioteca = () => {
                 }
             }
         } else {
-            showErrorAlert("Error", "Debe ser el propietario del Quiz para eliminarlo");
+            if(await deleteDataAlert()){
+                const response= await deleteForMe(quiz.idquiz,JSON.parse(sessionStorage.getItem("usuario")).id);
+                if(response.status===200) {
+                    showSuccessAlert("Eliminado","Se ha quitado de su biblioteca");
+                    fetchQuizzes();
+                }
+            }
         }
     }
 
