@@ -9,7 +9,7 @@ const HostIdeas = () => {
     const recibirRespuestas = (data) => {
         setRespuestas((prev) => {
             const nueva = { ...prev };
-            const palabra = data.responder.toLowerCase(); // para agrupar bien
+            const palabra = data.responder.toLowerCase(); 
             nueva[palabra] = (nueva[palabra] || 0) + 1;
             return nueva;
         });
@@ -20,10 +20,10 @@ const HostIdeas = () => {
         .sort((a, b) => b[1] - a[1]);
 
     useEffect(() => {
-        socket.on("answer", recibirRespuestas);
+            socket.on("answer", recibirRespuestas);
 
         return () => {
-            socket.off("answer", recibirRespuestas); // Limpieza
+            socket.off("answer", recibirRespuestas); 
         };
     }, []);
 
