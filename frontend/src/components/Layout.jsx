@@ -9,12 +9,12 @@ const Layout = () => {
   return (
     
     <div 
-      className="min-h-screen w-full bg-slate-900" // Un color de fondo base por si el SVG no carga
+      className="min-h-screen w-full bg-slate-500" // Un color de fondo base por si el SVG no carga
       style={{
-        backgroundImage: `url(${fondoSVG})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundAttachment: 'fixed', 
+        backgroundAttachment: 'fixed',
+         backgroundColor: '#1e3046',
       }}
     >
       {/* 1. Renderizamos la Navbar aquí */}
