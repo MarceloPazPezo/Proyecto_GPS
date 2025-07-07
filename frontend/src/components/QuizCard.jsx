@@ -64,7 +64,7 @@ const QuizCard = ({ quiz, onDelete, onShare }) => {
           </button>
         </div>
 
-        {/* Botón para iniciar sesión (derecha) */}
+        {/* Botón para iniciar sesión (derecha) 
         <button
           onClick={handleStartSession}
           className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full flex items-center transition-all duration-300"
@@ -72,7 +72,7 @@ const QuizCard = ({ quiz, onDelete, onShare }) => {
         >
           <FaPlay className="mr-2" size={12}/>
           <span>Iniciar</span>
-        </button>
+        </button>*/}
       </div>
     </div>
   );

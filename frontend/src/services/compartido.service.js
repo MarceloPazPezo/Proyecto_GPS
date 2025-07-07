@@ -13,7 +13,7 @@ export async function getCompartidos(idUser) {
 
 export async function shareQuiz(idQuiz, idUser) {
     try {
-        console.log(idQuiz,idUser)
+        //console.log(idQuiz,idUser)
         const response = await axios.post(`/share/`, { idCuestionario: idQuiz, idUser: idUser })
         return response.data;
     } catch (error) {
@@ -28,6 +28,15 @@ export async function shareQuizMany(idQuiz, users) {
         for (let i = 0; i < users.length; i++) {
             response[i] = await axios.post(`/share/`, { idCuestionario: idQuiz, idUser: users[i] })
         }
+        return response;
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+export async function deleteForMe(idQuiz,idUser) {
+    try {
+        const response = await axios.delete(`/share/`,{idQuiz,idUser});
         return response;
     } catch (error) {
         console.error(error);
