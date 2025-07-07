@@ -5,21 +5,18 @@ import { showErrorAlert } from '../helpers/sweetAlert';
 const QuizCard = ({ quiz, onDelete, onShare }) => {
   const navigate = useNavigate();
 
-  // Navega a la página de edición del cuestionario.
   const handleEdit = () => {
-    if(quiz.iduser==JSON.parse(sessionStorage.getItem("usuario")).id){
+    if (quiz.iduser == JSON.parse(sessionStorage.getItem("usuario")).id) {
       navigate(`/updateQuiz/${quiz.idquiz}`);
-    }else{
-      showErrorAlert("Acceso denegado","Debe ser el propietario para editar un cuestionario.");
+    } else {
+      showErrorAlert("Acceso denegado", "Debe ser el propietario para editar un cuestionario.");
     }
   };
 
-  // Navega para iniciar una sesión con este cuestionario.
   const handleStartSession = () => {
     navigate(`/host/${quiz.id}`);
   };
 
-  // Trunca la descripción si es demasiado larga.
   const truncateDescription = (text, maxLength) => {
     if (!text || text.length <= maxLength) {
       return text;
@@ -28,49 +25,51 @@ const QuizCard = ({ quiz, onDelete, onShare }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col justify-between transition-transform transform hover:-translate-y-2 duration-300 ease-in-out">
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col justify-between border border-[#ECEDF2] hover:shadow-2xl transition-transform transform hover:-translate-y-2 duration-300 ease-in-out">
       {/* Contenido de la tarjeta */}
       <div className="p-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-2 truncate">{quiz.nombre}</h3>
-        <p className="text-gray-600 text-sm h-16">
-          {truncateDescription("Creado por " +quiz.usuario, 90) || 'Este cuestionario no tiene descripción.'}
+        <h3 className="text-xl font-bold text-[#2C3E50] mb-2 truncate">{quiz.nombre}</h3>
+        <p className="text-[#4EB9FA] text-sm h-16">
+          {truncateDescription("Creado por " + quiz.usuario, 90) || 'Este cuestionario no tiene descripción.'}
         </p>
       </div>
 
       {/* Pie de la tarjeta con acciones */}
-      <div className="bg-gray-50 px-6 py-4 flex justify-between items-center">
+      <div className="bg-[#ECEDF2] px-6 py-4 flex justify-between items-center">
         {/* Botones de acción (izquierda) */}
         <div className="flex space-x-3">
           <button
             onClick={handleEdit}
-            className="text-gray-500 hover:text-blue-600 transition-colors duration-200"
+            className="text-[#FF9233]/70 hover:text-[#2C3E50] transition-colors duration-200"
             title="Editar Cuestionario"
           >
             <FaEdit size={18} />
           </button>
-          <button
-            onClick={() => onDelete(quiz)}
-            className="text-gray-500 hover:text-red-600 transition-colors duration-200"
-            title="Eliminar Cuestionario"
-          >
-            <FaTrash size={18} />
-          </button>
+          
           <button
             onClick={() => onShare(quiz.idquiz)}
-            className="text-gray-500 hover:text-green-600 transition-colors duration-200"
+            className="text-[#65CD73] hover:text-[#2C3E50] transition-colors duration-200"
             title="Compartir"
           >
             <FaShareAlt size={18} />
+          </button>
+
+          <button
+            onClick={() => onDelete(quiz)}
+            className="text-red-400 hover:text-[#2C3E50] transition-colors duration-200"
+            title="Eliminar Cuestionario"
+          >
+            <FaTrash size={18} />
           </button>
         </div>
 
         {/* Botón para iniciar sesión (derecha) 
         <button
           onClick={handleStartSession}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full flex items-center transition-all duration-300"
+          className="bg-[#4EB9FA] hover:bg-[#5EBFFA] text-white font-bold py-2 px-4 rounded-full flex items-center transition-all duration-300"
           title="Iniciar Sesión"
         >
-          <FaPlay className="mr-2" size={12}/>
+          <FaPlay className="mr-2" size={12} />
           <span>Iniciar</span>
         </button>*/}
       </div>
