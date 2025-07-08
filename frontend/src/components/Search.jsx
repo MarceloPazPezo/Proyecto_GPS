@@ -1,4 +1,4 @@
-import '@styles/search.css';
+// import '@styles/search.css';
 
 function Search({ value, onChange, placeholder }) {
     return (
