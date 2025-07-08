@@ -59,7 +59,7 @@ const Salas = () => {
 
 
     return (
-        <main >
+        <main className=" flex items-center justify-center p-10 min-h-screen">
             {!sessionStorage.getItem('sala') ? 
             <Form
                 title={`Crear una sala`}
@@ -88,7 +88,7 @@ const Salas = () => {
              <div>
                 <div>
                     <p className="p-2 text-white bg-black w-30">Conectados:</p>
-                    <ul className="w-full bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 ">
+                    <ul className="w-full bg-white/20 border border-white text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 ">
                         {participantes.map((participante, index) => (
                             <li key={index}><b>{"🟢"+ participante.nickname}</b></li>
                         ))}

@@ -12,7 +12,7 @@ function Root()  {
 
 function PageRoot() {
   return (
-    <div className="min-h-screen w-full bg-[#ECEDF2]">
+    <div className="min-h-screen w-full bg-[#C3E7FD] font-sans">
       <Navbar />
       <main className="pt-16">
         <div className="mx-auto px-4 sm:px-6 lg:px-8 ">
