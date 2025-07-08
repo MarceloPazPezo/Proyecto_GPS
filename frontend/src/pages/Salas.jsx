@@ -92,8 +92,8 @@ const Salas = () => {
                 />
             ) : (
                 <div>
-                    <p className="p-2 text-white bg-black w-30">Conectados:</p>
-                    <ul className="w-full bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200">
+                    <p className="p-2 text-black bg-blue w-30">Conectados:</p>
+                    <ul className="w-full bg-white/20 border border-white/30 text-black font-bold py-3 rounded-lg mt-6 transition-all duration-200">
                         {participantes.map((participante, index) => (
                             <li key={index}><b>{"🟢 " + participante.nickname}</b></li>
                         ))}
@@ -114,7 +114,7 @@ const Salas = () => {
                                             readOnly
                                             name="quizSelect"
                                             value={`'${quiz.nombre}' por: ${quiz.usuario}`}
-                                            className="center w-150 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
+                                            className="center w-150 bg-white/20 border border-white/30 text-#2C3E50 font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
                                         />
                                     </div>
                                 ))}
@@ -125,13 +125,13 @@ const Salas = () => {
                     <button
                         onClick={iniciarAct}
                         disabled={participantes.length === 0 || (actividad === 'quiz' && idQuiz === 0)}
-                        className="center w-150 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
+                        className="center w-150 bg-white/20 border border-white/30 text-red font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
                     >
                         Iniciar Actividad
                     </button>
                     <button
                         onClick={cancelarAct}
-                        className="w-150 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
+                        className="w-150 bg-white/20 border border-white/30 text-red font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
                     >
                         Cancelar
                     </button>

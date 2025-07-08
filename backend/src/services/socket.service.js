@@ -3,6 +3,7 @@ let users = [];
 
 export function socketEvents(socket) {
     console.log("Usuario conectado: ", socket.id);
+    
     socket.on("create", (body) => {
         console.log(body)
         if (users.indexOf(socket.id) < 0) {
@@ -44,8 +45,6 @@ export function socketEvents(socket) {
     });
 
     socket.on("start", (data) => {
-        console.log(data);
-
         socket.to(socket.room).emit("start", data);
     });
 
@@ -55,6 +54,10 @@ export function socketEvents(socket) {
         socket.leave(body.sala);
         rooms.splice(rooms.indexOf(body.sala));
         //console.log(rooms);
+    });
+
+    socket.on("opciones",(data)=>{
+        socket.to(socket.room).emit(data);
     });
 
     socket.on("answer", (data) => {
@@ -75,7 +78,6 @@ export function socketEvents(socket) {
         //console.log(body);
         socket.to(socket.room).emit("timer", { time: body.time })
     })
-
 
     socket.on("requestNotes", () => {
         socket.emit("getNotes");
