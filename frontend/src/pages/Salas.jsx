@@ -14,7 +14,7 @@ const Salas = () => {
     const [id, setId] = useState("");
     const [participantes, setParticipantes] = useState([]);
 
-    const { quizzes } = useQuizzes();
+    const { quizzes} = useQuizzes();
     const [idQuiz, setIdQuiz] = useState(0);
 
 
@@ -28,7 +28,6 @@ const Salas = () => {
             setId(message.sala);
             sessionStorage.setItem('sala', JSON.stringify({ sala: message.sala, name: 'host' }));
         }
-        //console.log(sessionStorage.getItem('sala'));
     }
 
     const cancelarAct = () => {
@@ -99,39 +98,39 @@ const Salas = () => {
                         ))}
                     </ul>
 
-                    <p className="text-3xl font-bold text-white mb-8 text-left">Nombre de la sala:</p>
-                    <h1 className="text-5xl font-bold text-white mb-8 text-center">{id}</h1>
-
+                    <p className="text-3xl font-bold text-[#2C3E50] mb-8 text-left">Nombre de la sala:</p>
+                    <h1 className="text-5xl font-bold text-[#2C3E50] mb-8 text-center">{id}</h1>
                     {actividad === 'quiz' && (
                         <div>
-                            <ul>
+                            <fieldset>
                                 {quizzes.map((quiz, index) => (
                                     <div key={index}>
                                         <input
                                             type="radio"
-                                            onClick={(e) => setIdQuiz(e.target.id)}
                                             id={quiz.idquiz}
+                                            onClick={(e) => setIdQuiz(e.target.id)}
                                             readOnly
-                                            name="quizSelect"
+                                            name="quizSelect"   
                                             value={`'${quiz.nombre}' por: ${quiz.usuario}`}
-                                            className="center w-150 bg-white/20 border border-white/30 text-#2C3E50 font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
+                                            className="text-[#2C3E50]"
                                         />
+                                        <label htmlFor={quiz.idquiz} className="text-[#2C3E50]">{`'${quiz.nombre}' por: ${quiz.usuario}`}</label>
                                     </div>
                                 ))}
-                            </ul>
+                            </fieldset>
                         </div>
                     )}
 
                     <button
                         onClick={iniciarAct}
                         disabled={participantes.length === 0 || (actividad === 'quiz' && idQuiz === 0)}
-                        className="center w-150 bg-white/20 border border-white/30 text-red font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
+                        className="center w-150 bg-white/20 border border-white/30 text-[#2C3E50] font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
                     >
                         Iniciar Actividad
                     </button>
                     <button
                         onClick={cancelarAct}
-                        className="w-150 bg-white/20 border border-white/30 text-red font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
+                        className="w-150 bg-white/20 border border-white/30 text-[#2C3E50] font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
                     >
                         Cancelar
                     </button>
