@@ -22,7 +22,7 @@ import Biblioteca from './pages/Biblioteca.jsx';
 import StickyHost from './pages/stickyNotesHost.jsx';
 import StickyNotesGuest from './pages/StickyNotesGuest.jsx';
 
-export const socket = io("/");
+export const socket = io("/",{reconnection:true});
 
 const router = createBrowserRouter([
   {
