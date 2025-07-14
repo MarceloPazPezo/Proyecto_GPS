@@ -61,7 +61,7 @@ const Join = () => {
                             required: true,
                             minLength: 3,
                             maxLength: 30,
-                            pattern: /^[a-zA-Z0-9]+$/,
+                            pattern: /^[a-zA-Z0-9ñ]+$/,
                             patternMessage: "Debe contener solo letras y números",
                             onChange: (e) => handleInputChange('String', e.target.value)
                         },
