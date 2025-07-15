@@ -11,6 +11,7 @@
     "test:c": "vitest run --coverage",
     "test:w": "vitest --watch",
     "test:ch": "vitest run --coverage --reporter html",
+    "test:ui": "vitest --ui",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{js,jsx,json,md}\""

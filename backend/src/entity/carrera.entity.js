@@ -26,8 +26,8 @@ const CarreraSchema = new EntitySchema({
       nullable: true,
     },
     departamento: {
-      type: "enum",
-      enum: ["Ciencias", "Ingeniería", "Humanidades", "Ciencias Sociales"],
+      type: "varchar",
+      length: 100,
       nullable: false,
     },
     createdAt: {
@@ -39,6 +39,10 @@ const CarreraSchema = new EntitySchema({
       type: "timestamp with time zone",
       default: () => "CURRENT_TIMESTAMP",
       onUpdate: "CURRENT_TIMESTAMP",
+      nullable: false,
+    },
+    idEncargado: {
+      type: "int",
       nullable: false,
     },
   },
@@ -59,6 +63,22 @@ const CarreraSchema = new EntitySchema({
       unique: false,
     },
   ],
+  relations: {
+    usuarios: {
+      type: "one-to-many",
+      target: "User",
+      inverseSide: "carrera",
+    },
+    idEncargado: {
+      type: "many-to-one",
+      target: "User",
+      joinColumn: {
+        name: "idEncargado",
+        referencedColumnName: "id",
+      },
+      nullable: false,
+    },
+  },
 });
 
 export default CarreraSchema;

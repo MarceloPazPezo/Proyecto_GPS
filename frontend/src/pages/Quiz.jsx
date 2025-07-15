@@ -9,7 +9,6 @@ const Quiz = () => {
     const [options, setOptions] = useState([{ textoRespuesta: "A",id:-1 }, { textoRespuesta: "B",id:-2 }]);
 
     const recieveTime = (data) => {
-        //console.log(data);
         setTimer(data.time);
     }
 
@@ -21,13 +20,14 @@ const Quiz = () => {
     const responderPreg = (data) => {
         console.log(data.target.id);
         if(data.target.id>0){
-            socket.emit("answer",data);
+            socket.emit("answer",{correcta:data.target.value,id:data.target.id});
         }
+        setOptions(null);
     }
 
     const receiveOptions = (opt) => {
         console.log(opt);
-        setOptions(opt);
+        setOptions(opt.respuestas);
         console.log(options)
     }
     useEffect(() => {
@@ -51,6 +51,7 @@ const Quiz = () => {
                                 <button className="center w-150 bg-white/20 border border-white/30 text-black font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
                                 key={option.id} 
                                 id={option.id}
+                                value={option.correcta}
                                 onClick={responderPreg}>
                                     {option.textoRespuesta}
                                 </button>
