@@ -67,7 +67,7 @@ function QuizCrear() {
     };
 
     return (
-        <div className="h-screen w-screen bg-gray-900 font-sans flex flex-col">
+        <div className=" font-sans flex flex-col">
             <div className="flex-grow flex flex-col lg:flex-row overflow-hidden">
                 <div className="order-first w-full lg:w-72 flex-shrink-0 border-r flex flex-col overflow-hidden">
                     <div className="flex-grow overflow-y-auto p-2">
@@ -89,8 +89,8 @@ function QuizCrear() {
                 </div>
 
                 <main className="flex-grow p-4 md:p-6 overflow-y-auto order-2 "
-                     style={{
-                                    backgroundImage: `url(${fondoSVG})`,}}>
+                    style={{ backgroundImage: `url(${fondoSVG})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                     >
                     <QuizEditor
                         slide={activeSlide}
                         onQuestionTextChange={handleQuestionTextChange}
