@@ -3,21 +3,19 @@ let users = [];
 
 export function socketEvents(socket) {
     console.log("Usuario conectado: ", socket.id);
+    
     socket.on("create", (body) => {
-        console.log(body)
+        //console.log(body)
         if (users.indexOf(socket.id) < 0) {
             if (rooms.indexOf(body.sala) < 0) {
                 socket.join(body.sala);
                 socket.room = body.sala;
                 socket.host = true;
-                //console.log(socket.room);
                 rooms.push(body.sala);
                 users.push(socket.id);
                 socket.emit("message", { sala: body.sala });
-                //console.log(rooms);
             } else {
                 socket.emit("message", { body: "Ese nombre de sala ya existe" });
-                //console.log(rooms);
             }
         } else {
             socket.emit("message", { body: "Ya se encuentra en una sala" });
@@ -32,7 +30,7 @@ export function socketEvents(socket) {
                 socket.room = data.sala;
                 socket.emit("message", data);
                 users.push(socket.id);
-                socket.to(data.sala).emit("join", { nickname: data.nickname })
+                socket.to(data.sala).emit("join", { nickname: data.nickname ,socket:socket.id})
             } else {
                 socket.emit("message", { body: "ya esta conectado a la sala" });
             }
@@ -44,8 +42,6 @@ export function socketEvents(socket) {
     });
 
     socket.on("start", (data) => {
-        console.log(data);
-
         socket.to(socket.room).emit("start", data);
     });
 
@@ -57,8 +53,13 @@ export function socketEvents(socket) {
         //console.log(rooms);
     });
 
+    socket.on("opt",(data)=>{
+        //console.log(data);
+        socket.to(socket.room).emit("opt",data);
+    });
+
     socket.on("answer", (data) => {
-        socket.to(socket.room).emit("answer", data);
+        socket.to(socket.room).emit("answer", {id:data.id,correcta:data.correcta,socket:socket.id});
     });
 
     //reiniciarPizarraIdeas
@@ -75,7 +76,6 @@ export function socketEvents(socket) {
         //console.log(body);
         socket.to(socket.room).emit("timer", { time: body.time })
     })
-
 
     socket.on("requestNotes", () => {
         socket.emit("getNotes");
@@ -116,6 +116,7 @@ export function socketEvents(socket) {
 
     //desconexion
     socket.on('disconnect', (reason) => {
+        console.log(reason);
         if (socket.host) {
             socket.to(socket.room).emit("finnish");
             rooms.splice(rooms.indexOf(socket.room));

@@ -23,8 +23,9 @@ async function setupServer() {
 
       const io = new Server(server, {
       connectionStateRecovery: {
-        maxDisconnectionDuration: 10 * 60 * 1000
-      }
+        maxDisconnectionDuration: 10 * 60 * 1000,
+      },
+      pingTimeout:60000
     });
 
     app.disable("x-powered-by");

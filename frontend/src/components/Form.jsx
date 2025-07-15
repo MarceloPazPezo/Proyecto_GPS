@@ -22,7 +22,7 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
 
     return (
         <form
-            className="bg-white/30 backdrop-blur-lg border border-[#2C3E50]/20 shadow-xl p-8 sm:p-10 rounded-2xl mb-6"
+            className="bg-blue backdrop-blur-lg border border-[#2C3E50]/20 shadow-xl p-8 sm:p-10 rounded-2xl mb-6"
             style={{ backgroundColor: backgroundColor }}
             onSubmit={handleSubmit(onFormSubmit)}
             autoComplete={autoComplete === undefined ? "on" : autoComplete}
@@ -109,7 +109,7 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
                     </div>
                 </div>
             ))}
-            {buttonText && <button className="w-full bg-[#2C3E50]/10 border border-[#2C3E50]/20 text-[#2C3E50] font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-[#2C3E50]/30 hover:-translate-y-0.5" type="submit">{buttonText}</button>}
+            {buttonText && <button className="w-full border border-[#2C3E50]/20 text-[#2C3E50] font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-[#2C3E50]/30 hover:-translate-y-0.5" type="submit">{buttonText}</button>}
             {footerContent && <div className='text-sky-300 text-xs font-semibold mt-1 h-5'>{footerContent}</div>}
         </form>
     );

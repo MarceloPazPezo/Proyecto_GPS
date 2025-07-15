@@ -28,7 +28,6 @@ const Salas = () => {
             setId(message.sala);
             sessionStorage.setItem('sala', JSON.stringify({ sala: message.sala, name: 'host' }));
         }
-        //console.log(sessionStorage.getItem('sala'));
     }
 
     const cancelarAct = () => {
@@ -49,7 +48,7 @@ const Salas = () => {
 
     const iniciarAct = () => {
 
-        sessionStorage.setItem("participantes", participantes);
+        sessionStorage.setItem("participantes", JSON.stringify(participantes));
         socket.emit("start", { actividad: actividad });
         if (actividad === 'quiz') navigate(`/host/${idQuiz}`);
         if (actividad === 'pizarra') navigate("/hostIdeas");
@@ -92,46 +91,66 @@ const Salas = () => {
                 />
             ) : (
                 <div>
-                    <p className="p-2 text-white bg-black w-30">Conectados:</p>
-                    <ul className="w-full bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200">
+                    <p className="p-2 text-black bg-blue w-30">Conectados:</p>
+                    <ul className="w-full bg-white/20 border border-white/30 text-black font-bold py-3 rounded-lg mt-6 transition-all duration-200">
                         {participantes.map((participante, index) => (
                             <li key={index}><b>{"🟢 " + participante.nickname}</b></li>
                         ))}
                     </ul>
 
-                    <p className="text-3xl font-bold text-white mb-8 text-left">Nombre de la sala:</p>
-                    <h1 className="text-5xl font-bold text-white mb-8 text-center">{id}</h1>
-
+                    <p className="text-3xl font-bold text-[#2C3E50] mb-8 text-left">Nombre de la sala:</p>
+                    <h1 className="text-5xl font-bold text-[#2C3E50] mb-8 text-center">{id}</h1>
                     {actividad === 'quiz' && (
-                        <div>
-                            <ul>
+
+
+
+                        <div className="p-6">
+                            <fieldset className="bg-white/80 backdrop-blur-lg border border-[#4EB9FA]/20 shadow-xl p-8 sm:p-10 rounded-2xl mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                 {quizzes.map((quiz, index) => (
-                                    <div key={index}>
+                                    <div
+                                        key={index}
+                                        className={`relative bg-white rounded-xl shadow-lg overflow-hidden flex flex-col justify-between border
+                            ${idQuiz === quiz.idquiz ? 'border-blue-500 ring-2 ring-blue-500' : 'border-[#ECEDF2]'}
+                            hover:shadow-2xl transition-transform transform hover:-translate-y-2 duration-300 ease-in-out
+                            cursor-pointer`}
+                                        onClick={() => setIdQuiz(quiz.idquiz)}
+                                    >
                                         <input
                                             type="radio"
-                                            onClick={(e) => setIdQuiz(e.target.id)}
                                             id={quiz.idquiz}
-                                            readOnly
                                             name="quizSelect"
-                                            value={`'${quiz.nombre}' por: ${quiz.usuario}`}
-                                            className="center w-150 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
+                                            value={`${quiz.nombre} por: ${quiz.usuario}`}
+                                            checked={idQuiz === quiz.idquiz}
+                                            onChange={() => setIdQuiz(quiz.idquiz)}
+                                            className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer z-10"
                                         />
+                                        <label
+                                            htmlFor={quiz.idquiz}
+                                            className="flex-grow items-center justify-center p-4"
+                                        >
+                                            <div className="text-xl font-bold text-[#2C3E50] mb-2 truncate">
+                                                {`${quiz.nombre}`}
+                                            </div>
+                                            <div className="text-[#4EB9FA] text-sm h-16">
+                                                Autor: {`${quiz.usuario}`}
+                                            </div>
+                                        </label>
                                     </div>
                                 ))}
-                            </ul>
+                            </fieldset>
                         </div>
                     )}
 
                     <button
                         onClick={iniciarAct}
                         disabled={participantes.length === 0 || (actividad === 'quiz' && idQuiz === 0)}
-                        className="center w-150 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
+                        className="center w-150 bg-white/20 border border-white/30 text-[#2C3E50] font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
                     >
                         Iniciar Actividad
                     </button>
                     <button
                         onClick={cancelarAct}
-                        className="w-150 bg-white/20 border border-white/30 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
+                        className="w-150 bg-white/20 border border-white/30 text-[#2C3E50] font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
                     >
                         Cancelar
                     </button>
