@@ -91,9 +91,9 @@ function QuizActualizar() {
 
     // El resto es la misma UI que en QuizCrear, pero con el botón y la lógica de "Actualizar"
     return (
-        <div className="h-screen bg-gray-100 font-sans flex flex-col">
-            <header className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-center bg-white p-3 sm:p-2 shadow-sm border-b gap-2 sm:gap-4 z-20">
-                <h1 className="text-2xl md:text-3xl font-bold text-purple-800">Editando Quiz</h1>
+        <div className="font-sans flex flex-col">
+            <header className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-center p-3 sm:p-2 border-b gap-2 sm:gap-4 z-20">
+                <h1 className="text-2xl md:text-3xl font-bold text-purple-800">Editar Quiz</h1>
                 <div className="flex items-center space-x-2">
                     <button className="bg-gray-200 text-gray-700 rounded-md px-3 py-2 text-sm sm:text-base font-semibold hover:bg-gray-300">Salir</button>
                     <button onClick={handleUpdate} disabled={isUpdating} className="bg-blue-600 text-white rounded-md px-3 py-2 text-sm sm:text-base font-bold hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed">
@@ -133,11 +133,11 @@ function QuizActualizar() {
                 </main>
 
                 <aside className="w-full lg:w-80 bg-white p-4 border-t lg:border-t-0 lg:border-l flex-shrink-0 overflow-y-auto order-last lg:order-3">
-                    <h2 className="text-xl font-bold mb-4">Configuraciones</h2>
+                    <h2 className="text-xl font-bold mb-4 text-gray-800">Configuraciones</h2>
                     <div className="space-y-4">
                         <div className="p-4 bg-gray-50 rounded-lg border">
                             <label htmlFor="quiz-title" className="block text-sm font-medium text-gray-700">Título del Cuestionario</label>
-                            <input type="text" id="quiz-title" value={quizTitle} onChange={(e) => setQuizTitle(e.target.value)} placeholder="Ej: Capitales del Mundo" className="mt-1 block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" />
+                            <input type="text" id="quiz-title" value={quizTitle} onChange={(e) => setQuizTitle(e.target.value)} placeholder="Ej: Capitales del Mundo" className=" text-gray-800 mt-1 block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" />
                         </div>
                     </div>
                 </aside>

@@ -49,11 +49,11 @@ export async function getCuestionariosService() {
 
 export async function getCuestionariosByUserService(idUser) {
     try {
-        const quizFound=await cuestRepository.find({where:{idUser:idUser}})
-        if(!quizFound) return [null, "No se encontraron cuestionarios"];
+        const quizFound = await cuestRepository.find({ where: { idUser: idUser } })
+        if (!quizFound) return [null, "No se encontraron cuestionarios"];
         return [quizFound, null];
     } catch (error) {
-        console.error("Error al buscar",error);
+        console.error("Error al buscar", error);
         return [null, "Error interno del servidor"];
     }
 }
@@ -104,7 +104,11 @@ export async function deleteCuestionarioService(data) {
     try {
         const { idUser, id, nombre } = data;
         const cuestFound = await cuestRepository.findOne({
-            where: [{ idUser: idUser }, { id: id }, { nombre: nombre }]
+            where: {
+                idUser: idUser,
+                id: id,
+                nombre: nombre,
+            },
         });
 
         if (!cuestFound) return [null, "El cuestionario no existe"];
@@ -182,12 +186,12 @@ export async function obtenerPreguntasYRespuestas(idCuestionario) {
             .groupBy('p.id')
             .getRawMany();
 
-        
-         return [result, null]
+
+        return [result, null]
     }
     catch (error) {
         console.error("Error al obtener preguntas y respuestas:", error);
-       return [null, "Error interno del servidor"];
+        return [null, "Error interno del servidor"];
     }
 }
 
