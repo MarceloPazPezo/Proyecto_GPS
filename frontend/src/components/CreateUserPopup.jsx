@@ -69,7 +69,7 @@ export default function CreateUserPopup({ show, setShow, dataUsers }) {
                                         required: true,
                                         minLength: 15,
                                         maxLength: 50,
-                                        pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+                                        pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑàèìòùÀÈÌÒÙ\s]+$/,
                                         errorMessageData: errorNombreCompleto,
                                         onChange: (e) => handleInputChange('nombreCompleto', e.target.value),
                                         autoComplete: "off"
@@ -82,7 +82,7 @@ export default function CreateUserPopup({ show, setShow, dataUsers }) {
                                         type: "email",
                                         required: true,
                                         minLength: 15,
-                                        maxLength: 30,
+                                        maxLength: 100,
                                         errorMessageData: errorEmail,
                                         onChange: (e) => handleInputChange('email', e.target.value),
                                         autoComplete: "new-email"
@@ -108,6 +108,9 @@ export default function CreateUserPopup({ show, setShow, dataUsers }) {
                                         fieldType: 'select',
                                         options: [
                                             { value: 'administrador', label: 'Administrador' },
+                                            { value: 'encargado_carrera', label: 'Encargado de Carrera' },
+                                            { value: 'tutor', label: 'Tutor' },
+                                            { value: 'tutorado', label: 'Tutorado' },
                                             { value: 'usuario', label: 'Usuario' },
                                         ],
                                         required: true,

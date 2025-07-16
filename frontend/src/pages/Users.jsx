@@ -18,7 +18,6 @@ const Users = () => {
   const {
     showCreate,
     setShowCreate,
-    handleCreateUser,
   } = useCreateUser();
 
   const { handleImport, loading } = useImportUsers({
@@ -46,7 +45,8 @@ const Users = () => {
     {
       accessorKey: 'rut',
       header: 'Rut',
-      size: 100,
+      size: 120,
+      sticky: 'left', // Fija la columna de Rut a la izquierda
     },
     {
       accessorKey: 'nombreCompleto',
@@ -56,22 +56,25 @@ const Users = () => {
     {
       accessorKey: 'email',
       header: 'Correo electrónico',
-      size: 200,
+      truncate: true,
     },
     {
       accessorKey: 'rol',
       header: 'Rol',
-      size: 150,
+      size: 120,
       filterType: 'select',
       filterOptions: [
-        { value: 'Administrador', label: 'Admin' },
+        { value: 'Administrador', label: 'Administrador' },
+        { value: 'Encargado Carrera', label: 'Encargado de Carrera' },
+        { value: 'Tutor', label: 'Tutor' },
+        { value: 'Tutorado', label: 'Tutorado' },
         { value: 'Usuario', label: 'Usuario' }
       ]
     },
     {
       accessorKey: 'createdAt',
       header: 'Creado',
-      size: 150,
+      truncate: true,
       // Muestra la fecha en formato chileno dd-MM-yyyy
       cell: info => {
         const value = info.getValue();
