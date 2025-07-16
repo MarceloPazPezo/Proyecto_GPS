@@ -56,8 +56,6 @@ const Salas = () => {
 
     }
 
-
-
     return (
         <main>
             {!sessionStorage.getItem('sala') ? (
