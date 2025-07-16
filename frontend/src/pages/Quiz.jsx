@@ -1,66 +1,111 @@
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { useEffect } from 'react';
-//import io from "socket.io-client";
 import { socket } from "../main.jsx";
-import { useState } from "react";
+import fondoSVG from '../assets/fondo_azul.svg';
+
+// Importamos los helpers que definen los estilos
+import { createDefaultAnswers, createExtraAnswers } from '../helpers/quizHelpers.js'; // Ajusta la ruta si es necesario
+
+// Creamos un array con todas las plantillas de respuesta (iconos y colores)
+const answerTemplates = [...createDefaultAnswers(), ...createExtraAnswers()];
 
 const Quiz = () => {
+    const navigate = useNavigate();
     const [timer, setTimer] = useState(0);
-    const [options, setOptions] = useState([{ textoRespuesta: "A",id:-1 }, { textoRespuesta: "B",id:-2 }]);
+    const [options, setOptions] = useState([]);
+    const [questionText, setQuestionText] = useState("¡Prepárate!");
 
-    const recieveTime = (data) => {
-        setTimer(data.time);
-    }
-
-    const finalizarQuiz = () => {
-        sessionStorage.removeItem('sala');
-        navigate("/join");
-    }
-
-    const responderPreg = (data) => {
-        console.log(data.target.id);
-        if(data.target.id>0){
-            socket.emit("answer",{correcta:data.target.value,id:data.target.id});
+    // Función para manejar la respuesta del usuario
+    const handleAnswerClick = (option) => {
+        if (option.id > 0) {
+            // ----- LA CORRECCIÓN ESTÁ AQUÍ -----
+            // El backend espera un string "true" o "false", no un booleano.
+            // Convertimos el booleano a string para que la lógica del servidor funcione como antes.
+            socket.emit("answer", { correcta: String(option.correcta), id: option.id });
         }
-        setOptions(null);
-    }
+        // Deshabilitar opciones después de responder
+        setOptions([]);
+    };
 
-    const receiveOptions = (opt) => {
-        console.log(opt);
-        setOptions(opt.respuestas);
-        console.log(options)
-    }
     useEffect(() => {
+        const receiveOptions = (data) => {
+            if (data && data.respuestas) {
+                const styledOptions = data.respuestas.map((backendAnswer, index) => {
+                    const template = answerTemplates[index];
+                    return {
+                        ...template,
+                        id: backendAnswer.id,
+                        textoRespuesta: backendAnswer.textoRespuesta,
+                        correcta: backendAnswer.correcta,
+                    };
+                });
+                setOptions(styledOptions);
+                if (data.pregunta && data.pregunta.texto) {
+                    setQuestionText(data.pregunta.texto);
+                } else {
+                    // Si no viene texto de la pregunta, ponemos uno por defecto
+                    setQuestionText("¡Responde la pregunta!");
+                }
+            }
+        };
+
+        const receiveTime = (data) => {
+            setTimer(data.time);
+        };
+
+        const finalizeQuiz = () => {
+            sessionStorage.removeItem('sala');
+            navigate("/join");
+        };
+
         socket.on("opt", receiveOptions);
-        socket.on("timer", recieveTime);
-        socket.on("finnish", finalizarQuiz);
-    }, []);
+        socket.on("timer", receiveTime);
+        socket.on("finnish", finalizeQuiz);
+
+        return () => {
+            socket.off("opt", receiveOptions);
+            socket.off("timer", receiveTime);
+            socket.off("finnish", finalizeQuiz);
+        };
+    }, [navigate]);
 
     return (
-        <div className="h-screen bg-zinc-800 text-white flex items-center justify-left">
-            <div>
-                <div>
-                    <p className="border-2 border-zinc-500 p-2 w-auto">
-                        {timer}
-                    </p>
+        <div className="h-screen text-white flex flex-col items-center justify-between p-4"
+            style={{ backgroundImage: `url(${fondoSVG})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+            
+            <header className="w-full max-w-4xl mx-auto flex justify-between items-center gap-4">
+                <div className="bg-black/30 backdrop-blur-sm rounded-lg p-3 font-bold text-2xl">
+                    <span>{timer}</span>
                 </div>
-                <main className="border-2 border-zinc-500 p-2 w-auto">
-                    {
-                        options && options.map(( option) => (
-                            <div key={option.id}>
-                                <button className="center w-150 bg-white/20 border border-white/30 text-black font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
-                                key={option.id} 
-                                id={option.id}
-                                value={option.correcta}
-                                onClick={responderPreg}>
-                                    {option.textoRespuesta}
-                                </button>
-                            </div>
+                <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 text-gray-800 font-bold text-lg text-center flex-grow min-h-[58px] flex items-center justify-center">
+                    <p>{questionText}</p>
+                </div>
+            </header>
+            
+            <main className="w-full max-w-4xl p-2">
+                {options.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {options.map((option) => (
+                            <button
+                                key={option.id}
+                                onClick={() => handleAnswerClick(option)}
+                                className={`flex items-center w-full p-3 rounded-lg text-white font-bold text-xl transition-transform duration-200 hover:scale-105 ${option.color}`}
+                            >
+                                <div className="flex items-center justify-center w-12 h-12 mr-4 bg-white/20 rounded-md">
+                                    {option.Icon && <option.Icon size={30} />}
+                                </div>
+                                <span>{option.textoRespuesta}</span>
+                            </button>
+                        ))}
+                    </div>
+                ) : (
+                     <div className="text-center text-2xl font-bold">
+                        <p>¡Espera la siguiente pregunta!</p>
+                    </div>
+                )}
+            </main>
 
-                        ))
-                    }
-                </main>
-            </div>
+            <footer className="h-10"></footer>
         </div>
     )
 }
