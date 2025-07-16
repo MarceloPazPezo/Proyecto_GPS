@@ -1,27 +1,28 @@
-import { useState, useMemo, useCallback } from 'react'; // <-- 1. Importar useCallback
+// hooks/crearQuiz/useQuizBuilder.jsx (Modificado)
+
+import { useState, useMemo, useCallback } from 'react';
 import { createNewSlide, createDefaultAnswers, createExtraAnswers } from '../../helpers/quizHelpers';
 
 export const useQuizBuilder = (initialSlides = null) => {
+    // ... (el resto del hook hasta handleToggleCorrectAnswer no cambia) ...
     const [slides, setSlides] = useState(() => initialSlides || [createNewSlide('Quiz')]);
-    const [activeSlideId, setActiveSlideId] = useState(() => slides[0]?.id || null);
+    const [activeSlideId, setActiveSlideId] = useState(() => (initialSlides && initialSlides.length > 0) ? initialSlides[0].id : (slides[0]?.id || null));
 
     const activeSlide = useMemo(
         () => slides.find(s => s.id === activeSlideId) || slides[0],
         [slides, activeSlideId]
     );
 
-    // --- 2. Envolver TODAS las funciones que se retornan en useCallback ---
-
-    // Las funciones `setSlides` y `setActiveSlideId` de useState son estables por defecto,
-    // así que no necesitamos incluirlas en los arrays de dependencias de useCallback.
-    // Solo las variables/estado que leemos (como `activeSlideId`) son necesarias.
-
     const setAllSlides = useCallback((newSlides) => {
         if (newSlides && newSlides.length > 0) {
             setSlides(newSlides);
             setActiveSlideId(newSlides[0].id);
+        } else {
+            const initial = [createNewSlide('Quiz')];
+            setSlides(initial);
+            setActiveSlideId(initial[0].id);
         }
-    }, []); // Array vacío porque solo usa setters de estado, que son estables.
+    }, []);
 
     const addSlide = useCallback((type) => {
         const newSlide = createNewSlide(type);
@@ -30,57 +31,80 @@ export const useQuizBuilder = (initialSlides = null) => {
     }, []);
 
     const deleteSlide = useCallback((idToDelete) => {
-        if (slides.length <= 1) return; // Podemos leer `slides.length` sin que sea dependencia
+        if (slides.length <= 1) return;
         setSlides(prev => {
             const remaining = prev.filter(s => s.id !== idToDelete);
             if (activeSlideId === idToDelete) {
-                // `activeSlideId` es leído aquí, así que debe ser una dependencia
                 setActiveSlideId(remaining[0]?.id || null);
             }
             return remaining;
         });
-    }, [activeSlideId]); // <-- Dependencia necesaria
+    }, [activeSlideId]);
 
     const updateActiveSlide = useCallback((updateFn) => {
         setSlides(prev => prev.map(s => (s.id === activeSlideId ? updateFn(s) : s)));
-    }, [activeSlideId]); // <-- Dependencia necesaria
+    }, [activeSlideId]);
 
     const handleQuestionTextChange = useCallback((text) => {
         updateActiveSlide(slide => ({ ...slide, questionText: text }));
     }, [updateActiveSlide]);
-
+    
     const handleAnswerTextChange = useCallback((answerIndex, text) => {
         updateActiveSlide(slide => {
             const newAnswers = [...slide.answers];
-            newAnswers[answerIndex].text = text;
+            const targetAnswer = newAnswers[answerIndex];
+
+            targetAnswer.text = text;
+
+            if (targetAnswer.isCorrect && !text.trim()) {
+                targetAnswer.isCorrect = false;
+            }
+            
             return { ...slide, answers: newAnswers };
         });
     }, [updateActiveSlide]);
 
+    // --- CAMBIO PRINCIPAL AQUÍ ---
     const handleToggleCorrectAnswer = useCallback((clickedAnswerIndex) => {
         updateActiveSlide(slide => {
-            const newAnswers = slide.answers.map((answer, index) => ({
-                ...answer,
-                isCorrect: index === clickedAnswerIndex,
-            }));
+            const clickedAnswer = slide.answers[clickedAnswerIndex];
+
+            // Mantenemos la guarda de seguridad: no se puede marcar una respuesta vacía.
+            if (!clickedAnswer || !clickedAnswer.text.trim()) {
+                return slide; // No hace ningún cambio
+            }
+
+            // La nueva lógica permite múltiples respuestas correctas.
+            // Simplemente invertimos el estado 'isCorrect' de la respuesta clickeada.
+            const newAnswers = slide.answers.map((answer, index) => {
+                if (index === clickedAnswerIndex) {
+                    // Si es la respuesta que clickeamos, invertimos su estado.
+                    return { ...answer, isCorrect: !answer.isCorrect };
+                }
+                // Las demás respuestas se quedan como están.
+                return answer;
+            });
+
             return { ...slide, answers: newAnswers };
         });
     }, [updateActiveSlide]);
 
     const toggleExtraAnswers = useCallback(() => {
         updateActiveSlide(slide => {
-            const hasExtras = slide.answers.length > 4;
-            const newAnswers = hasExtras ? createDefaultAnswers() : [...slide.answers, ...createExtraAnswers()];
-            return { ...slide, answers: newAnswers };
+            if (slide.answers.length > 4) {
+                const newAnswers = slide.answers.slice(0, 4);
+                return { ...slide, answers: newAnswers };
+            } else {
+                return { ...slide, answers: [...slide.answers, ...createExtraAnswers()] };
+            }
         });
     }, [updateActiveSlide]);
-
 
     return {
         slides,
         activeSlide,
         activeSlideId,
-        setActiveSlideId, // El setter de useState es estable, no necesita useCallback
+        setActiveSlideId,
         setAllSlides,
         addSlide,
         deleteSlide,
