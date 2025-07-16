@@ -1,43 +1,33 @@
+
 import Form from './Form';
 import CloseIcon from '@assets/XIcon.svg';
 import QuestionIcon from '@assets/QuestionCircleIcon.svg';
-import useCreateUser from '@hooks/users/useCreateUser.jsx';
-import PropTypes from 'prop-types';
-import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
-import { createUser } from '@services/user.service.js';
-import { formatUserData } from '@helpers/formatData.js';
 
-export default function CreateUserPopup({ show, setShow, dataUsers }) {
-    const {
-        errorNombreCompleto,
-        errorEmail,
-        errorRut,
-        errorPassword,
-        errorData,
-        handleInputChange,
-    } = useCreateUser();
-    
+export default function UpdateUserPopup({ show, setShow, data, action }) {
+    const userData = data && data.length > 0 ? data[0] : {};
+
+    // Mapeo de nombres legibles a valores de BD
+    const rolMap = {
+        'Administrador': 'administrador',
+        'Encargado Carrera': 'encargado_carrera',
+        'Encargado de Carrera': 'encargado_carrera',
+        'Tutor': 'tutor',
+        'Tutorado': 'tutorado',
+        'Usuario': 'usuario',
+        'administrador': 'administrador',
+        'encargado_carrera': 'encargado_carrera',
+        'tutor': 'tutor',
+        'tutorado': 'tutorado',
+        'usuario': 'usuario',
+    };
+    const rolValue = rolMap[userData.rol] || "";
+
+    const handleSubmit = (formData) => {
+        action(formData);
+    };
+
     const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d{6}|[1-2]\d{7}|29\.999\.999|29999999)-[\dkK]$/);
 
-    const handleSubmit = async (createdUserData) => {
-        if (createdUserData) {
-            try {
-                const response = await createUser(createdUserData);
-
-                if (response.status === 'Client error') {
-                    errorData(response.details);
-                } else {
-                    const formattedUser = formatUserData(response.data);
-                    showSuccessAlert('¡Registrado!', 'Usuario registrado exitosamente.');
-                    setShow(false);
-                    dataUsers(prevUsers => [...prevUsers, formattedUser]);
-                }
-            } catch (error) {
-                console.error("Error al registrar un usuario: ", error);
-                showErrorAlert('Cancelado', 'Ocurrió un error al registrar un usuario.');
-            }
-        }
-    };
     return (
         <div>
             {show && (
@@ -45,7 +35,7 @@ export default function CreateUserPopup({ show, setShow, dataUsers }) {
                     <div className="relative w-full max-w-xs sm:max-w-2xl h-auto p-0 animate-fade-in flex flex-col rounded-2xl bg-white/80 backdrop-blur-lg border border-[#4EB9FA]/20 shadow-xl">
                         {/* Header */}
                         <div className="flex items-center px-4 sm:px-10 pt-6 pb-4 border-b border-[#4EB9FA]/20 relative">
-                            <h2 className="text-2xl font-bold text-[#2C3E50] flex-1">Crear usuario</h2>
+                            <h2 className="text-2xl font-bold text-[#2C3E50] flex-1">Editar usuario</h2>
                             <button
                                 className="p-2 rounded-full bg-white border border-[#4EB9FA]/30 hover:bg-[#4EB9FA]/10 transition ml-2"
                                 onClick={() => setShow(false)}
@@ -61,10 +51,11 @@ export default function CreateUserPopup({ show, setShow, dataUsers }) {
                                 title={null}
                                 autoComplete="off"
                                 size="max-w-xs sm:max-w-2xl"
-                                fields={[
+                                fields={[ 
                                     {
                                         label: "Nombre completo",
                                         name: "nombreCompleto",
+                                        defaultValue: userData.nombreCompleto || "",
                                         placeholder: 'Diego Alexis Salazar Jara',
                                         fieldType: 'input',
                                         type: "text",
@@ -72,26 +63,26 @@ export default function CreateUserPopup({ show, setShow, dataUsers }) {
                                         minLength: 15,
                                         maxLength: 50,
                                         pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑàèìòùÀÈÌÒÙ\s]+$/,
-                                        errorMessageData: errorNombreCompleto,
-                                        onChange: (e) => handleInputChange('nombreCompleto', e.target.value),
+                                        // errorMessageData: errorNombreCompleto, // Si tienes lógica de error, descomenta y pásala por props
                                         autoComplete: "off"
                                     },
                                     {
                                         label: "Correo electrónico",
                                         name: "email",
+                                        defaultValue: userData.email || "",
                                         placeholder: 'example@gmail.cl',
                                         fieldType: 'input',
                                         type: "email",
                                         required: true,
                                         minLength: 15,
                                         maxLength: 100,
-                                        errorMessageData: errorEmail,
-                                        onChange: (e) => handleInputChange('email', e.target.value),
+                                        // errorMessageData: errorEmail,
                                         autoComplete: "new-email"
                                     },
                                     {
                                         label: "Rut",
                                         name: "rut",
+                                        defaultValue: userData.rut || "",
                                         placeholder: '21.308.770-3',
                                         fieldType: 'input',
                                         type: "text",
@@ -100,8 +91,7 @@ export default function CreateUserPopup({ show, setShow, dataUsers }) {
                                         pattern: patternRut,
                                         patternMessage: "Debe ser xx.xxx.xxx-x o xxxxxxxx-x",
                                         required: true,
-                                        errorMessageData: errorRut,
-                                        onChange: (e) => handleInputChange('rut', e.target.value),
+                                        // errorMessageData: errorRut,
                                         autoComplete: "off"
                                     },
                                     {
@@ -116,35 +106,35 @@ export default function CreateUserPopup({ show, setShow, dataUsers }) {
                                             { value: 'usuario', label: 'Usuario' },
                                         ],
                                         required: true,
+                                        defaultValue: rolValue,
                                     },
                                     {
                                         label: (
                                             <div className="flex items-center gap-2 mb-1">
-                                                <span className="font-semibold text-[#2C3E50]">Contraseña</span>
+                                                <span className="font-semibold text-[#2C3E50]">Nueva contraseña</span>
                                                 <span className="relative group">
                                                     <img src={QuestionIcon} alt="info" className="w-4 h-4 cursor-pointer" />
                                                     <span className="absolute left-6 top-1 z-10 hidden group-hover:block bg-white text-xs text-[#2C3E50] border border-[#4EB9FA]/30 rounded px-2 py-1 shadow-lg min-w-max">
-                                                        Este campo es obligatorio
+                                                        Este campo es opcional
                                                     </span>
                                                 </span>
                                             </div>
                                         ),
-                                        name: "password",
+                                        name: "newPassword",
                                         placeholder: "**********",
                                         fieldType: 'input',
                                         type: "password",
-                                        required: true,
+                                        required: false,
                                         minLength: 8,
                                         maxLength: 26,
                                         pattern: /^[a-zA-Z0-9]+$/,
                                         patternMessage: "Debe contener solo letras y números",
-                                        errorMessageData: errorPassword,
-                                        onChange: (e) => handleInputChange('password', e.target.value),
+                                        // errorMessageData: errorPassword,
                                         autoComplete: "new-password"
                                     }
                                 ]}
                                 onSubmit={handleSubmit}
-                                buttonText="Crear usuario"
+                                buttonText="Editar usuario"
                                 backgroundColor={'#fff'}
                             />
                         </div>
@@ -154,8 +144,3 @@ export default function CreateUserPopup({ show, setShow, dataUsers }) {
         </div>
     );
 }
-CreateUserPopup.propTypes = {
-    show: PropTypes.bool.isRequired,
-    setShow: PropTypes.func.isRequired,
-    dataUsers: PropTypes.func.isRequired,
-};

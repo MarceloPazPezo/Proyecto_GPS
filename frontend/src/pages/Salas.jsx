@@ -61,6 +61,7 @@ const Salas = () => {
             {!sessionStorage.getItem('sala') ? (
                 <Form
                     title={`Crear una sala`}
+                    size="w-auto"
                     fields={[
                         {
                             label: "Nombre de la sala",
