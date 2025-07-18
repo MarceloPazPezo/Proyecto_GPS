@@ -3,6 +3,7 @@ import Sidebar from '@components/Sidebar';
 import { AuthProvider } from '@context/AuthContext';
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { useLocation } from 'react-router-dom';
 
 function Root() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -14,6 +15,17 @@ function Root() {
 }
 
 function PageRoot({ sidebarOpen, setSidebarOpen }) {
+    const location = useLocation();
+  if (location.pathname === '/home') {
+    return (<div>
+     <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+    <Outlet />
+    </div>)
+
+    
+    
+    ; // Home ocupa toda la pantalla
+  }
   return (
     <div className="min-h-screen w-full bg-[#D8EFFD] flex">
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
