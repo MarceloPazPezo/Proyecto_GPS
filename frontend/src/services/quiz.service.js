@@ -70,3 +70,14 @@ export async function eliminarQuiz(Quiz) {
         return;
     }
 }
+
+export async function updateQuiz(idquiz,quiz) {
+    try {
+        console.log("Actualizando quiz:", quiz);
+        const response = await axios.patch(`/quiz/lote/${idquiz}`, quiz);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        return;
+    }
+}
