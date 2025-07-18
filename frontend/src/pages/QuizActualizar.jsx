@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 // Servicios y Helpers
-import { getQuizByIdLote, getCuestionariosByUser } from '../services/quiz.service.js'; // getCuestionariosByUser es el servicio clave aquí
+import { getQuizByIdLote, getCuestionariosByUser, updateQuiz } from '../services/quiz.service.js';
 import { transformApiDataToSlides } from '../helpers/quizDataMapper.js';
 import { showErrorAlert, showSuccessAlert } from '../helpers/sweetAlert.js';
 
@@ -37,6 +37,7 @@ function QuizActualizar() {
     const [isUpdating, setIsUpdating] = useState(false);
     const [validationErrors, setValidationErrors] = useState({});
 
+    // El useEffect para cargar datos iniciales permanece sin cambios.
     useEffect(() => {
         if (!quizId) {
             setError("No se proporcionó un ID de quiz.");
@@ -46,19 +47,16 @@ function QuizActualizar() {
 
         const fetchQuizData = async () => {
             try {
-                // 1. Obtener el ID del usuario de la sesión
                 const user = JSON.parse(sessionStorage.getItem('usuario'));
                 if (!user || !user.id) {
                     throw new Error("No se pudo identificar al usuario. Por favor, inicie sesión.");
                 }
 
-                // 2. Realizar las llamadas a la API en paralelo
                 const [allUserQuizzes, questionsResponse] = await Promise.all([
                     getCuestionariosByUser(user.id),
                     getQuizByIdLote(quizId)
                 ]);
 
-                // 3. Procesar la lista de quizzes para encontrar el título
                 if (allUserQuizzes && Array.isArray(allUserQuizzes)) {
                     const numericQuizId = Number(quizId);
                     const currentQuiz = allUserQuizzes.find(quiz => quiz.idquiz === numericQuizId);
@@ -71,7 +69,6 @@ function QuizActualizar() {
                      throw new Error("No se pudieron obtener los detalles del quiz del usuario.");
                 }
                 
-                // 4. Procesar las preguntas del quiz (sin cambios aquí)
                 if (questionsResponse.status === 'Success' && questionsResponse.data) {
                     const initialSlides = transformApiDataToSlides(questionsResponse.data);
                     setAllSlides(initialSlides);
@@ -89,20 +86,21 @@ function QuizActualizar() {
         fetchQuizData();
     }, [quizId, setAllSlides]);
 
+    // ===================================================================
+    // FUNCIÓN handleUpdate MODIFICADA PARA GENERAR EL JSON CORRECTO
+    // ===================================================================
     const handleUpdate = async () => {
+        // --- 1. Validaciones (sin cambios) ---
         const errors = {};
-
         if (!quizTitle.trim()) {
             showErrorAlert('Título requerido', 'Por favor, introduce un título para el cuestionario.');
             return;
         }
-
         const questionsToValidate = slides.filter(s => s.type === 'Quiz');
         if (questionsToValidate.length === 0) {
             showErrorAlert('Sin preguntas', 'Debes tener al menos una pregunta.');
             return;
         }
-
         questionsToValidate.forEach(q => {
             const answersWithText = q.answers.filter(a => a.text.trim() !== '');
             const correctAnswers = q.answers.filter(a => a.isCorrect);
@@ -113,7 +111,7 @@ function QuizActualizar() {
 
         if (Object.keys(errors).length > 0) {
             setValidationErrors(errors);
-            showErrorAlert('Revisa tu cuestionario', 'Algunas preguntas están incompletas o no tienen respuestas correctas.');
+            showErrorAlert('Revisa tu cuestionario', 'Algunas preguntas están incompletas.');
             const firstErrorSlideId = Object.keys(errors)[0];
             setActiveSlideId(firstErrorSlideId);
             return;
@@ -121,32 +119,53 @@ function QuizActualizar() {
 
         setValidationErrors({});
         setIsUpdating(true);
+        
         try {
-            const updatedData = {
-                nombre: quizTitle,
-                preguntas: slides.filter(s => s.type === 'Quiz').map(q => ({
-                    id: typeof q.id === 'number' ? q.id : undefined,
-                    texto: q.questionText,
-                    Respuestas: q.answers.filter(a => a.text.trim() !== '').map(a => ({
-                        id: typeof a.id === 'number' ? a.id : undefined,
-                        textoRespuesta: a.text,
-                        correcta: a.isCorrect,
+            // --- 2. Obtener el idUser ---
+            const user = JSON.parse(sessionStorage.getItem('usuario'));
+            if (!user || !user.id) {
+                throw new Error("No se pudo identificar al usuario para guardar. Por favor, inicie sesión de nuevo.");
+            }
+
+            // --- 3. Construir el JSON con la estructura exacta que pide el backend ---
+            const jsonPayload = {
+                idUser: user.id,
+                titulo: quizTitle, // La API espera 'titulo'
+                preguntas: slides
+                    .filter(s => s.type === 'Quiz') // Solo enviar preguntas, no diapositivas
+                    .map(slide => ({
+                        // Los IDs existentes se envían, los nuevos (que son strings) se omiten
+                        id: typeof slide.id === 'number' ? slide.id : undefined,
+                        texto: slide.questionText,
+                        // La API espera 'Respuestas' (con R mayúscula)
+                        Respuestas: slide.answers
+                            .filter(a => a.text.trim() !== '') // Solo enviar respuestas con texto
+                            .map(answer => ({
+                                id: typeof answer.id === 'number' ? answer.id : undefined,
+                                textoRespuesta: answer.text, // La API espera 'textoRespuesta'
+                                correcta: answer.isCorrect,  // La API espera 'correcta'
+                            })),
                     })),
-                })),
             };
 
-            // await updateQuiz(quizId, updatedData); // Llamada real
-            console.log("Datos que se enviarían para actualizar:", { quizId, ...updatedData });
-            showSuccessAlert("¡Éxito!", "Quiz actualizado exitosamente (Simulación).");
+            // Para depuración: puedes ver en la consola el JSON exacto que se envía
+            console.log("JSON generado para enviar al backend:", JSON.stringify(jsonPayload, null, 2));
+
+            // --- 4. Llamar al servicio de actualización ---
+            await updateQuiz(quizId, jsonPayload);
             
+            showSuccessAlert("¡Éxito!", "El quiz ha sido actualizado correctamente.");
+            navigate('/biblioteca'); // Opcional: navegar a otra página tras el éxito
+
         } catch (error) {
             console.error("Error al actualizar:", error);
-            showErrorAlert('Error al actualizar', ` ${error.message || 'Ocurrió un error inesperado.'}`);
+            showErrorAlert('Error al actualizar', error.message || 'Ocurrió un error inesperado.');
         } finally {
             setIsUpdating(false);
         }
     };
     
+    // El resto del componente (renderizado) permanece sin cambios
     if (isLoading) return <div className="flex items-center justify-center h-screen text-2xl">Cargando editor...</div>;
     if (error) return <div className="flex items-center justify-center h-screen text-2xl text-red-500">Error: {error}</div>;
 
