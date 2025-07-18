@@ -138,12 +138,7 @@ function QuizCrear() {
                             <label htmlFor="quiz-title" className="block text-sm font-medium text-gray-700">Título del Cuestionario</label>
                             <input type="text" id="quiz-title" value={quizTitle} onChange={(e) => setQuizTitle(e.target.value)} placeholder="Ej: Capitales del Mundo" className="mt-1 block w-full pl-3 pr-3 py-2 text-base text-blue-950 border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" />
                         </div>
-                        <div className="p-4 bg-gray-50 rounded-lg border">
-                            <label htmlFor="time-limit" className="block text-sm font-medium text-gray-700">Límite de tiempo</label>
-                            <select id="time-limit" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md text-blue-950">
-                                <option>20 segundos</option>
-                            </select>
-                        </div>
+                       
                     </div>
                 </aside>
             </div>
