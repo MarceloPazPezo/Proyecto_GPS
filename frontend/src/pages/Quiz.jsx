@@ -26,9 +26,8 @@ const Quiz = () => {
     }
 
     const receiveOptions = (opt) => {
-        console.log(opt);
-        setOptions(opt);
-        console.log(options)
+        console.log(opt.respuestas);
+        setOptions(opt.respuestas);
     }
     useEffect(() => {
         socket.on("opt", receiveOptions);

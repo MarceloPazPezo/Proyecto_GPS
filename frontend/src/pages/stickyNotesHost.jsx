@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { DndContext } from "@dnd-kit/core";
 import DraggableNote from "../components/DraggableNote";
 import { socket } from "../main";
@@ -111,7 +111,7 @@ const StickyNotesHost = () => {
                     onUpdate={updateNote}
                 />
             ))}
-
+    
             <button
                 onClick={addNote}
                 className="fixed bottom-4 left-4 px-4 py-2 bg-green-600 text-white rounded-lg shadow-lg z-50"
