@@ -30,7 +30,7 @@ export function socketEvents(socket) {
                 socket.room = data.sala;
                 socket.emit("message", data);
                 users.push(socket.id);
-                socket.to(data.sala).emit("join", { nickname: data.nickname })
+                socket.to(data.sala).emit("join", { nickname: data.nickname ,socket:socket.id})
             } else {
                 socket.emit("message", { body: "ya esta conectado a la sala" });
             }
@@ -59,7 +59,7 @@ export function socketEvents(socket) {
     });
 
     socket.on("answer", (data) => {
-        socket.to(socket.room).emit("answer", data);
+        socket.to(socket.room).emit("answer", {id:data.id,correcta:data.correcta,socket:socket.id});
     });
 
     //reiniciarPizarraIdeas

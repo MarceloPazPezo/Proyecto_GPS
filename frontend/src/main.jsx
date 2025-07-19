@@ -21,6 +21,7 @@ import WaitingRoom from './pages/WaitingRoom';
 import Biblioteca from './pages/Biblioteca.jsx';
 import StickyHost from './pages/stickyNotesHost.jsx';
 import StickyNotesGuest from './pages/StickyNotesGuest.jsx';
+import ScoreBoard from './pages/ScoreBoard.jsx';
 
 export const socket = io("/",{reconnection:true});
 
@@ -69,6 +70,10 @@ const router = createBrowserRouter([
       {
         path: '/stickyHost',
         element:<StickyHost/>
+      },
+      {
+        path:'/scoreBoard',
+        element:<ScoreBoard/>
       }
     ]
   },
