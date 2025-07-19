@@ -4,6 +4,7 @@ import {
     deleteStickyNoteService,
     getStickNoteService,
     getStickNotesService,
+    saveMuralService,
     updateStickNoteService,
 } from "../services/stickyNotes.service.js";
 
@@ -42,9 +43,6 @@ export async function createNote(req, res) {
         const { idMural, titulo, descripcion, color, posx, posy } = req.body;
         const hexColorRegex = /^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/;
 
-        if (!idMural)
-            return handleErrorClient(res, 400, "No se especificó el mural");
-
         if (!titulo || titulo.trim().length < 3)
             return handleErrorClient(res, 400, "El título debe tener al menos 3 caracteres");
 
@@ -57,7 +55,7 @@ export async function createNote(req, res) {
         if (typeof posy !== "number" || isNaN(posy))
             return handleErrorClient(res, 400, "La posición Y debe ser un número válido");
 
-        const [newNote, errorNote] = await createStickyNoteService(idMural, req.body);
+        const [newNote, errorNote] = await createStickyNoteService(idMural, { titulo, descripcion, color, posx, posy });
 
         if (errorNote)
             return handleErrorClient(res, 400, "Error al crear la nota", errorNote);
@@ -71,7 +69,6 @@ export async function createNote(req, res) {
 export async function deleteMural(req, res) {
     try {
         const { id } = req.params;
-
 
         if (!id)
             return handleErrorClient(res, 400, "No se especificó el mural a eliminar");
@@ -130,6 +127,9 @@ export async function getStickNote(req, res) {
     try {
         const { idNote } = req.params;
 
+        if (!idNote)
+            return handleErrorClient(res, 400, "No se especificó la nota");
+
         const [note, errorNote] = await getStickNoteService(idNote);
 
         if (errorNote)
@@ -182,10 +182,8 @@ export async function getStickNotes(req, res) {
 
 export async function updateMural(req, res) {
     try {
-        const {  id } = req.params;
+        const { id } = req.params;
         const { titulo } = req.body;
-
-    
 
         if (!id)
             return handleErrorClient(res, 400, "No se especificó el mural a actualizar");
@@ -246,3 +244,14 @@ export async function updateNote(req, res) {
         handleErrorServer(res, 500, error.message);
     }
 }
+
+export const saveMuralNotas = async (req, res) => {
+    const { idMural } = req.params;
+    const { notes } = req.body;
+    try {
+        await saveMuralService(idMural, notes);
+        return handleSuccess(res, 200, "Mural guardado correctamente");
+    } catch (error) {
+        handleErrorServer(res, 500, error.message);
+    }
+};

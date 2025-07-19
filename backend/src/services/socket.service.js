@@ -59,8 +59,13 @@ export function socketEvents(socket) {
     });
 
     socket.on("answer", (data) => {
-        socket.to(socket.room).emit("answer", {id:data.id,correcta:data.correcta,socket:socket.id});
+        socket.to(socket.room).emit("answer", { id:data.id,correcta:data.correcta,socket:socket.id });
     });
+
+    //respuestaIdeas
+    socket.on("respuesta",(data)=>{
+        socket.to(socket.room).emit("respuesta",data);
+    }); 
 
     //reiniciarPizarraIdeas
     socket.on("reiniciar", () => {

@@ -100,3 +100,13 @@ export async function deleteMural(idMural) {
         throw error.response?.data || new Error("Error de red o del servidor");
     }
 }
+
+export async function saveMuralFront(idMural, notes) {
+    try {
+        const response = await axios.put(`/mural/save/${idMural}`, { notes });
+        return response.data;
+    } catch (error) {
+        console.error("Error al guardar el mural:", error.response?.data || error.message);
+        throw error.response?.data || new Error("Error de red o del servidor");
+    }
+}

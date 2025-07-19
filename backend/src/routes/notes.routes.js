@@ -13,7 +13,7 @@ const router=Router();
 
 router.post("/crearNota",createNote);
 router.get("/mural/:idMural",getStickNotes);
-router.get("/nota/:id",getStickNote);
+router.get("/nota/:idNote", getStickNote);
 router.put("/:id",updateNote);
 router.delete("/:id",deleteNote);
 
