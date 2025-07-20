@@ -12,7 +12,7 @@ const UserSchema = new EntitySchema({
     },
     nombreCompleto: {
       type: "varchar",
-      length: 255,
+      length: 50,
       nullable: false,
     },
     rut: {

@@ -22,6 +22,7 @@ export const questionBodyValidation = joi.object({
     .unknown(false)
     .messages({
         "object.unknown": "No se permiten propiedades adicionales.",
+        "object.and": "Debes proporcionar texto e idCuestionario.", 
         "object.missing": "Debes proporcionar texto e idCuestionario.",
     });
     

@@ -5,7 +5,7 @@ const ROLES = [
   "encargado_carrera",
   "tutor",
   "tutorado",
-  "usuario"
+  "usuario",
 ];
 
 const stringPattern = /^[a-zA-ZáéíóúÁÉÍÓÚñÑàèìòùÀÈÌÒÙ\s]+$/;
@@ -15,11 +15,11 @@ const domainEmailValidator = (value, helper) => {
     "@gmail.cl",
     "@gmail.com",
     "@alumnos.ubiobio.cl",
-    "@ubiobio.cl"
+    "@ubiobio.cl",
   ];
-  if (!validDomains.some(domain => value.endsWith(domain))) {
+  if (!validDomains.some((domain) => value.endsWith(domain))) {
     return helper.message(
-      "El correo electrónico debe ser del dominio @gmail.cl, @gmail.com, @alumnos.ubiobio.cl o @ubiobio.cl."
+      "El correo electrónico debe ser del dominio @gmail.cl, @gmail.com, @alumnos.ubiobio.cl o @ubiobio.cl.",
     );
   }
   return value;
@@ -44,18 +44,14 @@ export const userQueryValidation = Joi.object({
         "El correo electrónico debe tener como máximo 100 caracteres.",
     })
     .custom(domainEmailValidator, "Validación dominio email"),
-  rut: Joi.string()
-    .min(9)
-    .max(12)
-    .pattern(rutPattern)
-    .messages({
-      "string.empty": "El rut no puede estar vacío.",
-      "string.base": "El rut debe ser de tipo string.",
-      "string.min": "El rut debe tener como mínimo 9 caracteres.",
-      "string.max": "El rut debe tener como máximo 12 caracteres.",
-      "string.pattern.base":
-        "Formato rut inválido, debe ser xx.xxx.xxx-x o xxxxxxxx-x.",
-    }),
+  rut: Joi.string().min(9).max(12).pattern(rutPattern).messages({
+    "string.empty": "El rut no puede estar vacío.",
+    "string.base": "El rut debe ser de tipo string.",
+    "string.min": "El rut debe tener como mínimo 9 caracteres.",
+    "string.max": "El rut debe tener como máximo 12 caracteres.",
+    "string.pattern.base":
+      "Formato rut inválido, debe ser xx.xxx.xxx-x o xxxxxxxx-x.",
+  }),
 })
   .or("id", "email", "rut")
   .unknown(false)
@@ -66,18 +62,14 @@ export const userQueryValidation = Joi.object({
   });
 
 export const userBodyValidation = Joi.object({
-  nombreCompleto: Joi.string()
-    .min(15)
-    .max(50)
-    .pattern(stringPattern)
-    .messages({
-      "string.empty": "El nombre completo no puede estar vacío.",
-      "string.base": "El nombre completo debe ser de tipo string.",
-      "string.min": "El nombre completo debe tener como mínimo 15 caracteres.",
-      "string.max": "El nombre completo debe tener como máximo 50 caracteres.",
-      "string.pattern.base":
-        "El nombre completo solo puede contener letras y espacios.",
-    }),
+  nombreCompleto: Joi.string().min(15).max(50).pattern(stringPattern).messages({
+    "string.empty": "El nombre completo no puede estar vacío.",
+    "string.base": "El nombre completo debe ser de tipo string.",
+    "string.min": "El nombre completo debe tener como mínimo 15 caracteres.",
+    "string.max": "El nombre completo debe tener como máximo 50 caracteres.",
+    "string.pattern.base":
+      "El nombre completo solo puede contener letras y espacios.",
+  }),
   email: Joi.string()
     .min(15)
     .max(100)
@@ -117,22 +109,21 @@ export const userBodyValidation = Joi.object({
       "string.pattern.base":
         "La nueva contraseña solo puede contener letras y números.",
     }),
-  rut: Joi.string()
-    .min(9)
-    .max(12)
-    .pattern(rutPattern)
-    .messages({
-      "string.empty": "El rut no puede estar vacío.",
-      "string.base": "El rut debe ser de tipo string.",
-      "string.min": "El rut debe tener como mínimo 9 caracteres.",
-      "string.max": "El rut debe tener como máximo 12 caracteres.",
-      "string.pattern.base":
-        "Formato rut inválido, debe ser xx.xxx.xxx-x o xxxxxxxx-x.",
-    }),
-  rol: Joi.string().valid(...ROLES).messages({
-    "any.only": `El rol debe ser uno de los siguientes: ${ROLES.join(", ")}`,
-    "string.base": "El rol debe ser de tipo string.",
+  rut: Joi.string().min(9).max(12).pattern(rutPattern).messages({
+    "string.empty": "El rut no puede estar vacío.",
+    "string.base": "El rut debe ser de tipo string.",
+    "string.min": "El rut debe tener como mínimo 9 caracteres.",
+    "string.max": "El rut debe tener como máximo 12 caracteres.",
+    "string.pattern.base":
+      "Formato rut inválido, debe ser xx.xxx.xxx-x o xxxxxxxx-x.",
   }),
+  rol: Joi.string()
+    .valid(...ROLES)
+    .messages({
+      "any.only": `El rol debe ser uno de los siguientes: ${ROLES.join(", ")}`,
+      "string.base": "El rol debe ser de tipo texto.",
+      "string.empty": "El rol no puede estar vacío.",
+    }),
 })
   .or("nombreCompleto", "email", "password", "newPassword", "rut", "rol")
   .unknown(false)
@@ -157,20 +148,15 @@ export const userCreateValidation = Joi.object({
       "string.pattern.base":
         "El nombre completo solo puede contener letras y espacios.",
     }),
-  rut: Joi.string()
-    .min(9)
-    .max(12)
-    .required()
-    .pattern(rutPattern)
-    .messages({
-      "string.empty": "El rut no puede estar vacío.",
-      "string.base": "El rut debe ser de tipo string.",
-      "string.min": "El rut debe tener como mínimo 9 caracteres.",
-      "string.max": "El rut debe tener como máximo 12 caracteres.",
-      "string.pattern.base":
-        "Formato rut inválido, debe ser xx.xxx.xxx-x o xxxxxxxx-x.",
-      "any.required": "El rut es obligatorio"
-    }),
+  rut: Joi.string().min(9).max(12).required().pattern(rutPattern).messages({
+    "string.empty": "El rut no puede estar vacío.",
+    "string.base": "El rut debe ser de tipo string.",
+    "string.min": "El rut debe tener como mínimo 9 caracteres.",
+    "string.max": "El rut debe tener como máximo 12 caracteres.",
+    "string.pattern.base":
+      "Formato rut inválido, debe ser xx.xxx.xxx-x o xxxxxxxx-x.",
+    "any.required": "El rut es obligatorio",
+  }),
   email: Joi.string()
     .min(15)
     .max(100)
@@ -200,18 +186,20 @@ export const userCreateValidation = Joi.object({
       "string.pattern.base":
         "La contraseña solo puede contener letras y números.",
     }),
-  rol: Joi.any().custom((value, helpers) => {
-    if (typeof value !== 'string') {
-      return helpers.error('string.base');
-    }
-    if (!ROLES.includes(value)) {
-      return helpers.error('any.only');
-    }
-    return value;
-  }, 'Validación personalizada de rol').messages({
-    "string.base": "El rol debe ser de tipo string.",
-    "any.only": `El rol debe ser uno de los siguientes: ${ROLES.join(", ")}`,
-  }),
+  rol: Joi.any()
+    .custom((value, helpers) => {
+      if (typeof value !== "string") {
+        return helpers.error("string.base");
+      }
+      if (!ROLES.includes(value)) {
+        return helpers.error("any.only");
+      }
+      return value;
+    }, "Validación personalizada de rol")
+    .messages({
+      "string.base": "El rol debe ser de tipo string.",
+      "any.only": `El rol debe ser uno de los siguientes: ${ROLES.join(", ")}`,
+    }),
 })
   .or("nombreCompleto", "email", "password", "rut", "rol")
   .unknown(false)

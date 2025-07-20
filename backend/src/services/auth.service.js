@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { AppDataSource } from "../config/configDb.js";
 import { comparePassword } from "../helpers/bcrypt.helper.js";
 import { ACCESS_TOKEN_SECRET } from "../config/configEnv.js";
+import { ILike } from "typeorm";
 
 export async function loginService(user) {
   try {
@@ -16,7 +17,7 @@ export async function loginService(user) {
     });
 
     const userFound = await userRepository.findOne({
-      where: { email }
+      where: { email: ILike(email) }
     });
 
     if (!userFound) {
