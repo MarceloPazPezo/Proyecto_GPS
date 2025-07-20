@@ -1,6 +1,6 @@
 import { DataSource } from "typeorm";
 
-export const testDataSource = new DataSource({
+const baseConfig = {
     type: "postgres",
     host: 'localhost',
     port: 5432,
@@ -8,30 +8,17 @@ export const testDataSource = new DataSource({
     password: 'password_test',
     database: 'db_test',
     entities: ["src/entity/**/*.js"],
+    logging: false,
+};
+
+export const setupDataSource = new DataSource({
+    ...baseConfig,
     dropSchema: true,
     synchronize: true,
-    logging: false,
 });
 
-export async function connectDbTest() {
-    try {
-        if (!testDataSource.isInitialized) {
-            await testDataSource.initialize();
-            console.log("=> Conexión exitosa a la base de datos de PRUEBA!");
-        }
-    } catch (error) {
-        console.error("Error al conectar con la base de datos de prueba:", error);
-        process.exit(1);
-    }
-}
-
-export async function disconnectDbTest() {
-    try {
-        if (testDataSource.isInitialized) {
-            await testDataSource.destroy();
-            console.log("=> Desconectado de la base de datos de prueba.");
-        }
-    } catch (error) {
-        console.error("Error al desconectar la base de datos de prueba:", error);
-    }
-}
+export const testDataSource = new DataSource({
+    ...baseConfig,
+    dropSchema: false,
+    synchronize: false,
+});
