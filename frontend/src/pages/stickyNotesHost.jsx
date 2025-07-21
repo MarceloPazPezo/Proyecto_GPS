@@ -4,11 +4,13 @@ import DraggableNote from "../components/DraggableNote";
 import { socket } from "../main";
 import { useParams } from "react-router-dom";
 import { crearNota, saveMuralFront, getNotesByMural, deleteNoteFront } from "../services/stickNotes.service";
+import { useNavigate } from "react-router-dom";
 
 const StickyNotesHost = () => {
     const [notes, setNotes] = useState([]);
     const [saving, setSaving] = useState(false);
     const { idMural } = useParams();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchNotes = async () => {
@@ -113,6 +115,13 @@ const StickyNotesHost = () => {
                 return note;
             })
         );
+    };
+
+    const finalizarAct = () => {
+        socket.emit("finnish", { sala: sessionStorage.getItem('sala') });
+        sessionStorage.removeItem("sala");
+        sessionStorage.removeItem("participantes");
+        navigate("/room");
     };
 
     const updateNote = (id, changes) => {
@@ -237,6 +246,11 @@ const StickyNotesHost = () => {
             >
                 💾 Guardar mural
             </button>
+
+            <button onClick={finalizarAct}
+                    className="fixed top-4 right-4 px-4 py-2 bg-red-600 text-black rounded-lg shadow-lg z-50">
+                    Terminar Actividad
+                </button>
         </DndContext>
     );
 };

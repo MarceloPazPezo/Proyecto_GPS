@@ -3,10 +3,12 @@ import { DndContext } from "@dnd-kit/core";
 import DraggableNote from "../components/DraggableNote";
 import { socket } from "../main";
 import { getNotesByMural } from "../services/stickNotes.service";
+import { useNavigate } from "react-router-dom";
 
 const StickyNotesGuest = () => {
     const [notes, setNotes] = useState([]);
     const [idMuralGuest, setIdMuralGuest] = useState(null);
+    const navigate = useNavigate();
 
     const formatNote = (note, idMural) => ({
         id: note.id,
@@ -49,6 +51,11 @@ const StickyNotesGuest = () => {
         fetchNotes();
     }, [idMuralGuest]);
 
+    const finalizeQuiz = () => {
+            sessionStorage.removeItem('sala');
+            navigate("/join");
+        };
+    
     useEffect(() => {
         socket.on("addNoteWithId", (note) => {
             setNotes((prev) => {
@@ -57,10 +64,20 @@ const StickyNotesGuest = () => {
             });
         });
 
+        socket.on("finnish",finalizeQuiz);
+
         socket.on("updateNote", (updatedNote) => {
             setNotes((prev) =>
                 prev.map((note) =>
-                    note.id === updatedNote.id ? { ...note, ...formatNote(updatedNote, idMuralGuest) } : note
+                    note.id === updatedNote.id
+                        ? {
+                            ...note,
+                            title: updatedNote.title ?? note.title,
+                            text: updatedNote.text ?? note.text,
+                            color: updatedNote.color ?? note.color,
+                            position: updatedNote.position ?? note.position,
+                        }
+                        : note
                 )
             );
         });
@@ -103,8 +120,8 @@ const StickyNotesGuest = () => {
         socket.emit("addNote", tempNote);
     };
 
-    const requestDeleteNote =  (noteId) => {
-        socket.emit("requestDeleteNote", noteId);  
+    const requestDeleteNote = (noteId) => {
+        socket.emit("requestDeleteNote", noteId);
     };
 
     const handleDragEnd = (event) => {
@@ -149,8 +166,8 @@ const StickyNotesGuest = () => {
                     text={note.text}
                     color={note.color}
                     position={note.position || { x: 0, y: 0 }}
-                    onDelete={() => requestDeleteNote(note.id)}
                     onUpdate={updateNote}
+                    onDelete={() => requestDeleteNote(note.id)}
                 />
             ))}
 
