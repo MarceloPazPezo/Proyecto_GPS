@@ -15,15 +15,14 @@ const HostIdeas = () => {
         });
     };
 
-
     const palabrasOrdenadas = Object.entries(respuestas)
         .sort((a, b) => b[1] - a[1]);
 
     useEffect(() => {
-            socket.on("answer", recibirRespuestas);
+            socket.on("respuesta", recibirRespuestas);
 
         return () => {
-            socket.off("answer", recibirRespuestas); 
+            socket.off("respuesta", recibirRespuestas); 
         };
     }, []);
 

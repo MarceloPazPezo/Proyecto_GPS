@@ -1,11 +1,10 @@
-import { socket } from "../main";
-import { useState, useEffect, act } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { socket } from "../main";
 import useLogin from "../hooks/auth/useLogin.jsx";
-import Form from "../components/Form";
 import useQuizzes from "../hooks/crearQuiz/getQuiz.jsx";
-
-
+import Form from "../components/Form";
+import PopUpMuralSelector from "../components/PopUpMuralSelector.jsx";
 
 const Salas = () => {
     const navigate = useNavigate();
@@ -13,33 +12,33 @@ const Salas = () => {
     const [actividad, setActividad] = useState('');
     const [id, setId] = useState("");
     const [participantes, setParticipantes] = useState([]);
-
     const { quizzes } = useQuizzes();
     const [idQuiz, setIdQuiz] = useState(0);
 
+    const [mostrarSelectorMural, setMostrarSelectorMural] = useState(false);
+    const [muralSeleccionado, setMuralSeleccionado] = useState(null);
 
     const createRoom = (data) => {
         socket.emit("create", { sala: data.sala });
         setActividad(data.actividad);
-    }
+    };
 
     const receiveMessage = (message) => {
         if (message.sala) {
             setId(message.sala);
             sessionStorage.setItem('sala', JSON.stringify({ sala: message.sala, name: 'host' }));
         }
-    }
+    };
 
     const cancelarAct = () => {
-        socket.emit('finnish', { sala: sessionStorage.getItem('sala') })
+        socket.emit('finnish', { sala: sessionStorage.getItem('sala') });
         sessionStorage.removeItem('sala');
         window.location.reload();
-    }
+    };
 
     const onJoin = (data) => {
-        //console.log(data);
         setParticipantes((state) => [data, ...state]);
-    }
+    };
 
     useEffect(() => {
         socket.on("message", receiveMessage);
@@ -47,17 +46,35 @@ const Salas = () => {
     }, []);
 
     const iniciarAct = () => {
-
         sessionStorage.setItem("participantes", JSON.stringify(participantes));
-        socket.emit("start", { actividad: actividad });
-        if (actividad === 'quiz') navigate(`/host/${idQuiz}`);
-        if (actividad === 'pizarra') navigate("/hostIdeas");
-        if (actividad === 'notas') navigate("/stickyHost");
 
-    }
+        if (actividad === 'quiz') {
+            socket.emit("start", { actividad });
+            navigate(`/host/${idQuiz}`);
+            return;
+        }
+
+        if (actividad === 'pizarra') {
+            socket.emit("start", { actividad });
+            navigate("/hostIdeas");
+            return;
+        }
+
+        if (actividad === 'notas') {
+            if (!muralSeleccionado) {
+                setMostrarSelectorMural(true);
+                return;
+            }
+            socket.emit("start", { actividad });
+            sessionStorage.setItem("muralSeleccionado", JSON.stringify(muralSeleccionado));
+            socket.emit("enviarIdMural", { idMural: muralSeleccionado.id });
+            navigate(`/stickyHost/${muralSeleccionado.id}`);
+            return;
+        }
+    };
 
     return (
-        <main>
+        <main className="flex justify-center">
             {!sessionStorage.getItem('sala') ? (
                 <Form
                     title={`Crear una sala`}
@@ -99,19 +116,17 @@ const Salas = () => {
 
                     <p className="text-3xl font-bold text-[#2C3E50] mb-8 text-left">Nombre de la sala:</p>
                     <h1 className="text-5xl font-bold text-[#2C3E50] mb-8 text-center">{id}</h1>
+
                     {actividad === 'quiz' && (
-
-
-
                         <div className="p-6">
                             <fieldset className="bg-white/80 backdrop-blur-lg border border-[#4EB9FA]/20 shadow-xl p-8 sm:p-10 rounded-2xl mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                 {quizzes.map((quiz, index) => (
                                     <div
                                         key={index}
                                         className={`relative bg-white rounded-xl shadow-lg overflow-hidden flex flex-col justify-between border
-                            ${idQuiz === quiz.idquiz ? 'border-blue-500 ring-2 ring-blue-500' : 'border-[#ECEDF2]'}
-                            hover:shadow-2xl transition-transform transform hover:-translate-y-2 duration-300 ease-in-out
-                            cursor-pointer`}
+                                            ${idQuiz === quiz.idquiz ? 'border-blue-500 ring-2 ring-blue-500' : 'border-[#ECEDF2]'}
+                                            hover:shadow-2xl transition-transform transform hover:-translate-y-2 duration-300 ease-in-out
+                                            cursor-pointer`}
                                         onClick={() => setIdQuiz(quiz.idquiz)}
                                     >
                                         <input
@@ -153,10 +168,22 @@ const Salas = () => {
                     >
                         Cancelar
                     </button>
+
+                    {mostrarSelectorMural && (
+                        <PopUpMuralSelector
+                            idUser={JSON.parse(sessionStorage.getItem("usuario")).id}
+                            onConfirm={(mural) => {
+                                setMuralSeleccionado(mural);
+                                setMostrarSelectorMural(false);
+                                iniciarAct(); 
+                            }}
+                            onCancel={() => setMostrarSelectorMural(false)}
+                        />
+                    )}
                 </div>
             )}
         </main>
-    )
-}
+    );
+};
 
 export default Salas;

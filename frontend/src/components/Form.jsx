@@ -22,7 +22,7 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
 
     return (
         <form
-            className={`bg-blue backdrop-blur-lg border border-[#2C3E50]/20 shadow-xl p-8 sm:p-10 rounded-2xl w-full ${size}`}
+            className="bg-blue backdrop-blur-lg border border-[#2C3E50]/20 shadow-xl p-8 sm:p-10 rounded-2xl mb-6 w-2xl"
             style={{ backgroundColor: backgroundColor }}
             onSubmit={handleSubmit(onFormSubmit)}
             autoComplete={autoComplete === undefined ? "on" : autoComplete}

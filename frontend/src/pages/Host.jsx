@@ -16,7 +16,7 @@ let i = 0;
 
 const Host = () => {
     const { id: quizId } = useParams();
-    const [timer, setTimer] = useState(5);
+    const [timer, setTimer] = useState(10);
     const [scoreBoard, setScores] = useState([]);
     const [pregunta, setPregunta] = useState(null);
     const [showOptions, setShowOptions] = useState(false);
@@ -56,6 +56,7 @@ const Host = () => {
     };
 
     const recieveAnswer = (data) => {
+        setPlayersAnswered(prev => prev + 1); 
         if (showOptions && data.correcta === 'true') {
             const newScores = scores.map((player) => {
                 if (player.socket === data.socket) {
@@ -66,7 +67,6 @@ const Host = () => {
             scores = newScores;
             setScores(newScores);
         }
-        setPlayersAnswered(prev => prev + 1);
     };
 
     const siguientePreg = () => {
@@ -151,6 +151,7 @@ const Host = () => {
                             value={timer}
                         />
                         <button onClick={setUpActividad}
+                            disabled={timer<5||timer===null}
                             className="w-full max-w-xs mt-6 bg-green-500 border-2 border-green-700 text-white font-bold py-3 rounded-lg transition-all duration-200 hover:bg-green-600 hover:-translate-y-0.5 shadow-md">
                             Iniciar Actividad
                         </button>

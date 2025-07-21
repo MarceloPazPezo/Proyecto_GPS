@@ -26,7 +26,7 @@ GROUP BY
         const compartidos= await AppDataSource.query(query2);
         const result=propios.concat(compartidos);
         if (result.length === 0) return [null, "No se encontraron Cuestionarios"];
-        console.log(result)
+        //console.log(result)
         return [result, null];
     } catch (error) {
         return [null, "Error interno del servidor"];

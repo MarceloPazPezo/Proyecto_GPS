@@ -70,7 +70,7 @@ const router = createBrowserRouter([
         element:<Biblioteca/>
       },
       {
-        path: '/stickyHost',
+        path: '/stickyHost/:idMural',
         element:<StickyHost/>
       },
       {
