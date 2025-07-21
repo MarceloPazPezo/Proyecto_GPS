@@ -15,9 +15,26 @@ export async function createCarreraService(body) {
     if (errors.length > 0) {
       return [null, { status: 'Client error', message: 'Error creando la carrera', details: errors }];
     }
-    const newCarrera = carreraRepository.create({ nombre: body.nombre });
+
+    const newCarrera = carreraRepository.create({
+      nombre: body.nombre,
+      codigo: body.codigo.toUpperCase(),
+      descripcion: body.descripcion || null,
+      departamento: body.departamento,
+      idEncargado: body.idEncargado,
+    });
     const savedCarrera = await carreraRepository.save(newCarrera);
-    return [savedCarrera, null];
+
+    const carreraFound = await carreraRepository.findOne({
+      where: { id: savedCarrera.id },
+      relations: ["idEncargado"],
+    });
+    if (!carreraFound) return [null, "Carrera no encontrada"];
+    const result = {
+      ...carreraFound,
+      rutEncargado: carreraFound.idEncargado?.rut || null,
+    };
+    return [result, null];
   } catch (error) {
     console.error("Error al crear una carrera:", error);
     return [null, { status: 'Server error', message: 'Error interno del servidor al crear la carrera.' }];
@@ -28,9 +45,17 @@ export async function getCarreraService(query) {
   try {
     const { id, nombre } = query;
     const carreraRepository = AppDataSource.getRepository(Carrera);
-    const carreraFound = await carreraRepository.findOne({ where: [{ id: id }, { nombre: nombre }] });
+    const carreraFound = await carreraRepository.findOne({
+      where: [{ id: id }, { nombre: nombre }],
+      relations: ["idEncargado"],
+    });
     if (!carreraFound) return [null, "Carrera no encontrada"];
-    return [carreraFound, null];
+    // Agregar rut del encargado si existe
+    const result = {
+      ...carreraFound,
+      rutEncargado: carreraFound.idEncargado?.rut || null,
+    };
+    return [result, null];
   } catch (error) {
     console.error("Error obtener la carrera:", error);
     return [null, "Error interno del servidor"];
@@ -40,9 +65,19 @@ export async function getCarreraService(query) {
 export async function getCarrerasService() {
   try {
     const carreraRepository = AppDataSource.getRepository(Carrera);
-    const carreras = await carreraRepository.find();
+    const carreras = await carreraRepository.find({ relations: ["idEncargado"] });
     if (!carreras || carreras.length === 0) return [[], "No hay carreras"];
-    return [carreras, null];
+    const carrerasMin = carreras.map(c => ({
+      id: c.id,
+      nombre: c.nombre,
+      codigo: c.codigo,
+      descripcion: c.descripcion,
+      departamento: c.departamento,
+      createdAt: c.createdAt,
+      idEncargado: c.idEncargado?.id || null,
+      rutEncargado: c.idEncargado?.rut || null,
+    }));
+    return [carrerasMin, null];
   } catch (error) {
     console.error("Error al obtener las carreras:", error);
     return [null, "Error interno del servidor"];
@@ -75,9 +110,9 @@ export async function updateCarreraService(query, body) {
 
 export async function deleteCarreraService(query) {
   try {
-    const { id, nombre } = query;
+    const { id, codigo } = query;
     const carreraRepository = AppDataSource.getRepository(Carrera);
-    const carreraFound = await carreraRepository.findOne({ where: [{ id: id }, { nombre: nombre }] });
+    const carreraFound = await carreraRepository.findOne({ where: [{ id: id }, { codigo: codigo }] });
     if (!carreraFound) return [null, "Carrera no encontrada"];
     const carreraDeleted = await carreraRepository.remove(carreraFound);
     return [carreraDeleted, null];

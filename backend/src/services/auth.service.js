@@ -17,7 +17,8 @@ export async function loginService(user) {
     });
 
     const userFound = await userRepository.findOne({
-      where: { email: ILike(email) }
+      where: { email: ILike(email) },
+      relations: ["carrerasEncargado"],
     });
 
     if (!userFound) {
@@ -26,16 +27,23 @@ export async function loginService(user) {
 
     const isMatch = await comparePassword(password, userFound.password);
 
+    console.log(userFound);
     if (!isMatch) {
       return [null, createErrorMessage("password", "La contraseña es incorrecta")];
     }
 
+    let carrerasEncargado = [];
+    if (userFound.rol === "encargado_carrera" && userFound.carrerasEncargado) {
+      // Devuelve solo el id de cada carrera encargada
+      carrerasEncargado = userFound.carrerasEncargado.map(c => c.id);
+    }
     const payload = {
       id: userFound.id,
       nombreCompleto: userFound.nombreCompleto,
       email: userFound.email,
       rut: userFound.rut,
       rol: userFound.rol,
+      carrerasEncargado,
     };
 
     const accessToken = jwt.sign(payload, ACCESS_TOKEN_SECRET, {

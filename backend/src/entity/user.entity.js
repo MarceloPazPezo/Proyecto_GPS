@@ -66,7 +66,7 @@ const UserSchema = new EntitySchema({
     carrerasEncargado: {
       type: "one-to-many",
       target: "Carrera",
-      inverseSide: "encargado",
+      inverseSide: "idEncargado",
       nullable: true // Un usuario puede no ser encargado de ninguna carrera
     }
   },

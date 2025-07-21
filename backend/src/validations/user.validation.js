@@ -124,6 +124,11 @@ export const userBodyValidation = Joi.object({
       "string.base": "El rol debe ser de tipo texto.",
       "string.empty": "El rol no puede estar vacío.",
     }),
+  idCarrera: Joi.number().integer().positive().allow(null).messages({
+    "number.base": "El idCarrera debe ser un número.",
+    "number.integer": "El idCarrera debe ser un número entero.",
+    "number.positive": "El idCarrera debe ser un número positivo.",
+  }),
 })
   .or("nombreCompleto", "email", "password", "newPassword", "rut", "rol")
   .unknown(false)
@@ -200,6 +205,12 @@ export const userCreateValidation = Joi.object({
       "string.base": "El rol debe ser de tipo string.",
       "any.only": `El rol debe ser uno de los siguientes: ${ROLES.join(", ")}`,
     }),
+  idCarrera: Joi.number().integer().positive().required().messages({
+    "number.base": "El idCarrera debe ser un número.",
+    "number.integer": "El idCarrera debe ser un número entero.",
+    "number.positive": "El idCarrera debe ser un número positivo.",
+    "any.required": "La carrera es obligatoria."
+  }),
 })
   .or("nombreCompleto", "email", "password", "rut", "rol")
   .unknown(false)

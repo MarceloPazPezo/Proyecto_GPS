@@ -23,6 +23,6 @@ router
   .patch("/detail/", authorizeRoles("administrador"), updateCarrera)
   .delete("/detail/", authorizeRoles("administrador"), deleteCarrera)
   .post("/import", authorizeRoles("administrador"), importCarreras)
-  .get("/encargado/", authorizeRoles("encargado_carrera"), getMyCarreras)
+  .get("/encargado/", authorizeRoles("encargado_carrera"), getMyCarreras);
 
 export default router;
