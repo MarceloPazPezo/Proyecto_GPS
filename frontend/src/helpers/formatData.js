@@ -30,3 +30,26 @@ export function formatPostUpdate(user) {
         createdAt: formatTempo(user.createdAt, "DD-MM-YYYY")
     };
 }
+
+export function formatCarreraData(carrera) {
+    return {
+        ...carrera,
+        nombre: startCase(carrera.nombre),
+        codigo: carrera.codigo.toUpperCase(),
+        descripcion: carrera.descripcion == undefined || carrera.descripcion == '' ? 'N/A' : startCase(carrera.descripcion),
+        departamento: startCase(carrera.departamento),
+        rutEncargado: formatRut(carrera.rutEncargado),
+    };
+}
+
+export function formatPostUpdateCarreraData(carrera) {
+    return {
+        ...carrera,
+        nombre: startCase(carrera.nombre),
+        codigo: carrera.codigo.toUpperCase(),
+        descripcion: startCase(carrera.descripcion),
+        departamento: startCase(carrera.departamento),
+        rutEncargado: formatRut(carrera.rutEncargado),
+        createdAt: formatTempo(carrera.createdAt, "DD-MM-YYYY")
+    };
+}

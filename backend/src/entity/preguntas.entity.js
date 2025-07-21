@@ -12,7 +12,7 @@ const PreguntasSchema = new EntitySchema({
         },
         texto:{
             type: "varchar",
-            length: 2000,
+            length: 500,
             nullable: false,
         },
         imagenUrl:{

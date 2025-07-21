@@ -22,7 +22,9 @@ import Biblioteca from './pages/Biblioteca.jsx';
 import StickyHost from './pages/stickyNotesHost.jsx';
 import StickyNotesGuest from './pages/StickyNotesGuest.jsx';
 import ScoreBoard from './pages/ScoreBoard.jsx';
-
+import Carreras from './pages/Carreras.jsx';
+import MisCarreras from './pages/MisCarreras.jsx';
+import MisUsuarios from './pages/MisUsuarios.jsx';
 export const socket = io("/",{reconnection:true});
 
 const router = createBrowserRouter([
@@ -74,6 +76,22 @@ const router = createBrowserRouter([
       {
         path:'/scoreBoard',
         element:<ScoreBoard/>
+      },
+      {
+        path: '/carreras',
+        element:<Carreras/>
+      },
+      {
+        path: '/miscarreras',
+        element: <ProtectedRoute allowedRoles={['encargado_carrera']}>
+          <MisCarreras />
+        </ProtectedRoute>
+      },
+      {
+        path: '/misusuarios',
+        element: <ProtectedRoute allowedRoles={['encargado_carrera']}>
+          <MisUsuarios />
+        </ProtectedRoute>
       }
     ]
   },

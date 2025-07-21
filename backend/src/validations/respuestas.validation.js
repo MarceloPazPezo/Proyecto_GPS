@@ -19,7 +19,7 @@ export const respuestaBodyValidation = Joi.object({
             "number.integer": "El id de la pregunta debe ser un número entero.",
             "number.positive": "El id de la pregunta debe ser un número positivo.",
         }),
-    correcta: Joi.boolean()
+    correcta: Joi.boolean().strict()
         .messages({
             "boolean.base": "El campo 'correcta' debe ser un booleano.",
         }),
@@ -27,6 +27,7 @@ export const respuestaBodyValidation = Joi.object({
     .unknown(false)
     .messages({
         "object.unknown": "No se permiten propiedades adicionales.",
+        "object.and": "Debes proporcionar textoRespuesta, idPreguntas y correcta.",
         "object.missing": "Debes proporcionar textoRespuesta, idPreguntas y correcta.",
     });
 
@@ -51,8 +52,9 @@ export const respuestaQueryValidation = Joi.object({
     .unknown(false)
     .messages({
         "object.unknown": "No se permiten propiedades adicionales.",
+        "object.missing": "Debes proporcionar un 'id' o un 'idPreguntas'.",
+        "object.xor": "No puedes proporcionar 'id' y 'idPreguntas' al mismo tiempo.",
     });
-
 
 export const LoteBodyValidation = Joi.object({
     textoRespuesta: Joi.string()
@@ -73,7 +75,7 @@ export const LoteBodyValidation = Joi.object({
             "number.integer": "El id de la pregunta debe ser un número entero.",
             "number.positive": "El id de la pregunta debe ser un número positivo.",
         }),
-    correcta: Joi.boolean()
+    correcta: Joi.boolean().strict()
         .messages({
             "boolean.base": "El campo 'correcta' debe ser un booleano.",
         }),
@@ -81,5 +83,6 @@ export const LoteBodyValidation = Joi.object({
     .unknown(false)
     .messages({
         "object.unknown": "No se permiten propiedades adicionales.",
+        "object.and": "Debes proporcionar textoRespuesta y correcta.",
         "object.missing": "Debes proporcionar textoRespuesta y correcta.",
     });

@@ -18,6 +18,7 @@ passport.use(
         where: {
           email: jwt_payload.email,
         },
+        relations: ["carrerasEncargado"],
       });
 
       if (user) {

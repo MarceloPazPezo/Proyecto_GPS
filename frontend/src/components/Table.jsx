@@ -10,13 +10,14 @@ import {
 } from '@tanstack/react-table';
 
 const Table = ({
-  data = [],
-  columns: userColumns = [],
-  pageSize = 10,
-  onEdit,
-  onDelete,
-  onView,
-  renderActions,
+data = [],
+columns: userColumns = [],
+pageSize = 10,
+badgeMap = {}, // NUEVA PROP
+onEdit,
+onDelete,
+onView,
+renderActions,
 }) => {
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
@@ -34,9 +35,11 @@ const Table = ({
       enableColumnFilter: false,
     };
 
+
     const baseCols = userColumns.map(col => {
       let filterFn = 'includesString';
       let filterElement;
+      let cellRender = col.cell || (info => info.getValue());
       if (col.filterType === 'select' && Array.isArray(col.filterOptions)) {
         filterFn = (row, columnId, filterValue) => {
           if (!filterValue) return true;
@@ -55,6 +58,20 @@ const Table = ({
             ))}
           </select>
         );
+        // Si existe badgeMap para esta columna, renderizar el badge de color
+        if (badgeMap[col.accessorKey]) {
+          cellRender = info => {
+            const value = info.getValue();
+            const color = badgeMap[col.accessorKey][value] || badgeMap[col.accessorKey]['default'];
+            if (!color) return value;
+            return (
+              <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-md border font-semibold text-xs ${color.bg} ${color.text} ${color.border}`}>
+                <span className={`w-2 h-2 rounded-full flex-shrink-0 flex-grow-0 inline-block ${color.dot}`}></span>
+                {color.label || value}
+              </span>
+            );
+          };
+        }
       } else if (col.filterType === 'date') {
         filterFn = (row, columnId, filterValue) => {
           if (!filterValue) return true;
@@ -94,7 +111,7 @@ const Table = ({
         enableColumnFilter: true,
         filterFn,
         filterElement,
-        cell: col.cell || (info => info.getValue()),
+        cell: cellRender,
       };
     });
     // Insertar la columna de índice al inicio
@@ -309,6 +326,7 @@ Table.propTypes = {
   data: PropTypes.array,
   columns: PropTypes.array,
   pageSize: PropTypes.number,
+  badgeMap: PropTypes.object,
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
   onView: PropTypes.func,

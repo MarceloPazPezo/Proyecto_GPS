@@ -9,6 +9,7 @@ import shareRoutes from "./compartido.routes.js"
 import EXRoutes from "./EX.routes.js"
 import muralRoutes from "./mural.routes.js"
 import notasRoute from "./notes.routes.js";
+import carreraRoutes from "./carrera.routes.js";
 
 const router = Router();
 
@@ -21,5 +22,7 @@ router
     .use("/share",shareRoutes)
     .use("/EX",EXRoutes)
     .use("/notas",notasRoute)
-    .use("/mural",muralRoutes);
+    .use("/mural",muralRoutes)
+    .use("/EX",EXRoutes)
+    .use("/carrera", carreraRoutes);
 export default router;

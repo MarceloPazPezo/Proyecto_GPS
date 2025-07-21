@@ -5,7 +5,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { logout } from '@services/auth.service.js';
 import { useAuth } from '@context/AuthContext';
 import { FiMenu, FiX } from "react-icons/fi";
-import { MdExpandMore, MdHome, MdLibraryBooks, MdGroup, MdSupervisorAccount, MdPerson, MdPeople } from "react-icons/md";
+import { MdExpandMore, MdHome, MdLibraryBooks, MdGroup, MdSupervisorAccount, MdCollectionsBookmark, MdPeople } from "react-icons/md";
 // Estado para el desplegable de Recursos Humanos
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -79,6 +79,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                         </button>
                     )}
                 </div>
+                {/* Información del usuario actual */}
+                <div className="px-6 py-4 border-b border-white/10 flex flex-col gap-1 bg-white/60">
+                    <span className="font-semibold text-[#2C3E50] text-base flex items-center gap-2">
+                        <MdPeople size={60} className="text-[#4EB9FA]" />
+                        {user?.nombreCompleto || 'Usuario'}
+                    </span>
+                    <span className="text-xs text-[#2C3E50] font-medium">{user?.rol || 'Sin rol'}</span>
+                </div>
                 <nav className="flex-1 flex flex-col gap-2 mt-6 px-4">
                     {navLinks.map(link => (
                         <NavLink
@@ -91,44 +99,41 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                         </NavLink>
                     ))}
                     {userRole === 'administrador' && (
-                        <div className="mt-4">
-                            <button
-                                className={`flex items-center justify-between w-full px-4 py-3 rounded-md font-semibold transition-colors duration-200 text-base mb-2 focus:outline-none text-[#2C3E50] hover:bg-[#4EB9FA]/30 hover:text-white`}
-                                onClick={() => setOpenRRHH((prev) => !prev)}
-                                type="button"
-                                aria-expanded={openRRHH}
+                        <>
+                            <NavLink
+                                to="/users"
+                                onClick={() => setSidebarOpen(false)}
+                                className={getNavLinkClass}
                             >
-                                <span className="flex items-center gap-2">
-                                    <MdExpandMore className={`transition-transform duration-200 ${openRRHH ? 'rotate-0' : '-rotate-90'}`} size={24} />
-                                    Recursos Humanos
-                                </span>
-                            </button>
-                            {openRRHH && (
-                                <div className="flex flex-col gap-1 animate-fade-in pl-6 border-l-2 border-[#4EB9FA]/30 ml-2">
-                                    <NavLink
-                                        to="/users"
-                                        onClick={() => setSidebarOpen(false)}
-                                        className={getNavLinkClass}
-                                    >
-                                        <span className="flex items-center"><MdSupervisorAccount size={20} className="mr-2" />Usuarios</span>
-                                    </NavLink>
-                                    <NavLink
-                                        to="/mis-tutores"
-                                        onClick={() => setSidebarOpen(false)}
-                                        className={getNavLinkClass}
-                                    >
-                                        <span className="flex items-center"><MdPerson size={20} className="mr-2" />Mis tutores</span>
-                                    </NavLink>
-                                    <NavLink
-                                        to="/mis-tutorados"
-                                        onClick={() => setSidebarOpen(false)}
-                                        className={getNavLinkClass}
-                                    >
-                                        <span className="flex items-center"><MdPeople size={20} className="mr-2" />Mis tutorados</span>
-                                    </NavLink>
-                                </div>
-                            )}
-                        </div>
+                                <span className="flex items-center"><MdSupervisorAccount size={20} className="mr-2" />Usuarios</span>
+                            </NavLink>
+                            <NavLink
+                                to="/carreras"
+                                onClick={() => setSidebarOpen(false)}
+                                className={getNavLinkClass}
+                            >
+                                <span className="flex items-center"><MdCollectionsBookmark size={20} className="mr-2" />Carreras</span>
+                            </NavLink>
+                        </>
+
+                    )}
+                    {userRole === 'encargado_carrera' && (
+                        <NavLink
+                            to="/miscarreras"
+                            onClick={() => setSidebarOpen(false)}
+                            className={getNavLinkClass}
+                        >
+                            <span className="flex items-center"><MdCollectionsBookmark size={20} className="mr-2" />Mis Carreras</span>
+                        </NavLink>
+                    )}
+                    {userRole === 'encargado_carrera' && (
+                        <NavLink
+                            to="/misusuarios"
+                            onClick={() => setSidebarOpen(false)}
+                            className={getNavLinkClass}
+                        >
+                            <span className="flex items-center"><MdCollectionsBookmark size={20} className="mr-2" />Mis Usuarios</span>
+                        </NavLink>
                     )}
                 </nav>
                 <div className="px-4 mb-6 mt-auto">

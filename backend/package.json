@@ -1,7 +1,7 @@
 {
-  "name": "plantillaisw2024",
+  "name": "herramienta_tutores",
   "version": "1.0.0",
-  "description": "Plantilla de proyecto para Ingenieria de Software 2024-2",
+  "description": "Proyecto para GPS 2025-1",
   "type": "module",
   "main": "index.js",
   "scripts": {

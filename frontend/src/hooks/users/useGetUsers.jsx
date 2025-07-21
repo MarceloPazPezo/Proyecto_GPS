@@ -7,38 +7,33 @@ const useUsers = () => {
     const fetchUsers = async () => {
         try {
             const response = await getUsers();
-            const formattedData = response.map(user => ({
-                id:user.id,
-                nombreCompleto: user.nombreCompleto,
-                rut: user.rut,
-                email: user.email,
-                rol: user.rol,
-                createdAt: user.createdAt
-            }));
-            dataLogged(formattedData);
+            const { rut } = JSON.parse(sessionStorage.getItem('usuario')) || {};
+            const formattedData = response
+                .map(user => ({
+                    id: user.id,
+                    nombreCompleto: user.nombreCompleto,
+                    rut: user.rut,
+                    email: user.email,
+                    rol: user.rol,
+                    createdAt: user.createdAt
+                }))
+                .filter(user => cleanRut(user.rut) !== cleanRut(rut)); // Elimina el usuario autenticado normalizando el rut
             setUsers(formattedData);
         } catch (error) {
             console.error("Error: ", error);
         }
     };
 
+    // Normaliza el rut quitando puntos y guión, y pasando a minúsculas
+    function cleanRut(rut) {
+        return rut ? rut.replace(/[\.-]/g, '').toLowerCase() : '';
+    }
+
     useEffect(() => {
         fetchUsers();
     }, []);
 
-    const dataLogged = (formattedData) => {
-        try {
-            const { rut } = JSON.parse(sessionStorage.getItem('usuario'));
-            for(let i = 0; i < formattedData.length ; i++) {
-                if(formattedData[i].rut === rut) {
-                    formattedData.splice(i, 1);
-                    break;
-                }
-            }
-        } catch (error) {
-            console.error("Error: ", error)
-        }
-    };
+    // Eliminada la función dataLogged, ahora el filtrado se hace en fetchUsers
 
     return { users, fetchUsers, setUsers };
 };

@@ -23,5 +23,6 @@ export const createNewSlide = (type = 'Quiz') => ({
     id: Date.now(),
     type: type,
     questionText: '',
-    answers: type === 'Quiz' ? createDefaultAnswers() : [], 
+    answers: type === 'Quiz' ? createDefaultAnswers() : [],
+    imagen: null, // Nueva propiedad para la imagen
 });

@@ -100,6 +100,14 @@ export const useQuizBuilder = (initialSlides = null) => {
         });
     }, [updateActiveSlide]);
 
+
+    // Handler para imagen: siempre actualiza el slide activo por id
+    const handleImageChange = useCallback((file) => {
+        setSlides(prev => prev.map(s =>
+            s.id === activeSlideId ? { ...s, imagen: file } : s
+        ));
+    }, [activeSlideId]);
+
     return {
         slides,
         activeSlide,
@@ -112,5 +120,6 @@ export const useQuizBuilder = (initialSlides = null) => {
         handleAnswerTextChange,
         handleToggleCorrectAnswer,
         toggleExtraAnswers,
+        handleImageChange,
     };
 };

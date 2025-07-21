@@ -12,7 +12,7 @@ const UserSchema = new EntitySchema({
     },
     nombreCompleto: {
       type: "varchar",
-      length: 255,
+      length: 50,
       nullable: false,
     },
     rut: {
@@ -66,7 +66,7 @@ const UserSchema = new EntitySchema({
     carrerasEncargado: {
       type: "one-to-many",
       target: "Carrera",
-      inverseSide: "encargado",
+      inverseSide: "idEncargado",
       nullable: true // Un usuario puede no ser encargado de ninguna carrera
     }
   },
