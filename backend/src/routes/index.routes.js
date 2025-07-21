@@ -22,7 +22,7 @@ router
     .use("/share",shareRoutes)
     .use("/EX",EXRoutes)
     .use("/notas",notasRoute)
-    .use("/mural",muralRoutes);
+    .use("/mural",muralRoutes)
     .use("/EX",EXRoutes)
     .use("/carrera", carreraRoutes);
 export default router;

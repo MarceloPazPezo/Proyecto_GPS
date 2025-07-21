@@ -127,10 +127,10 @@ export async function updateCarrera(req, res) {
 
 export async function deleteCarrera(req, res) {
   try {
-    const { id, nombre } = req.query;
+    const { id, codigo } = req.query;
     const { error: queryError } = carreraQueryValidation.validate({
       id,
-      nombre,
+      codigo,
     });
     if (queryError) {
       return handleErrorClient(
@@ -142,7 +142,7 @@ export async function deleteCarrera(req, res) {
     }
     const [carreraDelete, errorCarreraDelete] = await deleteCarreraService({
       id,
-      nombre,
+      codigo,
     });
     if (errorCarreraDelete)
       return handleErrorClient(

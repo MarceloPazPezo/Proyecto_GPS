@@ -106,7 +106,7 @@ async function createCarreras() {
       carreraRepository.save(
         carreraRepository.create({
           nombre: "Ingeniería Civil Informática",
-          codigo: "INF-UUBB-001",
+          codigo: "INF-UUBB-1",
           descripcion: "La carrera que forma a los arquitectos del software y los magos de la tecnología.",
           departamento: "Departamento de Informática y Computación",
           idEncargado: encargado.id
@@ -115,7 +115,7 @@ async function createCarreras() {
       carreraRepository.save(
         carreraRepository.create({
           nombre: "Ingeniería Civil Industrial",
-          codigo: "IND-UUBB-002",
+          codigo: "IND-UUBB-2",
           descripcion: "Donde nacen los líderes de la gestión y la optimización de procesos.",
           departamento: "Departamento de Ingeniería Industrial",
           idEncargado: encargado.id
@@ -124,7 +124,7 @@ async function createCarreras() {
       carreraRepository.save(
         carreraRepository.create({
           nombre: "Ingeniería Comercial",
-          codigo: "COM-UUBB-003",
+          codigo: "COM-UUBB-3",
           descripcion: "La cuna de los estrategas del mundo empresarial y financiero.",
           departamento: "Departamento de Ciencias Empresariales",
           idEncargado: encargado.id
@@ -133,7 +133,7 @@ async function createCarreras() {
       carreraRepository.save(
         carreraRepository.create({
           nombre: "Ingeniería en Ejecución Mecánica",
-          codigo: "MEC-UUBB-004",
+          codigo: "MEC-UUBB-4",
           descripcion: "Donde la fuerza y la precisión se unen para crear el futuro.",
           departamento: "Departamento de Ingeniería Mecánica",
           idEncargado: encargado.id
@@ -142,7 +142,7 @@ async function createCarreras() {
       carreraRepository.save(
         carreraRepository.create({
           nombre: "Ingeniería en Construcción",
-          codigo: "CON-UUBB-005",
+          codigo: "CON-UUBB-5",
           descripcion: "Formando a los constructores de sueños y ciudades.",
           departamento: "Departamento de Ingeniería Civil y Construcción",
           idEncargado: encargado.id

@@ -36,7 +36,7 @@ function QuizCrear() {
         }
 
         const questionsToValidate = slides.filter(s => s.type === 'Quiz');
-        
+
         if (questionsToValidate.length === 0) {
             showErrorAlert('Sin preguntas', 'Debes añadir al menos una pregunta para guardar el cuestionario.');
             return;
@@ -73,36 +73,37 @@ function QuizCrear() {
             const createdQuiz = await crearQuiz(quizInfo);
             const newQuizId = createdQuiz.data.id;
 
-            // Formatear preguntas para el backend
-            const formattedQuestions = questionsToValidate.map(q => ({
+            // Formatear preguntas para el backend, agregando referencia a la imagen
+            const formattedQuestions = questionsToValidate.map((q, idx) => ({
                 texto: q.questionText,
                 Respuestas: q.answers
                     .filter(a => a.text.trim() !== '')
-                    .map(a => ({ textoRespuesta: a.text, correcta: a.isCorrect }))
+                    .map(a => ({ textoRespuesta: a.text, correcta: a.isCorrect })),
+                imagenField: q.imagen ? `imagenPregunta${idx}` : null
             }));
 
-            // Crear FormData para enviar preguntas y sus imágenes
-            const formData = new FormData();
-            formData.append('preguntas', JSON.stringify(formattedQuestions));
-            // Adjuntar imágenes en el mismo orden
-            questionsToValidate.forEach((q, idx) => {
-                if (q.imagen) {
-                    formData.append('imagenPregunta', q.imagen);
-                } else {
-                    // Si no hay imagen, se puede omitir o enviar un campo vacío (el backend lo maneja)
-                }
-            });
+            // // Crear FormData para enviar preguntas y sus imágenes
+            // const formData = new FormData();
+            // formData.append('preguntas', JSON.stringify(formattedQuestions));
+            // // Adjuntar imágenes con nombre único por pregunta
+            // questionsToValidate.forEach((q, idx) => {
+            //     if (q.imagen) {
+            //         formData.append(`imagenPregunta${idx}`, q.imagen);
+            //     }
+            // });
 
-            // Depuración: mostrar el contenido real de FormData
-            for (let pair of formData.entries()) {
-                if (pair[1] instanceof File) {
-                    console.log(pair[0], pair[1].name, pair[1].type);
-                } else {
-                    console.log(pair[0], pair[1]);
-                }
-            }
+            // console.log("FormData preparado para enviar:", formData); // Depuración: mostrar FormData
 
-            await addQuizPreguntas(formData, newQuizId); // addQuizPreguntas debe aceptar FormData
+            // // Depuración: mostrar el contenido real de FormData
+            // for (let pair of formData.entries()) {
+            //     if (pair[1] instanceof File) {
+            //         console.log(pair[0], pair[1].name, pair[1].type);
+            //     } else {
+            //         console.log(pair[0], pair[1]);
+            //     }
+            // }
+
+            await addQuizPreguntas(formattedQuestions, newQuizId); // addQuizPreguntas debe aceptar FormData
 
             showSuccessAlert('¡Éxito!', 'Cuestionario guardado exitosamente.');
 
@@ -164,7 +165,7 @@ function QuizCrear() {
                             <label htmlFor="quiz-title" className="block text-sm font-medium text-gray-700">Título del Cuestionario</label>
                             <input type="text" id="quiz-title" value={quizTitle} onChange={(e) => setQuizTitle(e.target.value)} placeholder="Ej: Capitales del Mundo" className="mt-1 block w-full pl-3 pr-3 py-2 text-base text-blue-950 border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" />
                         </div>
-                       
+
                     </div>
                 </aside>
             </div>
