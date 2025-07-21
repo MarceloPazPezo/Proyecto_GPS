@@ -11,7 +11,15 @@ const ScoreBoard = () => {
         }
 
     }
+
+    const finalizarAct = () => {
+        socket.emit("finnish", { sala: sessionStorage.getItem('sala') });
+        sessionStorage.removeItem("sala");
+        sessionStorage.removeItem("participantes");
+        navigate("/room");
+    };
     const leaderBorad = getScores();
+
     return (
         <div>
             <h1
@@ -25,7 +33,7 @@ const ScoreBoard = () => {
             <div>
                 <button
                     className="center w-150 bg-white/20 border border-black/30 text-[#2C3E50] font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-white/30 hover:-translate-y-0.5"
-                    onClick={() => navigate("/room")}>
+                    onClick={finalizarAct}>
                     Finalizar
                 </button>
             </div>
