@@ -74,7 +74,7 @@ const Salas = () => {
     };
 
     return (
-        <main>
+        <main className="flex justify-center">
             {!sessionStorage.getItem('sala') ? (
                 <Form
                     title={`Crear una sala`}
