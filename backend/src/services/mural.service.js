@@ -8,10 +8,10 @@ const UserRepository = AppDataSource.getRepository(User);
 
 export async function createMuralService(data) {
     try {
-        const { idUser, titulo } = data;
+        const { usuario, titulo } = data;
 
         const userFound = await UserRepository.findOne({
-            where: { id: idUser }
+            where: { id: usuario }
         });
 
         if (!userFound) return [null, "Usuario no encontrado"];
@@ -19,7 +19,7 @@ export async function createMuralService(data) {
         const existing = await MuralRepository.findOne({
             where: {
                 titulo: titulo,
-                idUser: { id: idUser },
+                idUser:  usuario,
             }
         });
         const createErrorMessage = (dataInfo, message) => ({
@@ -31,7 +31,7 @@ export async function createMuralService(data) {
         }
         const newMural = MuralRepository.create({
             titulo,
-            idUser: userFound,
+            idUser: usuario,
         });
 
         await MuralRepository.save(newMural);
