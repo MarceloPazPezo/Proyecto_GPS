@@ -33,6 +33,12 @@ const CuestionarioSchema = new EntitySchema({
             type: "many-to-one",
             joinColumn: { name: "idUser", referencedColumnName: "id" },
             onDelete: "CASCADE"
+        },
+        preguntas: {
+            // Nombre de la propiedad que podrás usar en las consultas
+            type: "one-to-many",
+            target: "Preguntas", // El 'name' de la entidad PreguntasSchema
+            inverseSide: "idCuestionario" // La propiedad en PreguntasSchema que apunta de vuelta aquí
         }
     }
 });

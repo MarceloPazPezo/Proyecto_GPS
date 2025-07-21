@@ -1,21 +1,83 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { DndContext } from "@dnd-kit/core";
 import DraggableNote from "../components/DraggableNote";
 import { socket } from "../main";
+import { getNotesByMural } from "../services/stickNotes.service";
+import { useNavigate } from "react-router-dom";
 
 const StickyNotesGuest = () => {
     const [notes, setNotes] = useState([]);
+    const [idMuralGuest, setIdMuralGuest] = useState(null);
+    const navigate = useNavigate();
+
+    const formatNote = (note, idMural) => ({
+        id: note.id,
+        title: note.titulo ?? note.title ?? "Título",
+        text: note.descripcion ?? note.text ?? "Nueva nota",
+        color: note.color ?? "#fef08a",
+        position: {
+            x: note.posx ?? note.position?.x ?? 0,
+            y: note.posy ?? note.position?.y ?? 0,
+        },
+        idMural: idMural,
+    });
 
     useEffect(() => {
-        // Recibe una nota ya con ID oficial del host
-        socket.on("addNoteWithId", (note) => {
-            setNotes((prev) => [...prev, note]);
+        socket.on("enviarIdMural", (idMural) => {
+            const muralId = typeof idMural === "object" ? idMural.idMural : idMural;
+            setIdMuralGuest(muralId);
         });
+
+        return () => {
+            socket.off("enviarIdMural");
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!idMuralGuest) return;
+
+        const fetchNotes = async () => {
+            try {
+                const response = await getNotesByMural(idMuralGuest);
+                const formattedNotes = Array.isArray(response)
+                    ? response.map(note => formatNote(note, idMuralGuest))
+                    : [];
+                setNotes(formattedNotes);
+            } catch (error) {
+                console.error("Error cargando notas invitado:", error);
+            }
+        };
+
+        fetchNotes();
+    }, [idMuralGuest]);
+
+    const finalizeQuiz = () => {
+            sessionStorage.removeItem('sala');
+            navigate("/join");
+        };
+    
+    useEffect(() => {
+        socket.on("addNoteWithId", (note) => {
+            setNotes((prev) => {
+                if (prev.find((n) => n.id === note.id)) return prev;
+                return [...prev, note];
+            });
+        });
+
+        socket.on("finnish",finalizeQuiz);
 
         socket.on("updateNote", (updatedNote) => {
             setNotes((prev) =>
                 prev.map((note) =>
-                    note.id === updatedNote.id ? { ...note, ...updatedNote } : note
+                    note.id === updatedNote.id
+                        ? {
+                            ...note,
+                            title: updatedNote.title ?? note.title,
+                            text: updatedNote.text ?? note.text,
+                            color: updatedNote.color ?? note.color,
+                            position: updatedNote.position ?? note.position,
+                        }
+                        : note
                 )
             );
         });
@@ -32,64 +94,67 @@ const StickyNotesGuest = () => {
             );
         });
 
+        socket.on("syncNotes", (savedNotes) => {
+            setNotes(savedNotes.map(note => formatNote(note, idMuralGuest)));
+        });
+
         return () => {
             socket.off("addNoteWithId");
             socket.off("updateNote");
             socket.off("deleteNote");
             socket.off("moveNote");
+            socket.off("syncNotes");
         };
-    }, []);
+    }, [idMuralGuest]);
 
     const addNote = () => {
+        if (!idMuralGuest) return;
         const tempNote = {
-            title: "Nueva nota",
-            text: "",
+            titulo: "Título",
+            descripcion: "Nueva nota",
             color: "#fef08a",
-            position: { x: 0, y: 0 },
+            posx: 0,
+            posy: 0,
+            idMural: idMuralGuest,
         };
-        socket.emit("addNote", tempNote); // El host le asigna el ID
+        socket.emit("addNote", tempNote);
     };
 
-    const updateNote = (id, changes) => {
-        const note = notes.find((n) => n.id === id);
-        if (!note) return;
-
-        const updatedNote = { ...note, ...changes };
-        socket.emit("updateNote", updatedNote);
-
-        setNotes((prev) =>
-            prev.map((n) => (n.id === id ? updatedNote : n))
-        );
-    };
-
-    const deleteNote = (id) => {
-        socket.emit("deleteNote", id);
-        setNotes((prev) => prev.filter((note) => note.id !== id));
+    const requestDeleteNote = (noteId) => {
+        socket.emit("requestDeleteNote", noteId);
     };
 
     const handleDragEnd = (event) => {
         const { active, delta } = event;
-
-        setNotes((notes) =>
-            notes.map((note) => {
+        setNotes((prevNotes) =>
+            prevNotes.map((note) => {
                 if (note.id === active.id) {
-                    const pos = note.position || { x: 0, y: 0 };
                     const newPosition = {
-                        x: pos.x + delta.x,
-                        y: pos.y + delta.y,
+                        x: note.position?.x + delta.x,
+                        y: note.position?.y + delta.y,
                     };
-
-                    socket.emit("moveNote", {
-                        id: active.id,
-                        position: newPosition,
-                    });
-
+                    socket.emit("moveNote", { id: note.id, position: newPosition });
                     return { ...note, position: newPosition };
                 }
                 return note;
             })
         );
     };
+
+    const updateNote = (id, changes) => {
+        setNotes((prev) => {
+            const updatedNotes = prev.map((note) =>
+                note.id === id ? { ...note, ...changes } : note
+            );
+            const updatedNote = updatedNotes.find((note) => note.id === id);
+            socket.emit("updateNote", updatedNote);
+            return updatedNotes;
+        });
+    };
+
+    if (!idMuralGuest) {
+        return <p className="text-center mt-10 text-gray-500">Esperando el ID del mural...</p>;
+    }
 
     return (
         <DndContext onDragEnd={handleDragEnd}>
@@ -101,8 +166,8 @@ const StickyNotesGuest = () => {
                     text={note.text}
                     color={note.color}
                     position={note.position || { x: 0, y: 0 }}
-                    onDelete={deleteNote}
                     onUpdate={updateNote}
+                    onDelete={() => requestDeleteNote(note.id)}
                 />
             ))}
 

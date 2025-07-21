@@ -12,6 +12,7 @@ export async function getRespuestaService(id) {
         if (!respuestaFound) return [null, "Respuesta no encontrada"];
 
         const { ...respuestaData } = respuestaFound;
+        console.log(respuestaData," a ", respuestaFound );
         return [respuestaData, null];
 
     } catch (error) {
@@ -36,14 +37,14 @@ export async function getRespuestasService(idPreguntas) {
 }
 
 export async function createRespuestaService(query) {
-   try{
+    try{
     const { textoRespuesta, idPreguntas, correcta } = query;
     const respuestaRepository = AppDataSource.getRepository(Respuesta);
     const newRespuesta = respuestaRepository.create({ textoRespuesta, idPreguntas, correcta });
 
     const savedRespuesta = await respuestaRepository.save(newRespuesta);
     return [savedRespuesta, null];
-   }catch (error) {
+    }catch (error) {
         console.error("Error al crear la respuesta:", error);
         return [null, "Error interno del servidor"];
     }
