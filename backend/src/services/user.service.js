@@ -63,13 +63,17 @@ export async function getUserService(query) {
   }
 }
 
-export async function getUsersService() {
+export async function getUsersService(rol) {
   try {
     const userRepository = AppDataSource.getRepository(User);
+    let users;
+    if (rol) {
+      users = await userRepository.find({ where: { rol } });
+    } else {
+      users = await userRepository.find();
+    }
 
-    const users = await userRepository.find();
-
-    if (!users || users.length === 0) return [null, "No hay usuarios"];
+    if (!users || users.length === 0) return [[], null];
 
     const usersData = users.map(({ password, ...user }) => user);
 
@@ -242,6 +246,172 @@ export async function importUsersService(usersArray) {
     return [createdUsers, { invalidUsers }];
   } catch (error) {
     console.error("Error al importar usuarios:", error);
+    return [null, "Error interno del servidor al importar usuarios."];
+  }
+}
+
+export async function getMisUsuariosService(encargado) {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    // Obtener solo los ids de las carreras
+    const carrerasIds = Array.isArray(encargado.carrerasEncargado)
+      ? encargado.carrerasEncargado.map(c => c.id ?? c)
+      : [];
+    // Buscar usuarios cuyo idCarrera esté en carrerasIds
+    const usuarios = await userRepository.find({
+      where: carrerasIds.length > 0 ? carrerasIds.map(id => ({ idCarrera: id })) : {},
+      relations: ["idCarrera"]
+    });
+    if (!usuarios || usuarios.length === 0) return [[], null];
+    // Excluir la contraseña y agregar info de carrera
+    const usuariosConCarrera = usuarios.map(({ password, idCarrera, ...user }) => ({
+      ...user,
+      idCarrera: idCarrera?.id ?? idCarrera,
+      carreraCodigo: idCarrera?.codigo ?? null,
+      carreraNombre: idCarrera?.nombre ?? null
+    }));
+
+    console.log("Usuarios encontrados:", usuariosConCarrera);
+    return [usuariosConCarrera, null];
+  } catch (error) {
+    return [null, error.message];
+  }
+}
+
+export async function getMiUsuarioService(encargado, id) {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    const usuario = await userRepository.findOne({
+      where: {
+        id: id,
+        idCarrera: encargado.carrerasEncargado
+      },
+      relations: ["idCarrera"]
+    });
+    if (!usuario) return [null, "Usuario no encontrado o no autorizado"];
+    return [usuario, null];
+  } catch (error) {
+    return [null, error.message];
+  }
+}
+
+export async function createMiUsuarioService(encargado, body) {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    let bodyRut = body.rut ? normalizarRut(body.rut) : undefined;
+    // Buscar duplicados por separado
+    const errors = [];
+    if (bodyRut) {
+      const existingRut = await userRepository.findOne({ where: { rut: bodyRut } });
+      if (existingRut) {
+        errors.push({ field: 'rut', message: 'El rut ya está registrado' });
+      }
+    }
+    if (body.email) {
+      const existingEmail = await userRepository.findOne({ where: { email: body.email } });
+      if (existingEmail) {
+        errors.push({ field: 'email', message: 'El email ya está registrado' });
+      }
+    }
+    if (errors.length > 0) {
+      return [null, { status: 'Client error', message: 'Error creando al usuario', details: errors }];
+    }
+
+    const carrerasIds = Array.isArray(encargado.carrerasEncargado)
+      ? encargado.carrerasEncargado.map(c => Number(c.id ?? c))
+      : [];
+    if (!carrerasIds.includes(Number(body.idCarrera))) {
+      return [null, "No puedes crear usuarios en carreras que no gestionas"];
+    }
+    
+    const newUser = userRepository.create({
+      nombreCompleto: body.nombreCompleto,
+      rut: bodyRut,
+      email: body.email,
+      password: await encryptPassword(body.password),
+      rol: body.rol || "usuario",
+      idCarrera: carrerasIds.includes(Number(body.idCarrera)) ? body.idCarrera : undefined,
+    });
+    const savedUser = await userRepository.save(newUser);
+    const { password, ...userWithoutPassword } = savedUser; // Exclude the password
+    return [userWithoutPassword, null];
+  } catch (error) {
+    console.error("Error al crear un usuario:", error);
+    return [null, { status: 'Server error', message: 'Error interno del servidor al crear el usuario.' }];
+  }
+}
+
+export async function updateMiUsuarioService(encargado, id, body) {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    const usuario = await userRepository.findOne({
+      where: {
+        id: id,
+        idCarrera: encargado.carrerasEncargado
+      }
+    });
+    if (!usuario) return [null, "Usuario no encontrado o no autorizado"];
+    Object.assign(usuario, body);
+    await userRepository.save(usuario);
+    return [usuario, null];
+  } catch (error) {
+    return [null, error.message];
+  }
+}
+
+export async function deleteMiUsuarioService(rut) {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    let bodyRut = rut ? normalizarRut(rut) : undefined;
+    const usuario = await userRepository.findOne({
+      where: {
+        rut: bodyRut,
+      }
+    });
+    if (!usuario) return [null, "Usuario no encontrado o no autorizado"];
+    await userRepository.remove(usuario);
+    const { password, ...dataUser } = usuario;
+    return [dataUser, null];
+  } catch (error) {
+    return [null, error.message];
+  }
+}
+
+export async function importMisUsuariosService(encargado, usersArray) {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    const validUsers = [];
+    const invalidUsers = [];
+
+    for (let i = 0; i < usersArray.length; i++) {
+      const user = usersArray[i];
+      // Excluir roles no permitidos
+      if (["administrador", "encargado_carrera"].includes(user.rol)) {
+        invalidUsers.push({ index: i, user, error: [{ field: "rol", message: "No puedes importar usuarios con rol administrador o encargado_carrera" }] });
+        continue;
+      }
+      // Solo permite crear usuarios en carreras que gestiona
+      if (!encargado.carrerasEncargado.includes(user.idCarrera)) {
+        invalidUsers.push({ index: i, user, error: [{ field: "idCarrera", message: "No puedes importar usuarios en carreras que no gestionas" }] });
+        continue;
+      }
+      validUsers.push(user);
+    }
+
+    const createdUsers = [];
+    if (validUsers.length > 0) {
+      for (const user of validUsers) {
+        const newUser = userRepository.create(user);
+        await userRepository.save(newUser);
+        createdUsers.push(newUser);
+      }
+    }
+
+    if (createdUsers.length === 0) {
+      return [null, { invalidUsers }];
+    }
+    return [createdUsers, { invalidUsers }];
+  } catch (error) {
     return [null, "Error interno del servidor al importar usuarios."];
   }
 }

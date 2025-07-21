@@ -30,7 +30,7 @@ export function socketEvents(socket) {
                 socket.room = data.sala;
                 socket.emit("message", data);
                 users.push(socket.id);
-                socket.to(data.sala).emit("join", { nickname: data.nickname })
+                socket.to(data.sala).emit("join", { nickname: data.nickname ,socket:socket.id})
             } else {
                 socket.emit("message", { body: "ya esta conectado a la sala" });
             }
@@ -59,8 +59,13 @@ export function socketEvents(socket) {
     });
 
     socket.on("answer", (data) => {
-        socket.to(socket.room).emit("answer", data);
+        socket.to(socket.room).emit("answer", { id:data.id,correcta:data.correcta,socket:socket.id });
     });
+
+    //respuestaIdeas
+    socket.on("respuesta",(data)=>{
+        socket.to(socket.room).emit("respuesta",data);
+    }); 
 
     //reiniciarPizarraIdeas
     socket.on("reiniciar", () => {
@@ -79,35 +84,47 @@ export function socketEvents(socket) {
 
     socket.on("requestNotes", () => {
         socket.emit("getNotes");
-        console.log("Pide las notas")
+        //console.log("Pide las notas")
+    });
+
+    //enviar idMural
+    socket.on("enviarIdMural",(idMural)=>{
+        socket.to(socket.room).emit("enviarIdMural",idMural)
     });
 
     socket.on("updateNotes", (notes) => {
         socket.to(socket.room).emit("syncNotes", notes);
-        console.log("Sincronizar todas", notes)
+        //console.log("Sincronizar todas", notes)
     });
 
     socket.on("addNote", (note) => {
         socket.to(socket.room).emit("addNote", note);
+        console.log("addnote",note);
     });
 
     socket.on("addNoteWithId", (note) => {
         socket.to(socket.room).emit("addNoteWithId", note);
+        console.log("addnoteId",note);
     });
 
     socket.on("updateNote", (note) => {
         socket.to(socket.room).emit("updateNote", note);
-        console.log("actualizar una nota", note)
+        //console.log("actualizar una nota", note)
     });
 
     socket.on("deleteNote", (noteId) => {
         socket.to(socket.room).emit("deleteNote", noteId);
-        console.log("borrar una nota", noteId);
+        //console.log("borrar una nota", noteId);
+    });
+
+    socket.on("requestDeleteNote", (noteId) => {
+        socket.to(socket.room).emit("requestDeleteNote", noteId);
+        console.log("borrar una nota desde el guest", noteId);
     });
 
     socket.on("moveNote", (data) => {
         socket.to(socket.room).emit("moveNote", data);
-        console.log("Mover la nota", data)
+        //console.log("Mover la nota", data)
     });
 
     socket.on("broadcastNote", (note) => {

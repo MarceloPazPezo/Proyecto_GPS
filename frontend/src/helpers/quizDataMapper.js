@@ -1,3 +1,5 @@
+// helpers/quizDataMapper.js
+
 // Importamos las plantillas de respuestas para obtener los iconos y colores.
 import { createDefaultAnswers, createExtraAnswers } from './quizHelpers';
 
@@ -17,7 +19,7 @@ export const transformApiDataToSlides = (apiQuestions) => {
 
     return apiQuestions.map(question => ({
         // Mapeo de campos de la pregunta
-        id: question.id, // Mantenemos el ID de la BD
+        id: question.id, // Mantenemos el ID de la BD para la pregunta (usado como slide.id)
         type: 'Quiz',
         questionText: question.texto,
         
@@ -29,6 +31,7 @@ export const transformApiDataToSlides = (apiQuestions) => {
             // Fusionamos la plantilla con los datos reales de la API
             return {
                 ...template,
+                id: answer.id, // <-- CAMBIO CLAVE: Conservamos el ID de la respuesta
                 text: answer.textoRespuesta,
                 isCorrect: answer.correcta,
             };

@@ -13,7 +13,7 @@ const RespuestaSchema = new EntitySchema({
         },
         textoRespuesta: {
             type: "varchar",
-            length: 2000,
+            length: 120,
             nullable: false,
         },
         correcta: {

@@ -6,7 +6,10 @@ import {
     deleteCuestionarioService,
     addLotepPreguntasService,
     obtenerPreguntasYRespuestas,
-    ModLotepPreguntasService,
+    actualizarCuestionarioCompletoService,
+    elimnarALLpreguntas,
+
+    //ModLotepPreguntasService,
     getCuestionariosByUserService
 } from "../services/cuestionario.service.js";
 
@@ -22,8 +25,8 @@ import {
     quizUserValidation
 } from "../validations/cuestionario.validation.js";
 
-import { 
-    questionBodyValidation, 
+import {
+    questionBodyValidation,
 } from "../validations/preguntas.validation.js";
 
 import {
@@ -50,7 +53,7 @@ export async function createCuestionario(req, res) {
 export async function getCuestionario(req, res) {
     try {
         const { idUser, id, nombre } = req.query;
-        const { error } = quizQueryValidation.validate({id,idUser,nombre});
+        const { error } = quizQueryValidation.validate({ id, idUser, nombre });
 
         if (error) return handleErrorClient(res, 400, "Error de validación", error.message);
 
@@ -66,13 +69,13 @@ export async function getCuestionario(req, res) {
 
 export async function getCuestionariosByUser(req, res) {
     try {
-        const {idUser}=req.params;
-        
-        const {error}=quizUserValidation.validate({idUser});
-        
+        const { idUser } = req.params;
+
+        const { error } = quizUserValidation.validate({ idUser });
+
         if (error) return handleErrorClient(res, 400, "Error de validación", error.message);
-        
-        const [quiz,errorQuiz]= await getCuestionariosByUserService(idUser);
+
+        const [quiz, errorQuiz] = await getCuestionariosByUserService(idUser);
 
         if (errorQuiz) return handleErrorClient(res, 404, errorQuiz);
         handleSuccess(res, 200, "Cuestionario encontrado", quiz);
@@ -108,7 +111,7 @@ export async function updateCuestionario(req, res) {
 
         if (errorQuery) return handleErrorClient(res, 400, "Error de validación", error.message);
 
-        const [updatedQuiz, errorQuiz] = await updateCuestionarioService({id,idUser,nombre}, body);
+        const [updatedQuiz, errorQuiz] = await updateCuestionarioService({ id, idUser, nombre }, body);
 
         if (errorQuiz) return handleErrorClient(res, 400, "Error modificando el cuestionario", errorQuiz);
 
@@ -195,37 +198,45 @@ export async function obtenerPreguntasYRespuestasController(req, res) {
     }
 }
 
+
 //actualizar quiz enterito
-export async function actualizarPreguntasYRespuestasController(req, res) {
+
+    export async function actualizarPreguntasYRespuestasController(req, res) {
     try {
         const { idCuestionario } = req.params;
-        const { preguntas } = req.body;
+        const { idUser, titulo, preguntas } = req.body;
 
-        console.log("ID Cuestionario:", idCuestionario);
-        console.log("Preguntas recibidas:", preguntas);
+        // 1. Validación de la entrada (se mantiene igual)
+        const { error } = quizQueryValidation.validate({ id: idCuestionario, idUser, nombre: titulo });
+        if (error) return handleErrorClient(res, 400, "Error de validación", error.message);
 
-        if (!Array.isArray(preguntas) || preguntas.length === 0) {
-            return handleErrorClient(res, 400, "No se recibieron preguntas para actualizar");
+        // 2. Preparamos el objeto de datos para el nuevo servicio
+        const serviceData = {
+            cuestionarioData: {
+                idUser,
+                nombre: titulo
+            },
+            preguntasData: preguntas
+        };
+
+        // 3. Llamamos al ÚNICO servicio transaccional
+        const [resultado, errorService] = await actualizarCuestionarioCompletoService(idCuestionario, serviceData);
+        
+        // 4. Manejamos la respuesta del servicio
+        if (errorService) {
+            // El error puede ser por "no encontrado" (cliente) o un fallo de DB (servidor)
+            if (errorService.includes("no existe")) {
+                return handleErrorClient(res, 404, "No encontrado", errorService);
+            }
+            return handleErrorClient(res, 500, "Error al actualizar el cuestionario", errorService);
         }
 
-        // Asegura que cada pregunta tenga el idCuestionario correcto
-        const preguntasConId = preguntas.map(p => ({
-            ...p,
-            idCuestionario: Number(idCuestionario)
-        }));
-
-        // Llama al service modificado
-        console.log("antes de ejecutar el service");
-        const [result, errorPreguntas] = await ModLotepPreguntasService({ preguntas: preguntasConId, idCuestionario });
-
-        if (errorPreguntas) return res.status(500).json({ error: errorPreguntas });
-        if (!result || result.length === 0) return res.status(400).send();
-
-        handleSuccess(res, 200, "Preguntas y respuestas actualizadas exitosamente", result);
+        // 5. Respondemos con éxito
+        handleSuccess(res, 200, "Cuestionario actualizado exitosamente", resultado);
 
     } catch (error) {
-        console.error("Error al actualizar las preguntas y respuestas:", error);
-        handleErrorServer(res, 500, error.message);
+        console.error("Error en el controlador al actualizar preguntas y respuestas:", error);
+        handleErrorServer(res, 500, "Error inesperado en el servidor.");
     }
 }
 

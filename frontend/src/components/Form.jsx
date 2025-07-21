@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { fieldIcons } from '@helpers/fieldIcons';
 import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 
-const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundColor, autoComplete }) => {
+const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundColor, autoComplete, size = 'max-w-2xl' }) => {
     const { register, handleSubmit, formState: { errors } } = useForm();
     const [showPassword, setShowPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
@@ -22,12 +22,14 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
 
     return (
         <form
-            className="bg-blue backdrop-blur-lg border border-[#2C3E50]/20 shadow-xl p-8 sm:p-10 rounded-2xl mb-6"
+            className="bg-blue backdrop-blur-lg border border-[#2C3E50]/20 shadow-xl p-8 sm:p-10 rounded-2xl mb-6 w-2xl"
             style={{ backgroundColor: backgroundColor }}
             onSubmit={handleSubmit(onFormSubmit)}
             autoComplete={autoComplete === undefined ? "on" : autoComplete}
         >
-            <h1 className="text-3xl font-bold text-[#2C3E50] mb-8 text-center">{title}</h1>
+            {title && (
+                <h1 className="text-3xl font-bold text-[#2C3E50] mb-8 text-center">{title}</h1>
+            )}
             {fields.map((field, index) => (
                 <div className="w-full mb-4" key={index}>
                     {field.label && <label className="block text-sm font-semibold text-[#2C3E50] mb-2" htmlFor={field.name}>{field.label}</label>}

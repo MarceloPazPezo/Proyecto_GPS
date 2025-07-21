@@ -2,8 +2,9 @@
 import User from "../entity/user.entity.js";
 import jwt from "jsonwebtoken";
 import { AppDataSource } from "../config/configDb.js";
-import { comparePassword, encryptPassword } from "../helpers/bcrypt.helper.js";
+import { comparePassword } from "../helpers/bcrypt.helper.js";
 import { ACCESS_TOKEN_SECRET } from "../config/configEnv.js";
+import { ILike } from "typeorm";
 
 export async function loginService(user) {
   try {
@@ -16,7 +17,8 @@ export async function loginService(user) {
     });
 
     const userFound = await userRepository.findOne({
-      where: { email }
+      where: { email: ILike(email) },
+      relations: ["carrerasEncargado"],
     });
 
     if (!userFound) {
@@ -25,16 +27,23 @@ export async function loginService(user) {
 
     const isMatch = await comparePassword(password, userFound.password);
 
+    console.log(userFound);
     if (!isMatch) {
       return [null, createErrorMessage("password", "La contraseña es incorrecta")];
     }
 
+    let carrerasEncargado = [];
+    if (userFound.rol === "encargado_carrera" && userFound.carrerasEncargado) {
+      // Devuelve solo el id de cada carrera encargada
+      carrerasEncargado = userFound.carrerasEncargado.map(c => c.id);
+    }
     const payload = {
       id: userFound.id,
       nombreCompleto: userFound.nombreCompleto,
       email: userFound.email,
       rut: userFound.rut,
       rol: userFound.rol,
+      carrerasEncargado,
     };
 
     const accessToken = jwt.sign(payload, ACCESS_TOKEN_SECRET, {
@@ -44,53 +53,6 @@ export async function loginService(user) {
     return [accessToken, null];
   } catch (error) {
     console.error("Error al iniciar sesión:", error);
-    return [null, "Error interno del servidor"];
-  }
-}
-
-
-export async function registerService(user) {
-  try {
-    const userRepository = AppDataSource.getRepository(User);
-
-    const { nombreCompleto, rut, email } = user;
-
-    const createErrorMessage = (dataInfo, message) => ({
-      dataInfo,
-      message
-    });
-
-    const existingEmailUser = await userRepository.findOne({
-      where: {
-        email,
-      },
-    });
-    
-    if (existingEmailUser) return [null, createErrorMessage("email", "Correo electrónico en uso")];
-
-    const existingRutUser = await userRepository.findOne({
-      where: {
-        rut,
-      },
-    });
-
-    if (existingRutUser) return [null, createErrorMessage("rut", "Rut ya asociado a una cuenta")];
-
-    const newUser = userRepository.create({
-      nombreCompleto,
-      email,
-      rut,
-      password: await encryptPassword(user.password),
-      rol: "usuario",
-    });
-
-    await userRepository.save(newUser);
-
-    const { password, ...dataUser } = newUser;
-
-    return [dataUser, null];
-  } catch (error) {
-    console.error("Error al registrar un usuario", error);
     return [null, "Error interno del servidor"];
   }
 }

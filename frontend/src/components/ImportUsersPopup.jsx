@@ -104,7 +104,7 @@ const ImportUsersPopup = ({ show, setShow, onFile, loading }) => {
 
   // Log para detectar cambios de referencia en editData
   useEffect(() => {
-    console.log('ImportUsersPopup: editData changed', editData);
+    //console.log('ImportUsersPopup: editData changed', editData);
   }, [editData]);
 
   // Sincroniza editData cuando previewData cambia (al cargar archivo)

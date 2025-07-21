@@ -12,7 +12,7 @@ const PreguntasSchema = new EntitySchema({
         },
         texto:{
             type: "varchar",
-            length: 2000,
+            length: 500,
             nullable: false,
         },
         imagenUrl:{
@@ -38,7 +38,14 @@ const PreguntasSchema = new EntitySchema({
             type: "many-to-one",
             joinColumn: { name: "idCuestionario", referencedColumnName: "id" },
             onDelete: "CASCADE"
+        },
+         respuestas: {
+            // Nombre de la propiedad que podrás usar en las consultas
+            type: "one-to-many",
+            target: "Respuesta", // El 'name' de la entidad RespuestaSchema
+            inverseSide: "idPreguntas" // La propiedad en RespuestaSchema que apunta de vuelta aquí
         }
+
     }
 });
 

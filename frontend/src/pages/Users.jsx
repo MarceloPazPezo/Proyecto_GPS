@@ -1,7 +1,7 @@
 import Table from '@components/Table';
 import { format as formatDate, parseISO } from 'date-fns';
 import useUsers from '@hooks/users/useGetUsers.jsx';
-import Popup from '../components/Popup';
+import UpdateUserPopup from '../components/UpdateUserPopup';
 import { useState } from 'react';
 import useEditUser from '@hooks/users/useEditUser';
 import useDeleteUser from '@hooks/users/useDeleteUser';
@@ -18,7 +18,6 @@ const Users = () => {
   const {
     showCreate,
     setShowCreate,
-    handleCreateUser,
   } = useCreateUser();
 
   const { handleImport, loading } = useImportUsers({
@@ -42,11 +41,58 @@ const Users = () => {
 
   const { handleDelete } = useDeleteUser(fetchUsers, setDataUser);
 
+  // Definición de los colores para los badges de rol
+  // Definición de los colores para los badges de rol
+  const rolBadgeMap = {
+    'Administrador': {
+      bg: 'bg-green-100',
+      text: 'text-green-800',
+      border: 'border-green-400',
+      dot: 'bg-green-500',
+      label: 'Administrador'
+    },
+    'Encargado Carrera': {
+      bg: 'bg-blue-100',
+      text: 'text-blue-800',
+      border: 'border-blue-400',
+      dot: 'bg-blue-500',
+      label: 'Encargado de Carrera'
+    },
+    'Tutor': {
+      bg: 'bg-yellow-100',
+      text: 'text-yellow-800',
+      border: 'border-yellow-400',
+      dot: 'bg-yellow-500',
+      label: 'Tutor'
+    },
+    'Tutorado': {
+      bg: 'bg-orange-100',
+      text: 'text-orange-800',
+      border: 'border-orange-400',
+      dot: 'bg-orange-500',
+      label: 'Tutorado'
+    },
+    'Usuario': {
+      bg: 'bg-gray-100',
+      text: 'text-gray-800',
+      border: 'border-gray-400',
+      dot: 'bg-gray-500',
+      label: 'Usuario'
+    },
+    'default': {
+      bg: 'bg-gray-100',
+      text: 'text-gray-800',
+      border: 'border-gray-400',
+      dot: 'bg-gray-500',
+      label: 'Desconocido'
+    }
+  };
   const columns = [
     {
       accessorKey: 'rut',
       header: 'Rut',
-      size: 100,
+      size: 120,
+      sticky: 'left', // Fija la columna de Rut a la izquierda
     },
     {
       accessorKey: 'nombreCompleto',
@@ -56,22 +102,25 @@ const Users = () => {
     {
       accessorKey: 'email',
       header: 'Correo electrónico',
-      size: 200,
+      truncate: true,
     },
     {
       accessorKey: 'rol',
       header: 'Rol',
-      size: 150,
+      size: 120,
       filterType: 'select',
       filterOptions: [
-        { value: 'Administrador', label: 'Admin' },
+        { value: 'Administrador', label: 'Administrador' },
+        { value: 'Encargado Carrera', label: 'Encargado de Carrera' },
+        { value: 'Tutor', label: 'Tutor' },
+        { value: 'Tutorado', label: 'Tutorado' },
         { value: 'Usuario', label: 'Usuario' }
       ]
     },
     {
       accessorKey: 'createdAt',
       header: 'Creado',
-      size: 150,
+      truncate: true,
       // Muestra la fecha en formato chileno dd-MM-yyyy
       cell: info => {
         const value = info.getValue();
@@ -127,6 +176,7 @@ const Users = () => {
           data={users}
           columns={columns}
           pageSize={5}
+          badgeMap={{ rol: rolBadgeMap }}
           onEdit={row => { setDataUser([row]); setIsPopupOpen(true); }}
           onDelete={row => handleDelete([row])}
           onView={row => alert('Ver usuario: ' + row.nombreCompleto)}
@@ -143,7 +193,7 @@ const Users = () => {
         />
       </div>
 
-      <Popup show={isPopupOpen} setShow={setIsPopupOpen} data={dataUser} action={handleUpdate} />
+      <UpdateUserPopup show={isPopupOpen} setShow={setIsPopupOpen} data={dataUser} action={handleUpdate} />
       {showImport && (
         <ImportUsersPopup show={showImport} setShow={setShowImport} onFile={handleImportFile} loading={loading} />
       )}
