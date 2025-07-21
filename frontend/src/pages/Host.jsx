@@ -56,6 +56,7 @@ const Host = () => {
     };
 
     const recieveAnswer = (data) => {
+        setPlayersAnswered(prev => prev + 1); 
         if (showOptions && data.correcta === 'true') {
             const newScores = scores.map((player) => {
                 if (player.socket === data.socket) {
@@ -66,7 +67,6 @@ const Host = () => {
             scores = newScores;
             setScores(newScores);
         }
-        setPlayersAnswered(prev => prev + 1);
     };
 
     const siguientePreg = () => {

@@ -30,7 +30,7 @@ export async function getQuizByIdLote(quizId) {
     try {
         //console.log("Obteniendo quiz con ID:", quizId);
         const response = await axios.get(`/quiz/lote/${quizId}`);
-        console.log("Respuesta de getQuizByIdLote:", response.data);
+        //console.log("Respuesta de getQuizByIdLote:", response.data);
         return response.data; // Devolvemos el cuerpo de la respuesta.
 
     } catch (error) {
@@ -43,7 +43,7 @@ export async function getQuizByIdLote(quizId) {
 export async function getCuestionarios(idUser) {
     try {
         const response = await axios.get(`/quiz/user/${idUser}`)
-        console.log("Respuesta de getCuestionarios:", response.data);
+        //console.log("Respuesta de getCuestionarios:", response.data);
         return response.data.data;
     } catch (error) {
         console.error(error);
@@ -53,7 +53,7 @@ export async function getCuestionarios(idUser) {
 export async function getCuestionariosByUser(idUser) {
     try {
         const response = await axios.get(`/EX/quizzes/${idUser}`)
-        console.log("Respuesta de getCuestionariosByUser:", response.data);
+        //console.log("Respuesta de getCuestionariosByUser:", response.data);
         return response.data.data;
     } catch (error) {
         console.error(error.status);
@@ -62,7 +62,7 @@ export async function getCuestionariosByUser(idUser) {
 
 export async function eliminarQuiz(Quiz) {
     try {
-        console.log("Eliminando quiz:", Quiz);
+        //console.log("Eliminando quiz:", Quiz);
         const response = await axios.delete("/quiz/", { data: Quiz });
         return response.data;
     } catch (error) {

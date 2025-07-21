@@ -201,8 +201,8 @@ export async function actualizarPreguntasYRespuestasController(req, res) {
         const { idCuestionario } = req.params;
         const { preguntas } = req.body;
 
-        console.log("ID Cuestionario:", idCuestionario);
-        console.log("Preguntas recibidas:", preguntas);
+        //console.log("ID Cuestionario:", idCuestionario);
+        //console.log("Preguntas recibidas:", preguntas);
 
         if (!Array.isArray(preguntas) || preguntas.length === 0) {
             return handleErrorClient(res, 400, "No se recibieron preguntas para actualizar");
@@ -215,7 +215,7 @@ export async function actualizarPreguntasYRespuestasController(req, res) {
         }));
 
         // Llama al service modificado
-        console.log("antes de ejecutar el service");
+        //console.log("antes de ejecutar el service");
         const [result, errorPreguntas] = await ModLotepPreguntasService({ preguntas: preguntasConId, idCuestionario });
 
         if (errorPreguntas) return res.status(500).json({ error: errorPreguntas });

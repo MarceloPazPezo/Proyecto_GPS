@@ -52,7 +52,7 @@ export async function createRespuestaService(query) {
 export async function updateRespuestaService(query) {
     try {
         const { textoRespuesta, correcta,id } = query;
-        console.log("Datos recibidos:", { textoRespuesta, correcta, id });
+        //console.log("Datos recibidos:", { textoRespuesta, correcta, id });
 
         const respuestaRepository = AppDataSource.getRepository(Respuesta);
         const updatedRespuesta = await respuestaRepository.findOne({
@@ -92,7 +92,7 @@ export async function deleteRespuestaService(id) {
 
 export async function addLotepRespuestasService(query) {
     try {
-        console.log("Datos recibidos para agregar respuestas:", query);
+        //console.log("Datos recibidos para agregar respuestas:", query);
         const {respuestas} = query;
 
         const respuestaRepository = AppDataSource.getRepository(Respuesta);

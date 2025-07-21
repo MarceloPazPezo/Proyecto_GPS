@@ -136,7 +136,7 @@ function QuizActualizar() {
             };
 
             // await updateQuiz(quizId, updatedData); // Llamada real
-            console.log("Datos que se enviarían para actualizar:", { quizId, ...updatedData });
+            //console.log("Datos que se enviarían para actualizar:", { quizId, ...updatedData });
             showSuccessAlert("¡Éxito!", "Quiz actualizado exitosamente (Simulación).");
             
         } catch (error) {

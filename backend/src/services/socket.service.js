@@ -79,12 +79,12 @@ export function socketEvents(socket) {
 
     socket.on("requestNotes", () => {
         socket.emit("getNotes");
-        console.log("Pide las notas")
+        //console.log("Pide las notas")
     });
 
     socket.on("updateNotes", (notes) => {
         socket.to(socket.room).emit("syncNotes", notes);
-        console.log("Sincronizar todas", notes)
+        //console.log("Sincronizar todas", notes)
     });
 
     socket.on("addNote", (note) => {
@@ -97,17 +97,17 @@ export function socketEvents(socket) {
 
     socket.on("updateNote", (note) => {
         socket.to(socket.room).emit("updateNote", note);
-        console.log("actualizar una nota", note)
+        //console.log("actualizar una nota", note)
     });
 
     socket.on("deleteNote", (noteId) => {
         socket.to(socket.room).emit("deleteNote", noteId);
-        console.log("borrar una nota", noteId);
+        //console.log("borrar una nota", noteId);
     });
 
     socket.on("moveNote", (data) => {
         socket.to(socket.room).emit("moveNote", data);
-        console.log("Mover la nota", data)
+        //console.log("Mover la nota", data)
     });
 
     socket.on("broadcastNote", (note) => {
