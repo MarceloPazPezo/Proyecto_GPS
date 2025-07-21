@@ -18,6 +18,8 @@ export async function connectDB() {
   try {
     await AppDataSource.initialize();
     console.log("=> Conexión exitosa a la base de datos!");
+    await AppDataSource.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
+    console.log("Extensión uuid-ossp asegurada.");
   } catch (error) {
     console.error("Error al conectar con la base de datos:", error);
     process.exit(1);

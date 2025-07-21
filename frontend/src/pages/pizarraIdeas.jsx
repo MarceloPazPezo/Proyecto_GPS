@@ -9,7 +9,7 @@ const pizarraIdeas = () => {
     const [com, setCom] = useState(false)
 
     const responder = () => {
-        socket.emit("answer", { responder: respuesta })
+        socket.emit("respuesta", { responder: respuesta })
         setEstado(true)
     }
 

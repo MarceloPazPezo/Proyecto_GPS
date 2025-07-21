@@ -59,8 +59,13 @@ export function socketEvents(socket) {
     });
 
     socket.on("answer", (data) => {
-        socket.to(socket.room).emit("answer", {id:data.id,correcta:data.correcta,socket:socket.id});
+        socket.to(socket.room).emit("answer", { id:data.id,correcta:data.correcta,socket:socket.id });
     });
+
+    //respuestaIdeas
+    socket.on("respuesta",(data)=>{
+        socket.to(socket.room).emit("respuesta",data);
+    }); 
 
     //reiniciarPizarraIdeas
     socket.on("reiniciar", () => {
@@ -82,6 +87,11 @@ export function socketEvents(socket) {
         console.log("Pide las notas")
     });
 
+    //enviar idMural
+    socket.on("enviarIdMural",(idMural)=>{
+        socket.to(socket.room).emit("enviarIdMural",idMural)
+    });
+
     socket.on("updateNotes", (notes) => {
         socket.to(socket.room).emit("syncNotes", notes);
         console.log("Sincronizar todas", notes)
@@ -89,10 +99,12 @@ export function socketEvents(socket) {
 
     socket.on("addNote", (note) => {
         socket.to(socket.room).emit("addNote", note);
+        console.log("addnote",note);
     });
 
     socket.on("addNoteWithId", (note) => {
         socket.to(socket.room).emit("addNoteWithId", note);
+        console.log("addnoteId",note);
     });
 
     socket.on("updateNote", (note) => {
@@ -103,6 +115,11 @@ export function socketEvents(socket) {
     socket.on("deleteNote", (noteId) => {
         socket.to(socket.room).emit("deleteNote", noteId);
         console.log("borrar una nota", noteId);
+    });
+
+    socket.on("requestDeleteNote", (noteId) => {
+        socket.to(socket.room).emit("requestDeleteNote", noteId);
+        console.log("borrar una nota desde el guest", noteId);
     });
 
     socket.on("moveNote", (data) => {
