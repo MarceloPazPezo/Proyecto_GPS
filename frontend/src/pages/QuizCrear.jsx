@@ -18,7 +18,8 @@ function QuizCrear() {
         handleAnswerTextChange,
         handleToggleCorrectAnswer,
         toggleExtraAnswers,
-        setAllSlides
+        setAllSlides,
+        handleImageChange
     } = useQuizBuilder();
 
     const [isSaving, setIsSaving] = useState(false);
@@ -72,6 +73,7 @@ function QuizCrear() {
             const createdQuiz = await crearQuiz(quizInfo);
             const newQuizId = createdQuiz.data.id;
 
+            // Formatear preguntas para el backend
             const formattedQuestions = questionsToValidate.map(q => ({
                 texto: q.questionText,
                 Respuestas: q.answers
@@ -79,8 +81,29 @@ function QuizCrear() {
                     .map(a => ({ textoRespuesta: a.text, correcta: a.isCorrect }))
             }));
 
-            await addQuizPreguntas(formattedQuestions, newQuizId);
-            
+            // Crear FormData para enviar preguntas y sus imágenes
+            const formData = new FormData();
+            formData.append('preguntas', JSON.stringify(formattedQuestions));
+            // Adjuntar imágenes en el mismo orden
+            questionsToValidate.forEach((q, idx) => {
+                if (q.imagen) {
+                    formData.append('imagenPregunta', q.imagen);
+                } else {
+                    // Si no hay imagen, se puede omitir o enviar un campo vacío (el backend lo maneja)
+                }
+            });
+
+            // Depuración: mostrar el contenido real de FormData
+            for (let pair of formData.entries()) {
+                if (pair[1] instanceof File) {
+                    console.log(pair[0], pair[1].name, pair[1].type);
+                } else {
+                    console.log(pair[0], pair[1]);
+                }
+            }
+
+            await addQuizPreguntas(formData, newQuizId); // addQuizPreguntas debe aceptar FormData
+
             showSuccessAlert('¡Éxito!', 'Cuestionario guardado exitosamente.');
 
             setQuizTitle('');
@@ -120,7 +143,10 @@ function QuizCrear() {
                 <main className="flex-grow p-4 md:p-6 overflow-y-auto order-2 "
                     style={{ backgroundImage: `url(${fondoSVG})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                     <QuizEditor
-                        slide={activeSlide}
+                        slide={{
+                            ...activeSlide,
+                            onImageChange: handleImageChange
+                        }}
                         onQuestionTextChange={handleQuestionTextChange}
                         onAnswerTextChange={handleAnswerTextChange}
                         onToggleCorrect={handleToggleCorrectAnswer}

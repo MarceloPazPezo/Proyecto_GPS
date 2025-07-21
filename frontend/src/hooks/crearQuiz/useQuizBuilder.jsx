@@ -100,6 +100,11 @@ export const useQuizBuilder = (initialSlides = null) => {
         });
     }, [updateActiveSlide]);
 
+    // Nuevo handler para imagen
+    const handleImageChange = useCallback((file) => {
+        updateActiveSlide(slide => ({ ...slide, imagen: file }));
+    }, [updateActiveSlide]);
+
     return {
         slides,
         activeSlide,
@@ -112,5 +117,6 @@ export const useQuizBuilder = (initialSlides = null) => {
         handleAnswerTextChange,
         handleToggleCorrectAnswer,
         toggleExtraAnswers,
+        handleImageChange,
     };
 };
