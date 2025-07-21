@@ -61,7 +61,7 @@ export async function getMuralByUsuario(idUser) {
     }
 }
 
-export async function updateNote(idNote, data) {
+export async function updateNoteFront(idNote, data) {
     try {
         const response = await axios.put(`/notas/${idNote}`, data);
         return response.data.data
@@ -81,7 +81,7 @@ export async function updateMural(idMural, data) {
     }
 }
 
-export async function deleteNote(idNote) {
+export async function deleteNoteFront(idNote) {
     try {
         const response = await axios.delete(`/notas/${idNote}`);
         return response.data.data;

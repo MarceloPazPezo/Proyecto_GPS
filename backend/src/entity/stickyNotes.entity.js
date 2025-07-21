@@ -27,11 +27,11 @@ const StickyNotesSchema = new EntitySchema({
             nullable: false,
         },
         posx: {
-            type: "int",
+            type: "double precision",
             nullable: false,
         },
         posy: {
-            type: "int",
+            type: "double precision",
             nullable: false,
         },
         createdAt: {

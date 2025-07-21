@@ -67,6 +67,7 @@ const Salas = () => {
             }
             socket.emit("start", { actividad });
             sessionStorage.setItem("muralSeleccionado", JSON.stringify(muralSeleccionado));
+            socket.emit("enviarIdMural", { idMural: muralSeleccionado.id });
             navigate(`/stickyHost/${muralSeleccionado.id}`);
             return;
         }
