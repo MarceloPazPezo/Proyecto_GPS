@@ -15,21 +15,6 @@ function Root() {
 
 function PageRoot({ sidebarOpen, setSidebarOpen }) {
     const location = useLocation();
-<<<<<<< HEAD
-  if (location.pathname === '/home') {
-    return (<div>
-     <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-    <Outlet />
-    </div>)
-    ; // Home ocupa toda la pantalla
-  }
-
-
-
-
-
-
-=======
 
   // --- CAMBIO CLAVE AQUÍ ---
   // Comprobamos si la ruta es /home o si COMIENZA CON /host/
@@ -73,7 +58,6 @@ function PageRoot({ sidebarOpen, setSidebarOpen }) {
   }
 
   // Si no es ninguna de las anteriores, usamos el layout por defecto con Sidebar y contenedor.
->>>>>>> 8f435fed1b01e2b2d6a28e92b24e176e2b010725
   return (
     <div className="min-h-screen w-full bg-[#D8EFFD] flex">
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
