@@ -143,6 +143,7 @@ export async function addLotepPreguntas(req, res) {
     try {
         const { idCuestionario } = req.params;
         const preguntasBody = req.body;
+        // console.log(req.body);
 
         if (!Array.isArray(preguntasBody) || preguntasBody.length === 0) {
             return handleErrorClient(res, 400, "No se recibieron preguntas para agregar");

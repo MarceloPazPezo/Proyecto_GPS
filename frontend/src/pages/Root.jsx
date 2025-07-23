@@ -21,11 +21,14 @@ function PageRoot({ sidebarOpen, setSidebarOpen }) {
      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
     <Outlet />
     </div>)
-
-    
-    
     ; // Home ocupa toda la pantalla
   }
+
+
+
+
+
+
   return (
     <div className="min-h-screen w-full bg-[#D8EFFD] flex">
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />

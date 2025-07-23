@@ -42,6 +42,7 @@ export function socketEvents(socket) {
     });
 
     socket.on("start", (data) => {
+        socket.room.actividad
         socket.to(socket.room).emit("start", data);
     });
 

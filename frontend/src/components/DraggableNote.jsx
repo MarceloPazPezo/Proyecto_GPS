@@ -47,7 +47,7 @@ export default function DraggableNote({
         border: "none",
         fontWeight: "bold",
         fontSize: 14,
-        color: "white",
+        color: "#2c3e50",
         flexGrow: 1,
         outline: "none",
         marginRight: 8,
@@ -147,6 +147,7 @@ export default function DraggableNote({
                     fontSize: 15,
                     outline: "none",
                     fontFamily: "inherit",
+                    color: "#2c3e50"
                 }}
                 value={text}
                 onChange={(e) => onUpdate(id, { text: e.target.value })}
