@@ -21,18 +21,26 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
     };
 
     return (
+        // --- CAMBIOS PRINCIPALES AQUÍ ---
+        // 1. Se usa `w-full` para que ocupe el 100% del ancho en móviles.
+        // 2. La prop `size` (`max-w-2xl` por defecto) limita el ancho en pantallas grandes.
+        // 3. `mx-auto` centra el formulario en el medio de la pantalla.
+        // 4. Se ajustó el padding para ser más amigable en móviles (p-6).
         <form
-            className="bg-blue backdrop-blur-lg border border-[#2C3E50]/20 shadow-xl p-8 sm:p-10 rounded-2xl mb-6 w-2xl"
+            className={`bg-blue backdrop-blur-lg border border-[#2C3E50]/20 shadow-xl p-6 sm:p-8 md:p-10 rounded-2xl w-full ${size} mx-auto`}
             style={{ backgroundColor: backgroundColor }}
             onSubmit={handleSubmit(onFormSubmit)}
             autoComplete={autoComplete === undefined ? "on" : autoComplete}
         >
             {title && (
-                <h1 className="text-3xl font-bold text-[#2C3E50] mb-8 text-center">{title}</h1>
+                // --- CAMBIO DE TAMAÑO DE TEXTO RESPONSIVO ---
+                <h1 className="text-2xl sm:text-3xl font-bold text-[#2C3E50] mb-8 text-center">{title}</h1>
             )}
+
             {fields.map((field, index) => (
                 <div className="w-full mb-4" key={index}>
                     {field.label && <label className="block text-sm font-semibold text-[#2C3E50] mb-2" htmlFor={field.name}>{field.label}</label>}
+                    
                     {field.fieldType === 'input' && (
                         <div className="relative flex items-center">
                           {fieldIcons[field.name] && (
@@ -59,20 +67,26 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
                             onChange={field.onChange}
                             autoComplete={field.autoComplete || "off"}
                           />
-                          {field.type === 'password' && field.name === 'password' && (
-                            <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-[#2C3E50] opacity-70" onClick={togglePasswordVisibility} tabIndex={0} aria-label="Mostrar/ocultar contraseña">
-                                {showPassword ? <MdVisibility size={22} /> : <MdVisibilityOff size={22} />}
-                            </button>
-                          )}
-                          {field.type === 'password' && field.name === 'newPassword' && (
-                            <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-[#2C3E50] opacity-70" onClick={toggleNewPasswordVisibility} tabIndex={0} aria-label="Mostrar/ocultar contraseña">
-                                {showNewPassword ? <MdVisibility size={22} /> : <MdVisibilityOff size={22} />}
+                          {field.type === 'password' && (
+                            <button 
+                                type="button" 
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#2C3E50] opacity-70" 
+                                onClick={field.name === 'password' ? togglePasswordVisibility : toggleNewPasswordVisibility} 
+                                tabIndex={0} 
+                                aria-label="Mostrar/ocultar contraseña"
+                            >
+                                { (field.name === 'password' && showPassword) || (field.name === 'newPassword' && showNewPassword) 
+                                    ? <MdVisibility size={22} /> 
+                                    : <MdVisibilityOff size={22} />
+                                }
                             </button>
                           )}
                         </div>
                     )}
+
                     {field.fieldType === 'textarea' && (
                         <textarea
+                            className="w-full p-3 bg-white border border-[#2C3E50]/20 rounded-lg text-[#2C3E50] placeholder-[#2C3E50]/60 focus:outline-none focus:ring-2 focus:ring-[#4EB9FA]/40 transition"
                             {...register(field.name, {
                                 required: field.required ? 'Este campo es obligatorio' : false,
                                 minLength: field.minLength ? { value: field.minLength, message: `Debe tener al menos ${field.minLength} caracteres` } : false,
@@ -85,10 +99,13 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
                             defaultValue={field.defaultValue || ''}
                             disabled={field.disabled}
                             onChange={field.onChange}
+                            rows="4" // Añadido para un tamaño por defecto razonable
                         />
                     )}
+
                     {field.fieldType === 'select' && (
-                        <select className="w-full p-3 bg-[#2C3E50]/10 border border-[#2C3E50]/30 rounded-lg text-black placeholder-[#2C3E50] focus:outline-none focus:ring-2 focus:ring-white/50 transition"
+                        <select 
+                            className="w-full p-3 bg-white border border-[#2C3E50]/20 rounded-lg text-[#2C3E50] focus:outline-none focus:ring-2 focus:ring-[#4EB9FA]/40 transition appearance-none"
                             {...register(field.name, {
                                 required: field.required ? 'Este campo es obligatorio' : false,
                                 validate: field.validate || {},
@@ -98,21 +115,32 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
                             disabled={field.disabled}
                             onChange={field.onChange}
                         >
-                            <option  value="">Seleccionar opción</option>
+                            <option value="">Seleccionar opción</option>
                             {field.options && field.options.map((option, optIndex) => (
-                                <option className="options-class" key={optIndex} value={option.value}>
+                                <option className="text-black bg-white" key={optIndex} value={option.value}>
                                     {option.label}
                                 </option>
                             ))}
                         </select>
                     )}
-                    <div className={`error-message ${errors[field.name] || field.errorMessageData ? 'visible' : ''} text-red-600 font-semibold mt-1 mb-0 min-h-[1.25em]`}> 
+
+                    {/* --- MENSAJE DE ERROR MEJORADO --- */}
+                    <div className={`error-message text-red-600 font-semibold mt-1 min-h-[1.25em] text-sm`}> 
                         {errors[field.name]?.message || field.errorMessageData || ''}
                     </div>
                 </div>
             ))}
-            {buttonText && <button className="w-full border border-[#2C3E50]/20 text-[#2C3E50] font-bold py-3 rounded-lg mt-6 transition-all duration-200 hover:bg-[#2C3E50]/30 hover:-translate-y-0.5" type="submit">{buttonText}</button>}
-            {footerContent && <div className='text-sky-300 text-xs font-semibold mt-1 h-5'>{footerContent}</div>}
+
+            {buttonText && (
+                <button 
+                    className="w-full bg-[#2C3E50]/10 border border-[#2C3E50]/20 text-[#2C3E50] font-bold py-3 rounded-lg mt-4 transition-all duration-300 ease-in-out hover:bg-[#2C3E50]/20 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#4EB9FA]/50" 
+                    type="submit"
+                >
+                    {buttonText}
+                </button>
+            )}
+
+            {footerContent && <div className='text-center text-sm text-[#2C3E50]/80 font-medium mt-4 h-5'>{footerContent}</div>}
         </form>
     );
 };
