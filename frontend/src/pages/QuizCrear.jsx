@@ -73,7 +73,8 @@ function QuizCrear() {
             const createdQuiz = await crearQuiz(quizInfo);
             const newQuizId = createdQuiz.data.id;
 
-            // Formatear preguntas para el backend, agregando referencia a la imagen
+
+            // Formatear preguntas para el backend, agregando referencia a la imagenField
             const formattedQuestions = questionsToValidate.map((q, idx) => ({
                 texto: q.questionText,
                 Respuestas: q.answers
@@ -82,28 +83,26 @@ function QuizCrear() {
                 imagenField: q.imagen ? `imagenPregunta${idx}` : null
             }));
 
-            // // Crear FormData para enviar preguntas y sus imágenes
-            // const formData = new FormData();
-            // formData.append('preguntas', JSON.stringify(formattedQuestions));
-            // // Adjuntar imágenes con nombre único por pregunta
-            // questionsToValidate.forEach((q, idx) => {
-            //     if (q.imagen) {
-            //         formData.append(`imagenPregunta${idx}`, q.imagen);
-            //     }
-            // });
+            // Crear FormData para enviar preguntas y sus imágenes
+            const formData = new FormData();
+            formData.append('preguntas', JSON.stringify(formattedQuestions));
+            // Adjuntar imágenes con nombre único por pregunta
+            questionsToValidate.forEach((q, idx) => {
+                if (q.imagen) {
+                    formData.append(`imagenPregunta${idx}`, q.imagen);
+                }
+            });
 
-            // console.log("FormData preparado para enviar:", formData); // Depuración: mostrar FormData
+            // Depuración: mostrar el contenido real de FormData
+            for (let pair of formData.entries()) {
+                if (pair[1] instanceof File) {
+                    console.log(pair[0], pair[1].name, pair[1].type);
+                } else {
+                    console.log(pair[0], pair[1]);
+                }
+            }
 
-            // // Depuración: mostrar el contenido real de FormData
-            // for (let pair of formData.entries()) {
-            //     if (pair[1] instanceof File) {
-            //         console.log(pair[0], pair[1].name, pair[1].type);
-            //     } else {
-            //         console.log(pair[0], pair[1]);
-            //     }
-            // }
-
-            await addQuizPreguntas(formattedQuestions, newQuizId); // addQuizPreguntas debe aceptar FormData
+            await addQuizPreguntas(formData, newQuizId); // addQuizPreguntas debe aceptar FormData
 
             showSuccessAlert('¡Éxito!', 'Cuestionario guardado exitosamente.');
 

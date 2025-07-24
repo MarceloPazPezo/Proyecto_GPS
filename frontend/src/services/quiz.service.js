@@ -16,7 +16,11 @@ export async function crearQuiz(data) {
 
 export async function addQuizPreguntas(quizData, quizId) {
     try {
-        const response = await axios.post(`/quiz/addLote/${quizId}`, quizData);
+        const response = await axios.post(`/quiz/addLote/${quizId}`, quizData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
         //console.log("Respuesta de addQuizPreguntas:", response.data);
         return response.data;
 

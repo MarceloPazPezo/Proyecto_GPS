@@ -142,17 +142,40 @@ export async function deleteCuestionario(req, res) {
 export async function addLotepPreguntas(req, res) {
     try {
         const { idCuestionario } = req.params;
-        const preguntasBody = req.body;
-
-        if (!Array.isArray(preguntasBody) || preguntasBody.length === 0) {
-            return handleErrorClient(res, 400, "No se recibieron preguntas para agregar");
+        // Si viene como string, parsear
+        let preguntasBody = req.body;
+        if (typeof preguntasBody === 'string') {
+            preguntasBody = JSON.parse(preguntasBody);
+        }
+        if (typeof preguntasBody.preguntas === 'string') {
+            preguntasBody = JSON.parse(preguntasBody.preguntas);
+        } else if (preguntasBody.preguntas) {
+            preguntasBody = preguntasBody.preguntas;
         }
 
-        // Agrega el idCuestionario a cada pregunta
-        const preguntas = preguntasBody.map(p => ({
-            ...p,
-            idCuestionario: Number(idCuestionario)
-        }));
+        if (!Array.isArray(preguntasBody) || preguntasBody.length === 0) {
+            // Permitir guardar lote vacío (sin preguntas)
+            return handleSuccess(res, 201, "No se recibieron preguntas para agregar, lote vacío procesado", []);
+        }
+
+        // Asociar imágenes ya subidas por Multer/MinIO a cada pregunta
+        const preguntas = [];
+        for (const p of preguntasBody) {
+            let imagenUrl = null, imagenKey = null;
+            if (p.imagenField) {
+                const file = req.files?.find(f => f.fieldname === p.imagenField);
+                if (file) {
+                    imagenUrl = file.location;
+                    imagenKey = file.key;
+                }
+            }
+            preguntas.push({
+                ...p,
+                idCuestionario: Number(idCuestionario),
+                imagenUrl,
+                imagenKey
+            });
+        }
 
         // Validación de cada pregunta y sus respuestas
         for (const pregunta of preguntas) {
