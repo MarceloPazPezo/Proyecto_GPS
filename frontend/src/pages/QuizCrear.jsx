@@ -5,6 +5,7 @@ import SlidePreview from '../components/SlidePreview.jsx';
 import QuizEditor from '../components/QuizEditor.jsx';
 import fondoSVG from '../assets/fondo_azul.svg';
 import { showErrorAlert, showSuccessAlert } from '../helpers/sweetAlert.js'; // Ajusta la ruta si es necesario
+import { useNavigate } from 'react-router-dom';
 
 function QuizCrear() {
     const {
@@ -22,6 +23,7 @@ function QuizCrear() {
         handleImageChange
     } = useQuizBuilder();
 
+    const navigate = useNavigate();
     const [isSaving, setIsSaving] = useState(false);
     const [quizTitle, setQuizTitle] = useState('');
     const [validationErrors, setValidationErrors] = useState({});
@@ -73,42 +75,46 @@ function QuizCrear() {
             const createdQuiz = await crearQuiz(quizInfo);
             const newQuizId = createdQuiz.data.id;
 
-            // Formatear preguntas para el backend, agregando referencia a la imagen
+
+            // Formatear preguntas para el backend, agregando referencia a la imagenField
             const formattedQuestions = questionsToValidate.map((q, idx) => ({
                 texto: q.questionText,
                 Respuestas: q.answers
                     .filter(a => a.text.trim() !== '')
                     .map(a => ({ textoRespuesta: a.text, correcta: a.isCorrect })),
-                imagenField: q.imagen ? `imagenPregunta${idx}` : null
+                imagenField: q.imagen ? `imagenPregunta${idx}` : null,
             }));
+            const files=questionsToValidate.map((q)=>({
+                files:q.imagen
+            }));
+            console.log(files);
 
-            // // Crear FormData para enviar preguntas y sus imágenes
-            // const formData = new FormData();
-            // formData.append('preguntas', JSON.stringify(formattedQuestions));
-            // // Adjuntar imágenes con nombre único por pregunta
-            // questionsToValidate.forEach((q, idx) => {
-            //     if (q.imagen) {
-            //         formData.append(`imagenPregunta${idx}`, q.imagen);
-            //     }
-            // });
+            // Crear FormData para enviar preguntas y sus imágenes
+            const formData = new FormData();
+            formData.append('preguntas', JSON.stringify(formattedQuestions));
+            // Adjuntar imágenes con nombre único por pregunta
+            questionsToValidate.forEach((q, idx) => {
+                if (q.imagen) {
+                    formData.append(`imagenPregunta${idx}`, q.imagen);
+                }
+            });
 
-            // console.log("FormData preparado para enviar:", formData); // Depuración: mostrar FormData
+            // Depuración: mostrar el contenido real de FormData
+            for (let pair of formData.entries()) {
+                if (pair[1] instanceof File) {
+                    console.log(pair[0], pair[1].name, pair[1].type);
+                } else {
+                    console.log(pair[0], pair[1]);
+                }
+            }
 
-            // // Depuración: mostrar el contenido real de FormData
-            // for (let pair of formData.entries()) {
-            //     if (pair[1] instanceof File) {
-            //         console.log(pair[0], pair[1].name, pair[1].type);
-            //     } else {
-            //         console.log(pair[0], pair[1]);
-            //     }
-            // }
-
-            await addQuizPreguntas(formattedQuestions, newQuizId); // addQuizPreguntas debe aceptar FormData
+            await addQuizPreguntas(formData, newQuizId); // addQuizPreguntas debe aceptar FormData
 
             showSuccessAlert('¡Éxito!', 'Cuestionario guardado exitosamente.');
 
             setQuizTitle('');
             setAllSlides(null);
+            navigate('/biblioteca'); // Redirigir a la lista de cuestionarios
 
         } catch (error) {
             console.error("Error al guardar:", error);

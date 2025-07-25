@@ -117,14 +117,19 @@ const Host = () => {
     const sortedScores = [...scoreBoard].sort((a, b) => b.puntos - a.puntos);
 
     return (
-        <div className="min-h-screen text-white flex flex-col items-center justify-between p-4"
+        <div className="min-h-screen text-white flex flex-col items-center justify-between p-9"
             style={{ backgroundImage: `url(${fondoSVG})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
 
             <header className="w-full max-w-5xl mx-auto flex flex-col items-center gap-4">
                 {pregunta && (
-                    <div className="bg-white/80 backdrop-blur-sm rounded-lg p-6 text-gray-800 font-bold text-3xl text-center flex-grow w-full min-h-[150px] flex items-center justify-center shadow-lg">
-                        <p>{pregunta.texto}</p>
-                    </div>
+                        <>
+                        <div className="bg-white/80 backdrop-blur-sm rounded-lg p-6 text-gray-800 font-bold text-3xl text-center flex-grow w-full min-h-[150px] flex items-center justify-center shadow-lg">
+                            <p>{pregunta.texto}</p>
+                        </div>
+                        {timer > 0 && <div className="flex justify-center w-full max-w-2xl text-center text-lg text-gray-300">
+                            <p className="mb-4">{pregunta.imagenUrl && <img src={pregunta.imagenUrl} alt="Pregunta" className="w-2/5 h-auto max-w-md mx-auto" />}</p>
+                        </div>}
+                        </>
                 )}
                 <div className="w-full flex justify-between items-center mt-4">
                     <div className="bg-black/30 backdrop-blur-sm rounded-lg p-3 font-bold text-3xl text-center min-w-[80px]">

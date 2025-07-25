@@ -4,6 +4,7 @@ import DraggableNote from "../components/DraggableNote";
 import { socket } from "../main";
 import { getNotesByMural } from "../services/stickNotes.service";
 import { useNavigate } from "react-router-dom";
+import fondoSVG from '../assets/fondo_azul.svg';
 
 const StickyNotesGuest = () => {
     const [notes, setNotes] = useState([]);
@@ -24,8 +25,10 @@ const StickyNotesGuest = () => {
 
     useEffect(() => {
         socket.on("enviarIdMural", (idMural) => {
-            const muralId = typeof idMural === "object" ? idMural.idMural : idMural;
-            setIdMuralGuest(muralId);
+            if (!idMuralGuest) {
+                const muralId = typeof idMural === "object" ? idMural.idMural : idMural;
+                setIdMuralGuest(muralId);
+            }
         });
 
         return () => {
@@ -52,10 +55,10 @@ const StickyNotesGuest = () => {
     }, [idMuralGuest]);
 
     const finalizeQuiz = () => {
-            sessionStorage.removeItem('sala');
-            navigate("/join");
-        };
-    
+        sessionStorage.removeItem('sala');
+        navigate("/join");
+    };
+
     useEffect(() => {
         socket.on("addNoteWithId", (note) => {
             setNotes((prev) => {
@@ -64,7 +67,7 @@ const StickyNotesGuest = () => {
             });
         });
 
-        socket.on("finnish",finalizeQuiz);
+        socket.on("finnish", finalizeQuiz);
 
         socket.on("updateNote", (updatedNote) => {
             setNotes((prev) =>
@@ -153,31 +156,67 @@ const StickyNotesGuest = () => {
     };
 
     if (!idMuralGuest) {
-        return <p className="text-center mt-10 text-gray-500">Esperando el ID del mural...</p>;
+        return(  
+                <main
+                    className="flex items-center justify-center min-h-screen w-full p-4"
+                    style={{
+                        backgroundImage: `url(${fondoSVG})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat'
+                    }}
+                >
+                   
+                    <div className="w-full max-w-md bg-white/80 backdrop-blur-lg border border-[#2C3E50]/20 shadow-xl rounded-2xl p-8 text-center flex flex-col items-center gap-6">
+        
+                        
+                        <div
+                            className="w-16 h-16 animate-spin rounded-full border-4 border-dashed border-[#4EB9FA]"
+                            role="status"
+                            aria-label="Cargando"
+                        ></div>
+        
+                      
+                        <h1 className="text-2xl sm:text-3xl font-bold text-[#2C3E50]">
+                            Sala de Espera
+                        </h1>
+        
+                        <p className="text-base text-[#2C3E50]/80">
+                            Por favor, espera a que el anfitrión inicie la actividad.
+                        </p>
+        
+                    </div>
+                </main>
+
+                )
     }
 
     return (
-        <DndContext onDragEnd={handleDragEnd}>
-            {notes.map((note) => (
-                <DraggableNote
-                    key={note.id}
-                    id={note.id}
-                    title={note.title}
-                    text={note.text}
-                    color={note.color}
-                    position={note.position || { x: 0, y: 0 }}
-                    onUpdate={updateNote}
-                    onDelete={() => requestDeleteNote(note.id)}
-                />
-            ))}
+        <div className="min-h-screen w-full bg-sky-200 fixed inset-0 overflow-auto">
+            <div className="relative min-h-full p-4">
+                <DndContext onDragEnd={handleDragEnd}>
+                    {notes.map((note) => (
+                        <DraggableNote
+                            key={note.id}
+                            id={note.id}
+                            title={note.title}
+                            text={note.text}
+                            color={note.color}
+                            position={note.position || { x: 0, y: 0 }}
+                            onUpdate={updateNote}
+                            onDelete={() => requestDeleteNote(note.id)}
+                        />
+                    ))}
 
-            <button
-                onClick={addNote}
-                className="fixed bottom-4 left-4 px-4 py-2 bg-green-600 text-white rounded-lg shadow-lg z-50"
-            >
-                ➕ Nueva Nota
-            </button>
-        </DndContext>
+                    <button
+                        onClick={addNote}
+                        className="fixed bottom-4 left-4 px-4 py-2 bg-green-600 text-white rounded-lg shadow-lg z-50"
+                    >
+                        ➕ Nueva Nota
+                    </button>
+                </DndContext>
+            </div>
+        </div>
     );
 };
 
