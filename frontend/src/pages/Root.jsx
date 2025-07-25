@@ -1,9 +1,8 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from '@components/Sidebar';
 import { AuthProvider } from '@context/AuthContext';
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { useLocation } from 'react-router-dom';
 
 function Root() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -16,16 +15,49 @@ function Root() {
 
 function PageRoot({ sidebarOpen, setSidebarOpen }) {
     const location = useLocation();
-  if (location.pathname === '/home') {
-    return (<div>
-     <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-    <Outlet />
-    </div>)
 
-    
-    
-    ; // Home ocupa toda la pantalla
+  // --- CAMBIO CLAVE AQUÍ ---
+  // Comprobamos si la ruta es /home o si COMIENZA CON /host/
+  // Estas son las rutas que tendrán un layout especial (sin el contenedor principal).
+
+  // Caso 1: La ruta es /home. Tiene su propio layout con Sidebar.
+  if (location.pathname === '/home') {
+    return (
+      <div>
+        <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        <Outlet />
+      </div>
+    );
   }
+
+  // Caso 2: La ruta es para un host. No tiene NINGÚN layout, solo el contenido.
+  if (location.pathname.startsWith('/host/')) {
+    return (
+      <div>
+        <Outlet />
+      </div>
+    );
+  }
+
+   if (location.pathname === '/scoreBoard') {
+    return (
+      <div>
+      
+        <Outlet />
+      </div>
+    );
+  }
+
+  if (location.pathname.startsWith('/hostIdeas')) {
+    return (
+      <div>
+          <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        <Outlet />
+      </div>
+    );
+  }
+
+  // Si no es ninguna de las anteriores, usamos el layout por defecto con Sidebar y contenedor.
   return (
     <div className="min-h-screen w-full bg-[#D8EFFD] flex">
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />

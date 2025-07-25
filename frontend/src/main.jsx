@@ -25,7 +25,7 @@ import ScoreBoard from './pages/ScoreBoard.jsx';
 import Carreras from './pages/Carreras.jsx';
 import MisCarreras from './pages/MisCarreras.jsx';
 import MisUsuarios from './pages/MisUsuarios.jsx';
-export const socket = io("/",{reconnection:true});
+export const socket = io("/", { reconnection: true });
 
 const router = createBrowserRouter([
   {
@@ -66,20 +66,16 @@ const router = createBrowserRouter([
         element: <QuizActualizar />
       },
       {
-        path:'/biblioteca',
-        element:<Biblioteca/>
+        path: '/biblioteca',
+        element: <Biblioteca />
       },
       {
-        path: '/stickyHost/:idMural',
-        element:<StickyHost/>
-      },
-      {
-        path:'/scoreBoard',
-        element:<ScoreBoard/>
+        path: '/scoreBoard',
+        element: <ScoreBoard />
       },
       {
         path: '/carreras',
-        element:<Carreras/>
+        element: <Carreras />
       },
       {
         path: '/miscarreras',
@@ -121,7 +117,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/notas",
-    element:<StickyNotesGuest/>
+    element: <StickyNotesGuest />
+  },
+  {
+    path: '/stickyHost/:idMural',
+    element: <StickyHost />
   }
 ])
 

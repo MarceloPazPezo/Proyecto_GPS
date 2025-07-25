@@ -270,7 +270,7 @@ export async function getMiUsuario(req, res) {
 export async function getMisUsuarios(req, res) {
   try {
     const encargado = req.user;
-    console.log("Encargado1:", encargado);
+    //console.log("Encargado1:", encargado);
     const { error: queryError } = userQueryValidation.validate({
       id: encargado.id,
     });

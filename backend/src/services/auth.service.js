@@ -27,7 +27,7 @@ export async function loginService(user) {
 
     const isMatch = await comparePassword(password, userFound.password);
 
-    console.log(userFound);
+    //console.log(userFound);
     if (!isMatch) {
       return [null, createErrorMessage("password", "La contraseña es incorrecta")];
     }

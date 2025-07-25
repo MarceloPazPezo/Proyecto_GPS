@@ -117,7 +117,7 @@ const Host = () => {
     const sortedScores = [...scoreBoard].sort((a, b) => b.puntos - a.puntos);
 
     return (
-        <div className="min-h-screen text-white flex flex-col items-center justify-between p-4"
+        <div className="min-h-screen text-white flex flex-col items-center justify-between p-9"
             style={{ backgroundImage: `url(${fondoSVG})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
 
             <header className="w-full max-w-5xl mx-auto flex flex-col items-center gap-4">

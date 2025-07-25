@@ -1,5 +1,6 @@
 let rooms = [];
 let users = [];
+let actividades=[];
 
 export function socketEvents(socket) {
     console.log("Usuario conectado: ", socket.id);
@@ -11,6 +12,7 @@ export function socketEvents(socket) {
                 socket.join(body.sala);
                 socket.room = body.sala;
                 socket.host = true;
+                actividades.push(body.tipo);
                 rooms.push(body.sala);
                 users.push(socket.id);
                 socket.emit("message", { sala: body.sala });
@@ -28,7 +30,7 @@ export function socketEvents(socket) {
             if (users.indexOf(socket.id) < 0) {
                 socket.join(data.sala);
                 socket.room = data.sala;
-                socket.emit("message", data);
+                socket.emit("message", {...data,tipo:actividades.at(rooms.indexOf(data.sala))});
                 users.push(socket.id);
                 socket.to(data.sala).emit("join", { nickname: data.nickname ,socket:socket.id})
             } else {
@@ -42,6 +44,7 @@ export function socketEvents(socket) {
     });
 
     socket.on("start", (data) => {
+        socket.room.actividad
         socket.to(socket.room).emit("start", data);
     });
 
@@ -99,12 +102,12 @@ export function socketEvents(socket) {
 
     socket.on("addNote", (note) => {
         socket.to(socket.room).emit("addNote", note);
-        console.log("addnote",note);
+        //console.log("addnote",note);
     });
 
     socket.on("addNoteWithId", (note) => {
         socket.to(socket.room).emit("addNoteWithId", note);
-        console.log("addnoteId",note);
+        //console.log("addnoteId",note);
     });
 
     socket.on("updateNote", (note) => {
@@ -119,7 +122,7 @@ export function socketEvents(socket) {
 
     socket.on("requestDeleteNote", (noteId) => {
         socket.to(socket.room).emit("requestDeleteNote", noteId);
-        console.log("borrar una nota desde el guest", noteId);
+        //console.log("borrar una nota desde el guest", noteId);
     });
 
     socket.on("moveNote", (data) => {
@@ -136,6 +139,7 @@ export function socketEvents(socket) {
         console.log(reason);
         if (socket.host) {
             socket.to(socket.room).emit("finnish");
+            actividades.splice(rooms.indexOf(socket.room));
             rooms.splice(rooms.indexOf(socket.room));
         }
         console.log("Usuario desconectado: ", socket.id);

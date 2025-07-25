@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 //import io from "socket.io-client";
 import { socket } from "../main.jsx";
 import useLogin from "../hooks/auth/useLogin.jsx";
-import fondoSVG from '../assets/fondo_azul.svg'; 
+import fondoSVG from '../assets/fondo_azul.svg';
+import { showErrorAlert } from "../helpers/sweetAlert.js";
 
 //const socket=io("/");
 
@@ -26,17 +27,27 @@ const Join = () => {
 
     const receiveMessage = (message) => {
         if (message.sala) {
-            navigate("/espera");
+            if (message.tipo === 'notas') {
+                navigate("/notas");
+            }
+            if (message.tipo === 'pizarra') {
+                navigate("/ideas");
+            }
+            if (message.tipo === 'quiz') {
+                navigate("/espera");
+            }
+        }else{
+            showErrorAlert("Error al conectar","La sala igresada no existe, verifica el codigo de la sala");
         }
     }
 
     return (
         <main className="flex items-center justify-center min-h-screen w-full p-4 font-sans"
-                    style={{
-                        backgroundImage: `url(${fondoSVG})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                    }}>
+            style={{
+                backgroundImage: `url(${fondoSVG})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+            }}>
             <div>{/*sessionStorage.getItem('sala')?<div>
                 <h1>Esperando que inicie la actividad</h1>
             </div>:*/

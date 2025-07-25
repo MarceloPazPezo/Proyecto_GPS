@@ -80,8 +80,12 @@ function QuizCrear() {
                 Respuestas: q.answers
                     .filter(a => a.text.trim() !== '')
                     .map(a => ({ textoRespuesta: a.text, correcta: a.isCorrect })),
-                imagenField: q.imagen ? `imagenPregunta${idx}` : null
+                imagenField: q.imagen ? `imagenPregunta${idx}` : null,
             }));
+            const files=questionsToValidate.map((q)=>({
+                files:q.imagen
+            }));
+            console.log(files);
 
             // Crear FormData para enviar preguntas y sus imágenes
             const formData = new FormData();
