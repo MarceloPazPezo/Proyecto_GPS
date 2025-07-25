@@ -143,7 +143,16 @@ export async function addLotepPreguntas(req, res) {
     try {
         const { idCuestionario } = req.params;
 
-        const preguntasBody = req.body;
+        // Si viene como string, parsear
+        let preguntasBody = req.body;
+        if (typeof preguntasBody === 'string') {
+            preguntasBody = JSON.parse(preguntasBody);
+        }
+        if (typeof preguntasBody.preguntas === 'string') {
+            preguntasBody = JSON.parse(preguntasBody.preguntas);
+        } else if (preguntasBody.preguntas) {
+            preguntasBody = preguntasBody.preguntas;
+        }
 
         if (!Array.isArray(preguntasBody) || preguntasBody.length === 0) {
             // Permitir guardar lote vacío (sin preguntas)
