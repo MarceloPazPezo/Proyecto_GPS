@@ -136,8 +136,13 @@ export async function addLotepPreguntasService({ preguntas }) {
     await queryRunner.startTransaction();
 
     try {
-        // 1. Insertar todas las preguntas
-        const preguntasToSave = preguntas.map(({ texto, idCuestionario }) => ({ texto, idCuestionario }));
+        // 1. Insertar todas las preguntas (incluyendo imagenUrl e imagenKey si existen)
+        const preguntasToSave = preguntas.map(({ texto, idCuestionario, imagenUrl, imagenKey }) => ({
+            texto,
+            idCuestionario,
+            imagenUrl: imagenUrl || null,
+            imagenKey: imagenKey || null
+        }));
         const preguntasGuardadas = await queryRunner.manager.save(Pregunta, preguntasToSave);
 
         // 2. Insertar todas las respuestas asociadas a cada pregunta
