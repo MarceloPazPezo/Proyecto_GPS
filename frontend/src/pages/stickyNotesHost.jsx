@@ -217,6 +217,8 @@ const StickyNotesHost = () => {
     }, []);
 
     return (
+        
+         <div className="h-screen bg-sky-200 ">
         <DndContext onDragEnd={handleDragEnd}>
             {notes.map((note) => (
                 <DraggableNote
@@ -252,6 +254,7 @@ const StickyNotesHost = () => {
                     Terminar Actividad
                 </button>
         </DndContext>
+        </div>
     );
 };
 

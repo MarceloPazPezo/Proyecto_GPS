@@ -21,6 +21,7 @@ export async function addQuizPreguntas(quizData, quizId) {
                 'Content-Type': 'multipart/form-data'
             }
         });
+
         //console.log("Respuesta de addQuizPreguntas:", response.data);
         return response.data;
 
