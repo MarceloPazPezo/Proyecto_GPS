@@ -19,7 +19,7 @@ const Salas = () => {
     const [muralSeleccionado, setMuralSeleccionado] = useState(null);
 
     const createRoom = (data) => {
-        socket.emit("create", { sala: data.sala });
+        socket.emit("create", { sala: data.sala, tipo:data.actividad});
         setActividad(data.actividad);
     };
 

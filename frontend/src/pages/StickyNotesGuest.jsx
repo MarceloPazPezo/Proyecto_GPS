@@ -24,8 +24,10 @@ const StickyNotesGuest = () => {
 
     useEffect(() => {
         socket.on("enviarIdMural", (idMural) => {
-            const muralId = typeof idMural === "object" ? idMural.idMural : idMural;
-            setIdMuralGuest(muralId);
+            if (!idMuralGuest) {
+                const muralId = typeof idMural === "object" ? idMural.idMural : idMural;
+                setIdMuralGuest(muralId);
+            }
         });
 
         return () => {
@@ -52,10 +54,10 @@ const StickyNotesGuest = () => {
     }, [idMuralGuest]);
 
     const finalizeQuiz = () => {
-            sessionStorage.removeItem('sala');
-            navigate("/join");
-        };
-    
+        sessionStorage.removeItem('sala');
+        navigate("/join");
+    };
+
     useEffect(() => {
         socket.on("addNoteWithId", (note) => {
             setNotes((prev) => {
@@ -64,7 +66,7 @@ const StickyNotesGuest = () => {
             });
         });
 
-        socket.on("finnish",finalizeQuiz);
+        socket.on("finnish", finalizeQuiz);
 
         socket.on("updateNote", (updatedNote) => {
             setNotes((prev) =>
@@ -157,28 +159,30 @@ const StickyNotesGuest = () => {
     }
 
     return (
-        <div className="h-screen bg-sky-200 ">
-        <DndContext onDragEnd={handleDragEnd}>
-            {notes.map((note) => (
-                <DraggableNote
-                    key={note.id}
-                    id={note.id}
-                    title={note.title}
-                    text={note.text}
-                    color={note.color}
-                    position={note.position || { x: 0, y: 0 }}
-                    onUpdate={updateNote}
-                    onDelete={() => requestDeleteNote(note.id)}
-                />
-            ))}
+        <div className="min-h-screen w-full bg-sky-200 fixed inset-0 overflow-auto">
+            <div className="relative min-h-full p-4">
+                <DndContext onDragEnd={handleDragEnd}>
+                    {notes.map((note) => (
+                        <DraggableNote
+                            key={note.id}
+                            id={note.id}
+                            title={note.title}
+                            text={note.text}
+                            color={note.color}
+                            position={note.position || { x: 0, y: 0 }}
+                            onUpdate={updateNote}
+                            onDelete={() => requestDeleteNote(note.id)}
+                        />
+                    ))}
 
-            <button
-                onClick={addNote}
-                className="fixed bottom-4 left-4 px-4 py-2 bg-green-600 text-white rounded-lg shadow-lg z-50"
-            >
-                ➕ Nueva Nota
-            </button>
-        </DndContext>
+                    <button
+                        onClick={addNote}
+                        className="fixed bottom-4 left-4 px-4 py-2 bg-green-600 text-white rounded-lg shadow-lg z-50"
+                    >
+                        ➕ Nueva Nota
+                    </button>
+                </DndContext>
+            </div>
         </div>
     );
 };

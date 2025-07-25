@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect} from "react";
 import { socket } from "../main"; // Asume que el socket está exportado desde tu archivo principal
 import WordCloud from "react-d3-cloud";
 import { motion, AnimatePresence } from "framer-motion";
+import { startCase } from "lodash";
+import { useNavigate } from "react-router-dom";
 
 // --- 1. PALETA DE COLORES ---
 // Definimos un array con los colores que queremos que se usen en la nube.
@@ -15,6 +17,7 @@ const fillColor = (word, index) => colorPalette[index % colorPalette.length];
 const rotate = () => (Math.random() > 0.5 ? 0 : 90);
 
 const HostIdeas = () => {
+    const navigate=useNavigate();
     const [message, setMessage] = useState("");
     const [isStarted, setIsStarted] = useState(false);
     const [data, setData] = useState([]);
@@ -27,7 +30,7 @@ const HostIdeas = () => {
     const calculateFontSize = (word) => {
         // El tamaño base se reduce a medida que se añaden más palabras únicas.
         // La raíz cuadrada suaviza la reducción para que no sea tan drástica.
-        const baseSize = 220 / Math.sqrt(data.length || 1); // || 1 para evitar dividir por cero al inicio
+        const baseSize = 50 / Math.sqrt(data.length || 1); // || 1 para evitar dividir por cero al inicio
 
         // Se añade un "bono" de tamaño basado en la frecuencia.
         // El logaritmo hace que el aumento de tamaño sea más notorio al principio.
@@ -39,7 +42,9 @@ const HostIdeas = () => {
 
     useEffect(() => {
         const recibirRespuestas = (newAnswer) => {
-            const palabra = newAnswer.responder.trim().toLowerCase();
+
+            const palabra = startCase(newAnswer.responder.trim());
+            //console.log(palabra);
             if (!palabra) return; // Ignorar respuestas vacías
 
             setData((currentData) => {
@@ -62,7 +67,7 @@ const HostIdeas = () => {
         };
 
         socket.on("respuesta", recibirRespuestas);
-        
+
         // Limpia el listener cuando el componente se desmonta para evitar fugas de memoria
         return () => {
             socket.off("respuesta", recibirRespuestas);
@@ -83,7 +88,15 @@ const HostIdeas = () => {
             setIsStarted(true);
         }
     };
-    
+
+    const finalizarAct = () => {
+        // Asegúrate de que `sala` se obtiene correctamente
+        socket.emit("finnish", { sala: sessionStorage.getItem('sala') });
+        sessionStorage.removeItem("sala");
+        sessionStorage.removeItem("participantes");
+        navigate("/room"); // O a la ruta que consideres apropiada, como /home o /join
+    };
+
     // Configuración para las animaciones de Framer Motion
     const cloudAnimation = {
         initial: { opacity: 0, scale: 0.8 },
@@ -93,12 +106,15 @@ const HostIdeas = () => {
 
     return (
         <div className="bg-sky-200 min-h-screen flex flex-col justify-center items-center p-4 font-sans">
+            <button
+                className="fixed top-4 right-4 px-4 py-2 bg-red-600 text-black rounded-lg shadow-lg z-50"
+                onClick={finalizarAct}>Terminar</button>
             {isStarted ? (
                 <div className="w-full h-screen flex flex-col items-center">
                     <div className="w-full max-w-4xl p-4 mb-4 text-center">
                         <h2 className="text-[#2C3E50] text-3xl md:text-4xl font-semibold break-words">{message}</h2>
                     </div>
-                    
+
                     <div className="flex-1 w-full max-w-6xl">
                         <AnimatePresence>
                             {data.length > 0 && (
@@ -127,9 +143,9 @@ const HostIdeas = () => {
                                 </motion.div>
                             )}
                         </AnimatePresence>
-                        
+
                         {data.length === 0 && (
-                             <div className="w-full h-full flex justify-center items-center">
+                            <div className="w-full h-full flex justify-center items-center">
                                 <p className="text-[#2C3E50] text-2xl animate-pulse">Esperando respuestas...</p>
                             </div>
                         )}
@@ -157,7 +173,7 @@ const HostIdeas = () => {
                             value={message}
                             autoFocus
                         />
-                         <button 
+                        <button
                             type="submit"
                             className="w-full bg-green-500 text-white font-bold py-3 rounded-lg mt-6 transition-all duration-300 ease-in-out hover:bg-green-600 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-green-500/50 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none"
                             disabled={!message.trim()}

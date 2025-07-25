@@ -44,7 +44,7 @@ function removeFile(req, file, cb) {
       console.error(`Error al intentar eliminar el archivo '${file.key}' durante el rollback.`, err);
       return cb(err);
     }
-    console.log(`Archivo '${file.key}' eliminado exitosamente durante el rollback.`);
+    //console.log(`Archivo '${file.key}' eliminado exitosamente durante el rollback.`);
     cb(null);
   });
 }

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react"
 import { socket } from "../main";
 import "../styles/index.css"
-
+import { useNavigate } from "react-router-dom";
 const pizarraIdeas = () => {
-
+    const navigate=useNavigate();
     const [respuesta, setRespuesta] = useState("");
     const [estado, setEstado] = useState(false);
     const [com, setCom] = useState(false)
@@ -23,6 +23,9 @@ const pizarraIdeas = () => {
         socket.on("comenzar", (data) => {
             //console.log("comienza")
             setCom(true)
+        })
+        socket.on("finnish",()=>{
+            navigate("/join");
         })
     }
 

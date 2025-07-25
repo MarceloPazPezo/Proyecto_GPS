@@ -12,7 +12,7 @@ export async function getRespuestaService(id) {
         if (!respuestaFound) return [null, "Respuesta no encontrada"];
 
         const { ...respuestaData } = respuestaFound;
-        console.log(respuestaData," a ", respuestaFound );
+        //console.log(respuestaData," a ", respuestaFound );
         return [respuestaData, null];
 
     } catch (error) {

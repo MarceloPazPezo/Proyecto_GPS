@@ -19,7 +19,7 @@ const useWindowSize = () => {
 const PodiumStep = ({ player, rankText, rankColor, podiumHeight, isFirstPlace = false }) => (
     <div className="flex flex-col items-center mx-1">
         <p className="text-white font-bold text-xl sm:text-2xl truncate max-w-[150px]">{player.nickname}</p>
-        <div 
+        <div
             className={`w-24 sm:w-32 rounded-t-lg flex flex-col items-center justify-between p-2 text-white shadow-2xl ${rankColor} ${podiumHeight}`}
         >
             {isFirstPlace && <FaCrown className="text-yellow-300 text-3xl mb-2" />}
@@ -34,7 +34,7 @@ const PodiumStep = ({ player, rankText, rankColor, podiumHeight, isFirstPlace = 
 const ScoreBoard = () => {
     const navigate = useNavigate();
     const { width, height } = useWindowSize();
-    
+
     // Tu lógica se mantiene intacta
     const getScores = () => {
         try {
@@ -55,10 +55,7 @@ const ScoreBoard = () => {
 
     const finalizarAct = () => {
         // Asegúrate de que `sala` se obtiene correctamente
-        const salaData = JSON.parse(sessionStorage.getItem('sala'));
-        if (salaData && salaData.sala) {
-            socket.emit("finnish", { sala: salaData.sala });
-        }
+        socket.emit("finnish", { sala: sessionStorage.getItem('sala') });
         sessionStorage.removeItem("sala");
         sessionStorage.removeItem("participantes");
         sessionStorage.removeItem("scores");
@@ -69,7 +66,7 @@ const ScoreBoard = () => {
         // Contenedor principal con fondo de gradiente y confeti
         <div className="min-h-screen w-full bg-gradient-to-b from-[#4EB9FA] to-[#2C3E50] flex flex-col items-center justify-center p-4 overflow-hidden">
             <Confetti width={width} height={height} recycle={false} numberOfPieces={400} />
-            
+
             <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-8 text-center shadow-text">¡Podio de Ganadores!</h1>
 
             {/* Podio para los 3 primeros lugares */}
@@ -103,7 +100,7 @@ const ScoreBoard = () => {
                     </div>
                 </div>
             )}
-            
+
             {/* Botón para finalizar */}
             <button
                 className="bg-white text-[#2C3E50] font-bold py-3 px-8 rounded-lg mt-12 transition-all duration-300 hover:bg-gray-200 hover:-translate-y-1 shadow-2xl"

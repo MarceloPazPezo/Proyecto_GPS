@@ -57,7 +57,7 @@ export async function getCuestionariosByUser(idUser) {
         //console.log("Respuesta de getCuestionariosByUser:", response.data);
         return response.data.data;
     } catch (error) {
-        console.error(error.status);
+        console.error(error);
     }
 }
 

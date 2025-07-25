@@ -205,6 +205,11 @@ const StickyNotesHost = () => {
             }));
             setNotes(formatted);
         });
+        //falta hacer que se sincronicen
+        socket.on("join", (data) => {
+            saveMural();
+            socket.emit("enviarIdMural", { idMural: idMural });
+        });
 
         return () => {
             socket.off("addNote");
@@ -217,43 +222,44 @@ const StickyNotesHost = () => {
     }, []);
 
     return (
-        
-         <div className="h-screen bg-sky-200 ">
-        <DndContext onDragEnd={handleDragEnd}>
-            {notes.map((note) => (
-                <DraggableNote
-                    key={note.id}
-                    id={note.id}
-                    title={note.title}
-                    text={note.text}
-                    color={note.color}
-                    position={note.position ?? { x: 0, y: 0 }}
-                    onDelete={deleteNote}
-                    onUpdate={updateNote}
-                />
-            ))}
+        <div className="min-h-screen w-full bg-sky-200 fixed inset-0 overflow-auto">
+            <div className="relative min-h-full p-4">
+                <DndContext onDragEnd={handleDragEnd}>
+                    {notes.map((note) => (
+                        <DraggableNote
+                            key={note.id}
+                            id={note.id}
+                            title={note.title}
+                            text={note.text}
+                            color={note.color}
+                            position={note.position ?? { x: 0, y: 0 }}
+                            onDelete={deleteNote}
+                            onUpdate={updateNote}
+                        />
+                    ))}
 
-            <button
-                onClick={addNote}
-                className="fixed bottom-4 left-4 px-4 py-2 bg-green-600 text-white rounded-lg shadow-lg z-50"
-                disabled={saving}
-            >
-                ➕ Nueva Nota
-            </button>
+                    <button
+                        onClick={addNote}
+                        className="fixed bottom-4 left-4 px-4 py-2 bg-green-600 text-white rounded-lg shadow-lg z-50"
+                        disabled={saving}
+                    >
+                        ➕ Nueva Nota
+                    </button>
 
-            <button
-                onClick={saveMural}
-                className="fixed bottom-4 right-4 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-lg z-50"
-                disabled={saving}
-            >
-                💾 Guardar mural
-            </button>
+                    <button
+                        onClick={saveMural}
+                        className="fixed bottom-4 right-4 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-lg z-50"
+                        disabled={saving}
+                    >
+                        💾 Guardar mural
+                    </button>
 
-            <button onClick={finalizarAct}
-                    className="fixed top-4 right-4 px-4 py-2 bg-red-600 text-black rounded-lg shadow-lg z-50">
-                    Terminar Actividad
-                </button>
-        </DndContext>
+                    <button onClick={finalizarAct}
+                        className="fixed top-4 right-4 px-4 py-2 bg-red-600 text-black rounded-lg shadow-lg z-50">
+                        Terminar Actividad
+                    </button>
+                </DndContext>
+            </div>
         </div>
     );
 };
