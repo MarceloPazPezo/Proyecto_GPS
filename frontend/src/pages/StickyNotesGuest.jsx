@@ -4,6 +4,7 @@ import DraggableNote from "../components/DraggableNote";
 import { socket } from "../main";
 import { getNotesByMural } from "../services/stickNotes.service";
 import { useNavigate } from "react-router-dom";
+import fondoSVG from '../assets/fondo_azul.svg';
 
 const StickyNotesGuest = () => {
     const [notes, setNotes] = useState([]);
@@ -155,7 +156,39 @@ const StickyNotesGuest = () => {
     };
 
     if (!idMuralGuest) {
-        return <p className="text-center mt-10 text-gray-500">Esperando el ID del mural...</p>;
+        return(  
+                <main
+                    className="flex items-center justify-center min-h-screen w-full p-4"
+                    style={{
+                        backgroundImage: `url(${fondoSVG})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat'
+                    }}
+                >
+                   
+                    <div className="w-full max-w-md bg-white/80 backdrop-blur-lg border border-[#2C3E50]/20 shadow-xl rounded-2xl p-8 text-center flex flex-col items-center gap-6">
+        
+                        
+                        <div
+                            className="w-16 h-16 animate-spin rounded-full border-4 border-dashed border-[#4EB9FA]"
+                            role="status"
+                            aria-label="Cargando"
+                        ></div>
+        
+                      
+                        <h1 className="text-2xl sm:text-3xl font-bold text-[#2C3E50]">
+                            Sala de Espera
+                        </h1>
+        
+                        <p className="text-base text-[#2C3E50]/80">
+                            Por favor, espera a que el anfitrión inicie la actividad.
+                        </p>
+        
+                    </div>
+                </main>
+
+                )
     }
 
     return (
