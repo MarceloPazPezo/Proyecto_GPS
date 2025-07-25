@@ -30,6 +30,7 @@ export default function CreateMiUsuarioPopup({ show, setShow, dataUsers }) {
                 .finally(() => setLoadingCarreras(false));
         }
     }, [show]);
+    
     const {
         errorNombreCompleto,
         errorEmail,

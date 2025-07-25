@@ -178,7 +178,8 @@ export async function obtenerPreguntasYRespuestas(idCuestionario) {
             .select([
                 'p.id AS id',
                 'p."idCuestionario" AS "idCuestionario"',
-                'p.texto AS texto'
+                'p.texto AS texto',
+                'p."imagenUrl" AS "imagenUrl"'
             ])
             .addSelect(`
       json_agg(
@@ -194,7 +195,7 @@ export async function obtenerPreguntasYRespuestas(idCuestionario) {
             .groupBy('p.id')
             .getRawMany();
 
-
+        console.log("Preguntas y respuestas obtenidas:", result);
         return [result, null]
     }
     catch (error) {

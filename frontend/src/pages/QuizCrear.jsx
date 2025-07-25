@@ -5,6 +5,7 @@ import SlidePreview from '../components/SlidePreview.jsx';
 import QuizEditor from '../components/QuizEditor.jsx';
 import fondoSVG from '../assets/fondo_azul.svg';
 import { showErrorAlert, showSuccessAlert } from '../helpers/sweetAlert.js'; // Ajusta la ruta si es necesario
+import { useNavigate } from 'react-router-dom';
 
 function QuizCrear() {
     const {
@@ -22,6 +23,7 @@ function QuizCrear() {
         handleImageChange
     } = useQuizBuilder();
 
+    const navigate = useNavigate();
     const [isSaving, setIsSaving] = useState(false);
     const [quizTitle, setQuizTitle] = useState('');
     const [validationErrors, setValidationErrors] = useState({});
@@ -112,6 +114,7 @@ function QuizCrear() {
 
             setQuizTitle('');
             setAllSlides(null);
+            navigate('/biblioteca'); // Redirigir a la lista de cuestionarios
 
         } catch (error) {
             console.error("Error al guardar:", error);
