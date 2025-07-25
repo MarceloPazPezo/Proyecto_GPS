@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
+
 import {
     createCuestionario,
     getCuestionariosByUser,
@@ -11,6 +12,7 @@ import {
     obtenerPreguntasYRespuestasController,
     actualizarPreguntasYRespuestasController
 } from "../controllers/cuestionario.controller.js";
+import upload from "../middlewares/upload.middleware.js";
 
 
 
@@ -23,7 +25,7 @@ router.get("/all",getCuestionarios);
 router.post("/",createCuestionario);
 router.patch("/",updateCuestionario);
 router.delete("/",deleteCuestionario);
-router.post("/addLote/:idCuestionario", addLotepPreguntas);
+router.post("/addLote/:idCuestionario", upload.any(), addLotepPreguntas);
 router.get("/lote/:idCuestionario", obtenerPreguntasYRespuestasController);
 router.patch("/lote/:idCuestionario", actualizarPreguntasYRespuestasController);
 
