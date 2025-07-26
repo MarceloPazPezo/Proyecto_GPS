@@ -31,6 +31,7 @@ export async function createUserService(body) {
       email: body.email,
       password: await encryptPassword(body.password),
       rol: body.rol || "usuario", // Default to 'usuario' if no role is provided
+      idCarrera: body.idCarrera ? Number(body.idCarrera) : undefined,
     });
     const savedUser = await userRepository.save(newUser);
     const { password, ...userWithoutPassword } = savedUser; // Exclude the password
@@ -68,12 +69,19 @@ export async function getUsersService(rol) {
     const userRepository = AppDataSource.getRepository(User);
     let users;
     if (rol) {
-      users = await userRepository.find({ where: { rol } });
+      users = await userRepository.find({ where: { rol }, relations: ["idCarrera"] });
     } else {
       users = await userRepository.find();
     }
 
     if (!users || users.length === 0) return [[], null];
+
+    const usuariosConCarrera = users.map(({ password, idCarrera, ...user }) => ({
+      ...user,
+      idCarrera: idCarrera?.id ?? idCarrera,
+      carreraCodigo: idCarrera?.codigo ?? null,
+      carreraNombre: idCarrera?.nombre ?? null
+    }));
 
     const usersData = users.map(({ password, ...user }) => user);
 
@@ -120,6 +128,7 @@ export async function updateUserService(query, body) {
       rut: bodyRut,
       email: body.email,
       rol: body.rol,
+      idCarrera: body.idCarrera ? Number(body.idCarrera) : undefined,
       updatedAt: new Date(),
     };
 
@@ -271,7 +280,6 @@ export async function getMisUsuariosService(encargado) {
       carreraNombre: idCarrera?.nombre ?? null
     }));
 
-    console.log("Usuarios encontrados:", usuariosConCarrera);
     return [usuariosConCarrera, null];
   } catch (error) {
     return [null, error.message];

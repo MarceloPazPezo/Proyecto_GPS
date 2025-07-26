@@ -122,14 +122,9 @@ const Host = () => {
 
             <header className="w-full max-w-5xl mx-auto flex flex-col items-center gap-4">
                 {pregunta && (
-                        <>
-                        <div className="bg-white/80 backdrop-blur-sm rounded-lg p-6 text-gray-800 font-bold text-3xl text-center flex-grow w-full min-h-[150px] flex items-center justify-center shadow-lg">
-                            <p>{pregunta.texto}</p>
-                        </div>
-                        {timer > 0 && <div className="flex justify-center w-full max-w-2xl text-center text-lg text-gray-300">
-                            <p className="mb-4">{pregunta.imagenUrl && <img src={pregunta.imagenUrl} alt="Pregunta" className="w-2/5 h-auto max-w-md mx-auto" />}</p>
-                        </div>}
-                        </>
+                    <div className="bg-white/80 backdrop-blur-sm rounded-lg p-6 text-gray-800 font-bold text-3xl text-center flex-grow w-full min-h-[150px] flex items-center justify-center shadow-lg">
+                        <p>{pregunta.texto}</p>
+                    </div>
                 )}
                 <div className="w-full flex justify-between items-center mt-4">
                     <div className="bg-black/30 backdrop-blur-sm rounded-lg p-3 font-bold text-3xl text-center min-w-[80px]">
@@ -164,20 +159,54 @@ const Host = () => {
                 ) : (
                     <>
                         {showOptions ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                                {pregunta.Respuestas.map((option, index) => {
-                                    const template = answerTemplates[index];
-                                    return (
-                                        <div key={option.id}
-                                            className={`flex items-center w-full p-6 rounded-lg text-white font-bold text-2xl shadow-lg ${template.color}`}>
-                                            <div className="flex items-center justify-center w-12 h-12 mr-4 text-white">
-                                                <template.Icon size={30} />
-                                            </div>
-                                            <span className="flex-grow text-center">{option.textoRespuesta}</span>
+                            pregunta.imagenUrl ? (
+                                // Layout con imagen: izquierda imagen, derecha alternativas
+                                <div className="flex w-full h-full gap-6">
+                                    {/* Mitad izquierda - Imagen */}
+                                    <div className="w-1/2 flex items-center justify-center">
+                                        <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg max-w-full max-h-full flex items-center justify-center">
+                                            <img 
+                                                src={pregunta.imagenUrl} 
+                                                alt="Pregunta" 
+                                                className="max-w-full max-h-full object-contain rounded-lg"
+                                                style={{ maxHeight: '400px' }}
+                                            />
                                         </div>
-                                    );
-                                })}
-                            </div>
+                                    </div>
+                                    
+                                    {/* Mitad derecha - Alternativas */}
+                                    <div className="w-1/2 flex flex-col justify-center gap-3">
+                                        {pregunta.Respuestas.map((option, index) => {
+                                            const template = answerTemplates[index];
+                                            return (
+                                                <div key={option.id}
+                                                    className={`flex items-center w-full p-4 rounded-lg text-white font-bold text-lg shadow-lg ${template.color}`}>
+                                                    <div className="flex items-center justify-center w-10 h-10 mr-3 text-white">
+                                                        <template.Icon size={24} />
+                                                    </div>
+                                                    <span className="flex-grow text-center">{option.textoRespuesta}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ) : (
+                                // Layout sin imagen: grid normal centrado
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl">
+                                    {pregunta.Respuestas.map((option, index) => {
+                                        const template = answerTemplates[index];
+                                        return (
+                                            <div key={option.id}
+                                                className={`flex items-center w-full p-6 rounded-lg text-white font-bold text-2xl shadow-lg ${template.color}`}>
+                                                <div className="flex items-center justify-center w-12 h-12 mr-4 text-white">
+                                                    <template.Icon size={30} />
+                                                </div>
+                                                <span className="flex-grow text-center">{option.textoRespuesta}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )
                         ) : (
                             <div className="flex flex-col items-center justify-center w-full">
                                 <h2 className="text-3xl font-bold mb-6">Puntuaciones</h2>
