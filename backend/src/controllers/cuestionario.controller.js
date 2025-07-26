@@ -142,8 +142,10 @@ export async function deleteCuestionario(req, res) {
 export async function addLotepPreguntas(req, res) {
     try {
         const { idCuestionario } = req.params;
+        console.log("ID Cuestionario:", idCuestionario);
 
         const preguntasBody = req.body;
+        console.log("Preguntas recibidas:", preguntasBody);
 
         if (!Array.isArray(preguntasBody) || preguntasBody.length === 0) {
             // Permitir guardar lote vacío (sin preguntas)
