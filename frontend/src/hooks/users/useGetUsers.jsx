@@ -15,6 +15,8 @@ const useUsers = () => {
                     rut: user.rut,
                     email: user.email,
                     rol: user.rol,
+                    carreraCodigo: user.carreraCodigo || 'Sin Carrera',
+                    carreraNombre: user.carreraNombre || 'Sin Código',
                     createdAt: user.createdAt
                 }))
                 .filter(user => cleanRut(user.rut) !== cleanRut(rut)); // Elimina el usuario autenticado normalizando el rut

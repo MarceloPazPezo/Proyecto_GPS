@@ -1,12 +1,11 @@
-import { useState, useEffect} from "react";
-import { DndContext } from "@dnd-kit/core";
-import DraggableNote from "../components/DraggableNote";
-import { socket } from "../main";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import DraggableNote from "../components/DraggableNote";
+import { DndContext } from "@dnd-kit/core";
 import { crearNota, saveMuralFront, getNotesByMural, deleteNoteFront } from "../services/stickNotes.service";
 import { useNavigate } from "react-router-dom";
 
-const StickyNotesHost = () => {
+const VerpizarraNotas = () => {
     const [notes, setNotes] = useState([]);
     const [saving, setSaving] = useState(false);
     const { idMural } = useParams();
@@ -26,7 +25,9 @@ const StickyNotesHost = () => {
                     idMural: idMural,
                 }));
                 setNotes(formattedNotes);
+                console.log(idMural)
             } catch (error) {
+                console.log(idMural)
                 console.error("Error cargando notas:", error);
             }
         };
@@ -62,12 +63,10 @@ const StickyNotesHost = () => {
             };
 
             setNotes((prev) => [...prev, newNote]);
-            socket.emit("addNoteWithId", newNote);
         } catch (error) {
             console.error("Error creando nota:", error);
         }
     };
-
     const saveMural = async () => {
         setSaving(true);
         try {
@@ -82,14 +81,11 @@ const StickyNotesHost = () => {
             }));
 
             await saveMuralFront(idMural, formattedNotesForBackend);
-
-            socket.emit("syncNotes", notes);
         } catch (error) {
             console.error("Error guardando mural:", error);
         }
         setSaving(false);
     };
-
     useEffect(() => {
         const autoSaveInterval = setInterval(() => {
             saveMural();
@@ -99,38 +95,33 @@ const StickyNotesHost = () => {
     }, [notes]);
 
     const handleDragEnd = (event) => {
-    const { active, delta } = event;
+        const { active, delta } = event;
 
-    setNotes((prevNotes) =>
-        prevNotes.map((note) => {
-            if (note.id === active.id) {
-                const currentPosition = note.position ?? { x: 0, y: 0 };
-                const newPosition = {
-                    x: Math.max(0, currentPosition.x + delta.x),
-                    y: Math.max(0, currentPosition.y + delta.y),
-                };
-                socket.emit("moveNote", { id: note.id, position: newPosition });
-                return { ...note, position: newPosition };
-            }
-            return note;
-        })
-    );
-};
+        setNotes((prevNotes) =>
+            prevNotes.map((note) => {
+                if (note.id === active.id) {
+                    const currentPosition = note.position ?? { x: 0, y: 0 };
+                    const newX = Math.max(0, currentPosition.x + delta.x);
+                    const newY = Math.max(0, currentPosition.y + delta.y);
 
-    const finalizarAct = () => {
-        socket.emit("finnish", { sala: sessionStorage.getItem('sala') });
-        sessionStorage.removeItem("sala");
-        sessionStorage.removeItem("participantes");
-        navigate("/room");
+                    return {
+                        ...note,
+                        position: { x: newX, y: newY },
+                    };
+                }
+                return note;
+            })
+        );
     };
 
+    const volver = () => {
+        navigate("/biblioteca");
+    };
     const updateNote = (id, changes) => {
         setNotes((prev) => {
             const updatedNotes = prev.map((note) =>
                 note.id === id ? { ...note, ...changes } : note
             );
-            const updatedNote = updatedNotes.find((note) => note.id === id);
-            socket.emit("updateNote", updatedNote);
             return updatedNotes;
         });
     };
@@ -139,87 +130,10 @@ const StickyNotesHost = () => {
         try {
             await deleteNoteFront(id);
             setNotes((prev) => prev.filter((note) => note.id !== id));
-            socket.emit("deleteNote", id);
         } catch (error) {
             console.error("Error borrando nota:", error);
         }
     };
-
-    useEffect(() => {
-        socket.on("addNote", async (noteWithoutId) => {
-            try {
-                const response = await crearNota(noteWithoutId); // crea nota en DB y recibe la nota con UUID
-                const createdNote = response.data;
-
-                if (!createdNote || !createdNote.id) {
-                    console.error("La nota creada no tiene ID");
-                    return;
-                }
-
-                const noteWithId = {
-                    ...createdNote,
-                    position: { x: createdNote.posx ?? 0, y: createdNote.posy ?? 0 },
-                };
-
-                setNotes((prev) => [...prev, noteWithId]);
-                socket.emit("addNoteWithId", noteWithId);
-
-            } catch (error) {
-                console.error("Error creando nota en socket addNote:", error);
-            }
-        });
-
-        socket.on("addNoteWithId", (note) => {
-            setNotes((prev) => [...prev, {
-                ...note,
-                position: note.position ?? { x: 0, y: 0 }
-            }]);
-        });
-
-        socket.on("updateNote", (updatedNote) => {
-            setNotes((prev) =>
-                prev.map((note) =>
-                    note.id === updatedNote.id
-                        ? { ...note, ...updatedNote, position: updatedNote.position ?? note.position ?? { x: 0, y: 0 } }
-                        : note
-                )
-            );
-        });
-
-        socket.on("requestDeleteNote", (noteId) => {
-            deleteNote(noteId);
-        });
-
-        socket.on("moveNote", ({ id, position }) => {
-            setNotes((prev) =>
-                prev.map((note) =>
-                    note.id === id ? { ...note, position: position ?? { x: 0, y: 0 } } : note
-                )
-            );
-        });
-
-        socket.on("syncNotes", (savedNotes) => {
-            const formatted = savedNotes.map(note => ({
-                ...note,
-                position: note.position ?? { x: 0, y: 0 }
-            }));
-            setNotes(formatted);
-        });
-        //falta hacer que se sincronicen
-        socket.on("join", () => {
-            saveMural();
-            socket.emit("enviarIdMural", { idMural: idMural });
-        });
-
-        return () => {
-            socket.off("addNote");
-            socket.off("addNoteWithId");
-            socket.off("updateNote");
-            socket.off("deleteNote");
-            socket.off("moveNote");
-            socket.off("syncNotes");
-        };
-    }, []);
 
     return (
         <div className="min-h-screen w-full bg-sky-200 fixed inset-0 overflow-auto">
@@ -254,14 +168,14 @@ const StickyNotesHost = () => {
                         💾 Guardar mural
                     </button>
 
-                    <button onClick={finalizarAct}
+                    <button onClick={volver}
                         className="fixed top-4 right-4 px-4 py-2 bg-red-600 text-black rounded-lg shadow-lg z-50">
-                        Terminar Actividad
+                        Volver a biblioteca
                     </button>
                 </DndContext>
             </div>
         </div>
     );
-};
+}
 
-export default StickyNotesHost;
+export default VerpizarraNotas;

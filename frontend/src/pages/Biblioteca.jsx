@@ -9,7 +9,7 @@ import { eliminarQuiz } from "../services/quiz.service.js";
 import { deleteMural } from "../services/stickNotes.service.js";
 import useUsers from "../hooks/users/useGetUsers.jsx";
 import { useState } from "react";
-import { FaThLarge, FaList, FaEdit, FaTrash, FaShareAlt } from "react-icons/fa";
+import { FaThLarge, FaList, FaEdit, FaTrash, FaShareAlt, FaEye } from "react-icons/fa";
 import PopUpUpdateMural from "../components/popupUpdateMural.jsx";
 import { updateMural } from "../services/stickNotes.service.js";
 
@@ -197,6 +197,12 @@ const Biblioteca = () => {
                                 <div key={mural.idmural} className="bg-gradient-to-r from-indigo-400 to-purple-500 rounded-lg shadow-md p-4 flex flex-col justify-between">
                                     <h3 className="text-white font-bold text-lg mb-2 truncate">{mural.titulo}</h3>
                                     <div className="flex justify-end gap-3">
+
+                                        <button 
+                                        onClick={() => navigate(`/vermuralnotas/${mural.id}`)} 
+                                        className="text-[#FF9233]/70 hover:text-[#2C3E50] transition-colors duration-200">
+                                            <FaEye size={18} />
+                                        </button>
                                         <button
                                             onClick={() => abrirEditarMural(mural)}
                                             className="text-[#FF9233]/70 hover:text-[#2C3E50] transition-colors duration-200"

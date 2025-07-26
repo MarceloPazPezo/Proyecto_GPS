@@ -3,6 +3,8 @@ import { socket } from "../main";
 import "../styles/index.css"
 import { useNavigate } from "react-router-dom";
 import fondoSVG from '../assets/fondo_azul.svg';
+import banWords from "../helpers/banWords";
+import { showErrorAlert, showSuccessAlert } from "../helpers/sweetAlert"
 
 const pizarraIdeas = () => {
     const navigate = useNavigate();
@@ -12,9 +14,26 @@ const pizarraIdeas = () => {
 
     const responder = (e) => {
         e.preventDefault();
-        socket.emit("respuesta", { responder: respuesta })
-        setEstado(true)
-    }
+
+        const respuestaLower = respuesta.toLowerCase();
+
+        if (respuestaLower.length > 18) {
+            showErrorAlert("Respuesta demasiado larga", "Máximo 18 caracteres permitidos");
+            return;
+        }
+
+        const contieneGroseria = banWords.some((regex) =>
+            regex.test(respuestaLower)
+        );
+
+        if (contieneGroseria) {
+            showErrorAlert("Nada de groserias", "No se admiten groserias");
+            return;
+        }
+
+        socket.emit("respuesta", { responder: respuesta });
+        setEstado(true);
+    };
 
     useEffect(() => {
         socket.on("reiniciar", (data) => {

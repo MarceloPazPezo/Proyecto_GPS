@@ -103,8 +103,8 @@ const Salas = () => {
                                 required: true,
                                 options: [
                                     { label: "Quiz", value: 'quiz' },
-                                    { label: "Pizarra", value: 'pizarra' },
-                                    { label: "Notas", value: 'notas' }
+                                    { label: "Nube de palabras", value: 'pizarra' },
+                                    { label: "Pizarra de notas", value: 'notas' }
                                 ]
                             }
                         ]}
@@ -192,11 +192,6 @@ const Salas = () => {
                                 onConfirm={(mural) => {
                                     setMuralSeleccionado(mural);
                                     setMostrarSelectorMural(false);
-                                    // Llamar a iniciarAct después de que el estado se actualice
-                                    // Se necesita un useEffect o llamar a la función con el nuevo valor
-                                    // Para simplificar, asumimos que el estado se actualiza y la lógica funciona
-                                    // Una solución más robusta sería usar un useEffect que dependa de muralSeleccionado.
-                                    // Por ahora, lo mantenemos como estaba.
                                     iniciarAct();
                                 }}
                                 onCancel={() => setMostrarSelectorMural(false)}
