@@ -1,10 +1,12 @@
-import { useState, useEffect} from "react";
-import { DndContext } from "@dnd-kit/core";
+import { useState, useEffect } from "react";
+import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 import DraggableNote from "../components/DraggableNote";
 import { socket } from "../main";
 import { useParams } from "react-router-dom";
 import { crearNota, saveMuralFront, getNotesByMural, deleteNoteFront } from "../services/stickNotes.service";
 import { useNavigate } from "react-router-dom";
+import { censurarTexto } from "../helpers/censoredtext";
+import { showErrorAlert, showSuccessAlert } from "../helpers/sweetAlert";
 
 const StickyNotesHost = () => {
     const [notes, setNotes] = useState([]);
@@ -12,12 +14,14 @@ const StickyNotesHost = () => {
     const { idMural } = useParams();
     const navigate = useNavigate();
 
+    const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
+
     useEffect(() => {
         const fetchNotes = async () => {
             try {
                 const response = await getNotesByMural(idMural);
                 const rawNotes = Array.isArray(response) ? response : [];
-                const formattedNotes = rawNotes.map(note => ({
+                const formattedNotes = rawNotes.map((note) => ({
                     id: note.id,
                     title: note.titulo,
                     text: note.descripcion,
@@ -34,12 +38,14 @@ const StickyNotesHost = () => {
     }, [idMural]);
 
     const addNote = async () => {
+        const position = getFreePosition(notes);
+
         const newNoteData = {
             titulo: "Título",
             descripcion: "Nueva nota",
             color: "#fef08a",
-            posx: 0,
-            posy: 0,
+            posx: position.x,
+            posy: position.y,
             idMural: idMural,
         };
 
@@ -84,8 +90,48 @@ const StickyNotesHost = () => {
             await saveMuralFront(idMural, formattedNotesForBackend);
 
             socket.emit("syncNotes", notes);
+
         } catch (error) {
             console.error("Error guardando mural:", error);
+        }
+        setSaving(false);
+    };
+
+    const getFreePosition = (existingNotes, spacing = 200) => {
+        const maxTries = 100;
+        for (let i = 0; i < maxTries; i++) {
+            const x = (i % 5) * spacing;
+            const y = Math.floor(i / 5) * spacing;
+            const overlaps = existingNotes.some(note => {
+                const dx = Math.abs(note.position.x - x);
+                const dy = Math.abs(note.position.y - y);
+                return dx < spacing && dy < spacing;
+            });
+            if (!overlaps) return { x, y };
+        }
+        return { x: 0, y: 0 }; // fallback
+    };
+
+    const saveMuralclick = async () => {
+        setSaving(true);
+        try {
+            const formattedNotesForBackend = notes.map(note => ({
+                id: note.id,
+                titulo: note.title ?? "Titulo",
+                descripcion: note.text ?? "Nueva Nota",
+                color: note.color ?? "#fef08a",
+                posx: note.position?.x ?? 0,
+                posy: note.position?.y ?? 0,
+                idMural: idMural,
+            }));
+
+            await saveMuralFront(idMural, formattedNotesForBackend);
+
+            socket.emit("syncNotes", notes);
+            showSuccessAlert("Mural guardado", "El mural se a guarado correctamente");
+        } catch (error) {
+            console.error("Error guardando mural:", error);
+            showErrorAlert("Error al guardar el mural", error);
         }
         setSaving(false);
     };
@@ -98,24 +144,79 @@ const StickyNotesHost = () => {
         return () => clearInterval(autoSaveInterval);
     }, [notes]);
 
-    const handleDragEnd = (event) => {
-    const { active, delta } = event;
 
-    setNotes((prevNotes) =>
-        prevNotes.map((note) => {
-            if (note.id === active.id) {
-                const currentPosition = note.position ?? { x: 0, y: 0 };
-                const newPosition = {
-                    x: Math.max(0, currentPosition.x + delta.x),
-                    y: Math.max(0, currentPosition.y + delta.y),
-                };
-                socket.emit("moveNote", { id: note.id, position: newPosition });
-                return { ...note, position: newPosition };
-            }
-            return note;
-        })
-    );
-};
+    const handleDragEnd = (event) => {
+        const { active, delta } = event;
+
+        setNotes((prevNotes) => {
+            return prevNotes.map((note) => {
+                if (note.id === active.id) {
+                    const currentPosition = note.position ?? { x: 0, y: 0 };
+                    let newPosition = {
+                        x: Math.max(0, currentPosition.x + delta.x),
+                        y: Math.max(0, currentPosition.y + delta.y),
+                    };
+
+                    const minDx = 210;
+                    const minDy = 230;
+
+                    // Máximos desplazamientos en cada dirección
+                    let maxOffsetXPos = 0;
+                    let maxOffsetXNeg = 0;
+                    let maxOffsetYPos = 0;
+                    let maxOffsetYNeg = 0;
+
+                    prevNotes.forEach((otherNote) => {
+                        if (otherNote.id === note.id) return;
+
+                        const dx = otherNote.position.x - newPosition.x;
+                        const dy = otherNote.position.y - newPosition.y;
+
+                        const absDx = Math.abs(dx);
+                        const absDy = Math.abs(dy);
+
+                        if (absDx < minDx && absDy < minDy) {
+                            const overlapX = minDx - absDx + 5;
+                            const overlapY = minDy - absDy + 5;
+
+                            if (dx < 0 && overlapX > maxOffsetXPos) maxOffsetXPos = overlapX;
+                            if (dx >= 0 && overlapX > maxOffsetXNeg) maxOffsetXNeg = overlapX;
+                            if (dy < 0 && overlapY > maxOffsetYPos) maxOffsetYPos = overlapY;
+                            if (dy >= 0 && overlapY > maxOffsetYNeg) maxOffsetYNeg = overlapY;
+                        }
+                    });
+
+                    // Calculamos desplazamientos en X e Y
+                    let offsetX = 0;
+                    if (maxOffsetXPos > maxOffsetXNeg) offsetX = maxOffsetXPos;
+                    else if (maxOffsetXNeg > 0) offsetX = -maxOffsetXNeg;
+
+                    let offsetY = 0;
+                    if (maxOffsetYPos > maxOffsetYNeg) offsetY = maxOffsetYPos;
+                    else if (maxOffsetYNeg > 0) offsetY = -maxOffsetYNeg;
+
+                    // Ahora elegimos el eje de mayor desplazamiento y movemos sólo en ese eje
+                    if (Math.abs(offsetX) > Math.abs(offsetY)) {
+                        newPosition.x = Math.max(0, newPosition.x + offsetX);
+                        // Y no cambia
+                    } else if (Math.abs(offsetY) > 0) {
+                        newPosition.y = Math.max(0, newPosition.y + offsetY);
+                        // X no cambia
+                    }
+                    // Si ambos son 0, no hay solapamiento, no se mueve nada
+
+                    socket.emit("moveNote", {
+                        id: note.id,
+                        position: newPosition,
+                    });
+
+                    return { ...note, position: newPosition };
+                }
+                return note;
+            });
+        });
+    };
+
 
     const finalizarAct = () => {
         socket.emit("finnish", { sala: sessionStorage.getItem('sala') });
@@ -127,7 +228,14 @@ const StickyNotesHost = () => {
     const updateNote = (id, changes) => {
         setNotes((prev) => {
             const updatedNotes = prev.map((note) =>
-                note.id === id ? { ...note, ...changes } : note
+                note.id === id
+                    ? {
+                        ...note,
+                        ...changes,
+                        title: censurarTexto(changes.title ?? note.title),
+                        text: censurarTexto(changes.text ?? note.text),
+                    }
+                    : note
             );
             const updatedNote = updatedNotes.find((note) => note.id === id);
             socket.emit("updateNote", updatedNote);
@@ -224,7 +332,7 @@ const StickyNotesHost = () => {
     return (
         <div className="min-h-screen w-full bg-sky-200 fixed inset-0 overflow-auto">
             <div className="relative min-h-full p-4">
-                <DndContext onDragEnd={handleDragEnd}>
+                <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
                     {notes.map((note) => (
                         <DraggableNote
                             key={note.id}
@@ -247,15 +355,17 @@ const StickyNotesHost = () => {
                     </button>
 
                     <button
-                        onClick={saveMural}
+                        onClick={saveMuralclick}
                         className="fixed bottom-4 right-4 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-lg z-50"
                         disabled={saving}
                     >
                         💾 Guardar mural
                     </button>
 
-                    <button onClick={finalizarAct}
-                        className="fixed top-4 right-4 px-4 py-2 bg-red-600 text-black rounded-lg shadow-lg z-50">
+                    <button
+                        onClick={finalizarAct}
+                        className="fixed top-4 right-4 px-4 py-2 bg-red-600 text-black rounded-lg shadow-lg z-50"
+                    >
                         Terminar Actividad
                     </button>
                 </DndContext>

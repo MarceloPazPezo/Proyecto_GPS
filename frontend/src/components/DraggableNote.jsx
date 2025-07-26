@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
 
 export default function DraggableNote({
@@ -65,6 +65,7 @@ export default function DraggableNote({
         left: "50%",
         transform: "translate(-50%, -50%)",
         zIndex: 1,
+        touchAction: "none",
     };
 
     const dragDotStyle = {
