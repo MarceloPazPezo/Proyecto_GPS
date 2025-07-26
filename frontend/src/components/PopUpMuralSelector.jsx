@@ -1,6 +1,8 @@
 import { useState } from "react";
 import useGetMurales from "../hooks/mural/useGetMurales.jsx";
 import useCreateMural from "../hooks/mural/useCreateMural.jsx";
+import { showErrorAlert, showSuccessAlert } from "../helpers/sweetAlert";
+
 
 const PopUpMuralSelector = ({ idUser, onConfirm, onCancel }) => {
     const { murales, loading: loadingMurales, error: errorMurales, fetchMurales } = useGetMurales(idUser);
@@ -11,7 +13,7 @@ const PopUpMuralSelector = ({ idUser, onConfirm, onCancel }) => {
 
     const handleCrearMural = async () => {
         if (!tituloNuevo.trim()) {
-            alert("Por favor, ingresa un título para el mural");
+            showErrorAlert("Ingrese titulo","No se admite titulo vacio")
             return;
         }
         try {
@@ -19,8 +21,8 @@ const PopUpMuralSelector = ({ idUser, onConfirm, onCancel }) => {
             setMuralSeleccionado(nuevo);
             setTituloNuevo("");
             fetchMurales();
-        } catch {
-            alert("Error al crear el mural");
+        } catch (error){
+            showErrorAlert("Error al crear el mural",error.details.message);
         }
     };
 
