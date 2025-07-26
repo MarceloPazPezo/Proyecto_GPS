@@ -100,7 +100,7 @@ const Carreras = () => {
   ];
 
   return (
-    <div>
+    <div className='p-9'>
       <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
         <h1 className="text-3xl font-bold text-[#2C3E50]">Carreras</h1>
         <div className="flex items-center gap-2">
