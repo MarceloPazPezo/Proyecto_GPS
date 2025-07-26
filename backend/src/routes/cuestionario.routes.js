@@ -27,7 +27,7 @@ router.patch("/",updateCuestionario);
 router.delete("/",deleteCuestionario);
 router.post("/addLote/:idCuestionario", upload.any(), addLotepPreguntas);
 router.get("/lote/:idCuestionario", obtenerPreguntasYRespuestasController);
-router.patch("/lote/:idCuestionario", actualizarPreguntasYRespuestasController);
+router.patch("/lote/:idCuestionario", upload.any(), actualizarPreguntasYRespuestasController);
 
 
 export default router;
