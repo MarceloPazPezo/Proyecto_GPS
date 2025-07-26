@@ -8,6 +8,8 @@ export function formatUserData(user) {
         nombreCompleto: startCase(user.nombreCompleto),
         rol: startCase(user.rol),
         rut: formatRut(user.rut),
+        carreraCodigo: user.carreraCodigo || 'Sin Carrera',
+        carreraNombre: user.carreraNombre || 'Sin Código',
         createdAt: formatTempo(user.createdAt, "DD-MM-YYYY")
     };
 }
@@ -27,6 +29,8 @@ export function formatPostUpdate(user) {
         rol: startCase(user.rol),
         rut: formatRut(user.rut),
         email: user.email,
+        carreraCodigo: user.carreraCodigo || 'Sin Carrera',
+        carreraNombre: user.carreraNombre || 'Sin Código',
         createdAt: formatTempo(user.createdAt, "DD-MM-YYYY")
     };
 }

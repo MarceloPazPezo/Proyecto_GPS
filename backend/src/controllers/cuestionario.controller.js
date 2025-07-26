@@ -103,13 +103,13 @@ export async function updateCuestionario(req, res) {
         const { body } = req;
         const { idUser, nombre, id } = req.query
 
-        const { errorBody } = quizBodyValidation.validate(body);
+        const { error: errorBody } = quizBodyValidation.validate(body);
 
-        if (errorBody) return handleErrorClient(res, 400, "Error de validación", error.message);
+        if (errorBody) return handleErrorClient(res, 400, "Error de validación", errorBody.message);
 
-        const { errorQuery } = quizQueryValidation.validate({ idUser, nombre, id });
+        const { error: errorQuery } = quizQueryValidation.validate({ idUser, nombre, id });
 
-        if (errorQuery) return handleErrorClient(res, 400, "Error de validación", error.message);
+        if (errorQuery) return handleErrorClient(res, 400, "Error de validación", errorQuery.message);
 
         const [updatedQuiz, errorQuiz] = await updateCuestionarioService({ id, idUser, nombre }, body);
 
@@ -125,9 +125,9 @@ export async function deleteCuestionario(req, res) {
     try {
         const { idUser, nombre, id } = req.body
 
-        const { errorQuery } = quizQueryValidation.validate({ idUser, nombre, id });
+        const { error: errorQuery } = quizQueryValidation.validate({ idUser, nombre, id });
 
-        if (errorQuery) return handleErrorClient(res, 400, "Error de validación", error.message);
+        if (errorQuery) return handleErrorClient(res, 400, "Error de validación", errorQuery.message);
 
         const [quiz, errorQuiz] = await deleteCuestionarioService({ idUser, nombre, id });
 
@@ -142,10 +142,17 @@ export async function deleteCuestionario(req, res) {
 export async function addLotepPreguntas(req, res) {
     try {
         const { idCuestionario } = req.params;
-        console.log("ID Cuestionario:", idCuestionario);
 
-        const preguntasBody = req.body;
-        console.log("Preguntas recibidas:", preguntasBody);
+        // Si viene como string, parsear
+        let preguntasBody = req.body;
+        if (typeof preguntasBody === 'string') {
+            preguntasBody = JSON.parse(preguntasBody);
+        }
+        if (typeof preguntasBody.preguntas === 'string') {
+            preguntasBody = JSON.parse(preguntasBody.preguntas);
+        } else if (preguntasBody.preguntas) {
+            preguntasBody = preguntasBody.preguntas;
+        }
 
         if (!Array.isArray(preguntasBody) || preguntasBody.length === 0) {
             // Permitir guardar lote vacío (sin preguntas)
@@ -221,13 +228,57 @@ export async function obtenerPreguntasYRespuestasController(req, res) {
     export async function actualizarPreguntasYRespuestasController(req, res) {
     try {
         const { idCuestionario } = req.params;
-        const { idUser, titulo, preguntas } = req.body;
+        let jsonData;
 
-        // 1. Validación de la entrada (se mantiene igual)
+        // Verificar si los datos vienen como FormData o como JSON directo
+        if (req.body.data) {
+            // Si hay un campo 'data', parsear el JSON desde ahí
+            try {
+                jsonData = JSON.parse(req.body.data);
+            } catch (parseError) {
+                return handleErrorClient(res, 400, "Error de formato", "Los datos JSON en el campo 'data' no son válidos");
+            }
+        } else {
+            // Si no hay campo 'data', los datos JSON están directamente en req.body
+            jsonData = req.body;
+        }
+
+        console.log("Datos recibidos para actualizar preguntas y respuestas:", jsonData);
+        const { idUser, titulo, preguntas } = jsonData;
+
+        // Validar que preguntas sea un array
+        if (!Array.isArray(preguntas)) {
+            return handleErrorClient(res, 400, "Error de formato", "El campo 'preguntas' debe ser un array");
+        }
+
+        // 1. Validación de la entrada
         const { error } = quizQueryValidation.validate({ id: idCuestionario, idUser, nombre: titulo });
         if (error) return handleErrorClient(res, 400, "Error de validación", error.message);
 
-        // 2. Preparamos el objeto de datos para el nuevo servicio
+        // 2. Procesar las imágenes si existen
+        if (req.files && req.files.length > 0) {
+            // Asociar cada archivo con su pregunta correspondiente
+            for (const file of req.files) {
+                // Buscar la pregunta que tiene este imagenField
+                const preguntaIndex = preguntas.findIndex(p => p.imagenField === file.fieldname);
+                if (preguntaIndex !== -1) {
+                    // Agregar la información de la imagen a la pregunta
+                    preguntas[preguntaIndex].imagenUrl = file.location;
+                    preguntas[preguntaIndex].imagenKey = file.key;
+                }
+            }
+        }
+
+        for (const pregunta of preguntas) {
+            // Si imagenField es null (imagen eliminada) o no existe, asegurarse de que imagenUrl y imagenKey sean null
+            if (!pregunta.imagenField) {
+                pregunta.imagenUrl = null;
+                pregunta.imagenKey = null;
+            }
+            // Si no se actualizó con un archivo nuevo pero tenía una URL anterior, mantenerla
+            // Esto ya está manejado implícitamente porque no modificamos estos campos
+        }
+        // 3. Preparamos el objeto de datos para el servicio
         const serviceData = {
             cuestionarioData: {
                 idUser,
@@ -236,19 +287,18 @@ export async function obtenerPreguntasYRespuestasController(req, res) {
             preguntasData: preguntas
         };
 
-        // 3. Llamamos al ÚNICO servicio transaccional
+        // 4. Llamamos al servicio transaccional
         const [resultado, errorService] = await actualizarCuestionarioCompletoService(idCuestionario, serviceData);
         
-        // 4. Manejamos la respuesta del servicio
+        // 5. Manejamos la respuesta del servicio
         if (errorService) {
-            // El error puede ser por "no encontrado" (cliente) o un fallo de DB (servidor)
             if (errorService.includes("no existe")) {
                 return handleErrorClient(res, 404, "No encontrado", errorService);
             }
             return handleErrorClient(res, 500, "Error al actualizar el cuestionario", errorService);
         }
 
-        // 5. Respondemos con éxito
+        // 6. Respondemos con éxito
         handleSuccess(res, 200, "Cuestionario actualizado exitosamente", resultado);
 
     } catch (error) {

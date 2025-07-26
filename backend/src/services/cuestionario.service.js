@@ -2,6 +2,7 @@ import Cuestionario from "../entity/cuestionario.entity.js";
 import { AppDataSource } from "../config/configDb.js";
 import Respuesta from "../entity/respuesta.entity.js";
 import Pregunta from "../entity/preguntas.entity.js";
+import { deleteFile } from './minio.service.js';
 
 const cuestRepository = AppDataSource.getRepository(Cuestionario);
 
@@ -178,7 +179,8 @@ export async function obtenerPreguntasYRespuestas(idCuestionario) {
             .select([
                 'p.id AS id',
                 'p."idCuestionario" AS "idCuestionario"',
-                'p.texto AS texto'
+                'p.texto AS texto',
+                'p."imagenUrl" AS "imagenUrl"'
             ])
             .addSelect(`
       json_agg(
@@ -194,7 +196,7 @@ export async function obtenerPreguntasYRespuestas(idCuestionario) {
             .groupBy('p.id')
             .getRawMany();
 
-
+        console.log("Preguntas y respuestas obtenidas:", result);
         return [result, null]
     }
     catch (error) {
@@ -246,22 +248,32 @@ export async function actualizarCuestionarioCompletoService(idCuestionario, data
         });
         const updatedCuestionario = await queryRunner.manager.save(Cuestionario, cuestFound);
 
+        // --- PASO 2: OBTENER LAS PREGUNTAS ANTIGUAS PARA ELIMINAR IMÁGENES ---
+        const preguntaRepository = queryRunner.manager.getRepository(Pregunta);
+        const preguntasAntiguas = await preguntaRepository.find({ 
+            where: { idCuestionario: idCuestionario },
+            select: ["id", "imagenKey"] // Solo necesitamos el ID y la clave de la imagen
+        });
 
-        // --- PASO 2: ELIMINAR TODAS LAS PREGUNTAS ANTIGUAS ---
+        // Recopilamos las claves de imágenes para eliminar después
+        const imagenesParaEliminar = preguntasAntiguas
+            .filter(p => p.imagenKey) // Solo las preguntas con imágenes
+            .map(p => p.imagenKey);
+
+        // --- PASO 3: ELIMINAR TODAS LAS PREGUNTAS ANTIGUAS ---
         // Esto eliminará todas las preguntas asociadas al cuestionario.
         // Si tienes "ON DELETE CASCADE" en la relación Pregunta->Respuesta, las respuestas se borrarán automáticamente.
-        // Esta es la forma más eficiente y recomendada.
-        const preguntaRepository = queryRunner.manager.getRepository(Pregunta);
         await preguntaRepository.delete({ idCuestionario: idCuestionario });
 
-
-        // --- PASO 3: INSERTAR LAS NUEVAS PREGUNTAS Y RESPUESTAS ---
+        // --- PASO 4: INSERTAR LAS NUEVAS PREGUNTAS Y RESPUESTAS ---
         if (preguntasData && preguntasData.length > 0) {
-            // a) Creamos las nuevas preguntas. Ignoramos los IDs viejos del body.
+            // a) Creamos las nuevas preguntas con sus imágenes si existen
             const preguntasNuevas = preguntasData.map(p => {
                 return preguntaRepository.create({
                     texto: p.texto,
                     idCuestionario: updatedCuestionario.id,
+                    imagenUrl: p.imagenUrl || null,
+                    imagenKey: p.imagenKey || null
                 });
             });
             const preguntasGuardadas = await queryRunner.manager.save(Pregunta, preguntasNuevas);
@@ -274,14 +286,10 @@ export async function actualizarCuestionarioCompletoService(idCuestionario, data
                 const respuestasDeLaPreguntaOriginal = preguntasData[index].Respuestas || [];
                 
                 const nuevasRespuestas = respuestasDeLaPreguntaOriginal.map(r => {
-                    // Creamos una nueva entidad Respuesta.
-                    // Los campos `textoRespuesta` y `correcta` de tu body deben coincidir
-                    // con los nombres de las propiedades en tu entidad Respuesta.
-                    // El ID antiguo de la respuesta (`r.id`) se ignora.
                     return respuestasRepository.create({
                         textoRespuesta: r.textoRespuesta,
                         correcta: r.correcta,
-                        idPreguntas: preguntaGuardada.id, // ¡Asociamos con el ID de la NUEVA pregunta!
+                        idPreguntas: preguntaGuardada.id, // Asociamos con el ID de la NUEVA pregunta
                     });
                 });
                 respuestasToSave.push(...nuevasRespuestas);
@@ -295,6 +303,16 @@ export async function actualizarCuestionarioCompletoService(idCuestionario, data
         
         // Si todos los pasos fueron exitosos, confirmamos la transacción.
         await queryRunner.commitTransaction();
+
+        // --- PASO 5: ELIMINAR LAS IMÁGENES ANTIGUAS DE MINIO ---
+        // Esto se hace fuera de la transacción para no bloquear la BD
+        // y porque no es crítico para la integridad de los datos
+        for (const imagenKey of imagenesParaEliminar) {
+            await deleteFile(imagenKey).catch(err => {
+                console.error(`Error al eliminar imagen ${imagenKey} de MinIO:`, err);
+                // No lanzamos el error para no afectar la respuesta al cliente
+            });
+        }
 
         // Para devolver una respuesta completa, volvemos a buscar el cuestionario con sus nuevas relaciones.
         const resultadoFinal = await AppDataSource.getRepository(Cuestionario).findOne({

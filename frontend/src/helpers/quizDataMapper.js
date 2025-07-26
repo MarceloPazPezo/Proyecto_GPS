@@ -22,6 +22,7 @@ export const transformApiDataToSlides = (apiQuestions) => {
         id: question.id, // Mantenemos el ID de la BD para la pregunta (usado como slide.id)
         type: 'Quiz',
         questionText: question.texto,
+        imagen: question.imagenUrl || null, // Si no hay imagen, dejamos null
         
         // Mapeo de respuestas
         answers: question.Respuestas.map((answer, index) => {
