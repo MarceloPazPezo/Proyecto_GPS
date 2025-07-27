@@ -36,10 +36,9 @@ export default function DraggableNote({
         padding: "4px 6px",
         display: "flex",
         alignItems: "center",
-        justifyContent: "space-between",
         borderTopLeftRadius: 8,
         borderTopRightRadius: 8,
-        position: "relative",
+        gap: 4,
     };
 
     const titleInputStyle = {
@@ -48,9 +47,13 @@ export default function DraggableNote({
         fontWeight: "bold",
         fontSize: 14,
         color: "#2c3e50",
-        flexGrow: 1,
+        flexShrink: 1,         // permite encoger si es necesario
+        maxWidth: 100,         // máximo ancho para el título
         outline: "none",
         marginRight: 8,
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
     };
 
     const dragHandleStyle = {
@@ -60,11 +63,7 @@ export default function DraggableNote({
         gap: "3px 5px",
         cursor: "grab",
         justifyContent: "center",
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        zIndex: 1,
+        alignItems: "center",
         touchAction: "none",
     };
 
@@ -81,14 +80,12 @@ export default function DraggableNote({
         color: "white",
         fontSize: 16,
         cursor: "pointer",
-        padding: 0,
-        marginLeft: 4,
+        padding: 2,
     };
 
     return (
         <div ref={setNodeRef} style={style} {...attributes}>
             <div style={titleBarStyle}>
-
                 <input
                     type="text"
                     value={title}
@@ -97,6 +94,18 @@ export default function DraggableNote({
                     style={titleInputStyle}
                 />
 
+                <div {...listeners} style={dragHandleStyle} title="Mover">
+                    {[0, 1, 2, 3].map((i) => (
+                        <div key={`top-${i}`} style={dragDotStyle} />
+                    ))}
+                    {[null, 0, 1, null].map((val, i) =>
+                        val !== null ? (
+                            <div key={`bottom-${i}`} style={dragDotStyle} />
+                        ) : (
+                            <div key={`spacer-${i}`} />
+                        )
+                    )}
+                </div>
 
                 <button
                     onClick={(e) => {
@@ -109,33 +118,16 @@ export default function DraggableNote({
                     🎨
                 </button>
 
-
                 <button
-                    style={iconButtonStyle}
                     onClick={(e) => {
                         e.stopPropagation();
                         onDelete(id);
                     }}
+                    style={iconButtonStyle}
                     title="Eliminar nota"
                 >
                     ×
                 </button>
-
-
-                <div {...listeners} style={dragHandleStyle} title="Mover">
-
-                    {[0, 1, 2, 3].map((i) => (
-                        <div key={`top-${i}`} style={dragDotStyle} />
-                    ))}
-
-                    {[null, 0, 1, null].map((val, i) =>
-                        val !== null ? (
-                            <div key={`bottom-${i}`} style={dragDotStyle} />
-                        ) : (
-                            <div key={`spacer-${i}`} />
-                        )
-                    )}
-                </div>
             </div>
 
             <textarea
@@ -148,7 +140,7 @@ export default function DraggableNote({
                     fontSize: 15,
                     outline: "none",
                     fontFamily: "inherit",
-                    color: "#2c3e50"
+                    color: "#2c3e50",
                 }}
                 value={text}
                 onChange={(e) => onUpdate(id, { text: e.target.value })}
