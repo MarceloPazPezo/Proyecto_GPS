@@ -20,6 +20,7 @@ import '@styles/styles.css';
 import WaitingRoom from './pages/WaitingRoom';
 import Biblioteca from './pages/Biblioteca.jsx';
 import StickyHost from './pages/stickyNotesHost.jsx';
+import VerpizarraNotas from './pages/VerpizarraNotas.jsx';
 import StickyNotesGuest from './pages/StickyNotesGuest.jsx';
 import ScoreBoard from './pages/ScoreBoard.jsx';
 import Carreras from './pages/Carreras.jsx';
@@ -122,6 +123,10 @@ const router = createBrowserRouter([
   {
     path: '/stickyHost/:idMural',
     element: <StickyHost />
+  },
+  {
+    path: '/vermuralnotas/:idMural',
+    element: <VerpizarraNotas />
   }
 ])
 
