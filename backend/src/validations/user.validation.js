@@ -130,12 +130,12 @@ export const userBodyValidation = Joi.object({
     "number.positive": "El idCarrera debe ser un número positivo.",
   }),
 })
-  .or("nombreCompleto", "email", "password", "newPassword", "rut", "rol")
+  .or("nombreCompleto", "email", "password", "newPassword", "rut", "rol", "idCarrera")
   .unknown(false)
   .messages({
     "object.unknown": "No se permiten propiedades adicionales.",
     "object.missing":
-      "Debes proporcionar al menos un campo: nombreCompleto, email, password, newPassword, rut o rol.",
+      "Debes proporcionar al menos un campo: nombreCompleto, email, password, newPassword, rut, rol o idCarrera.",
   });
 
 export const userCreateValidation = Joi.object({
