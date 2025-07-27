@@ -10,6 +10,15 @@ export async function createUser(userData) {
     }
 }
 
+export async function getUser(data){
+    try {
+        const response= await axios.post(`/EX/join`,{rut:data});
+        return response.data;
+    } catch (error) {
+        return error.response.data;
+    }
+}
+
 export async function getUsers() {
     try {
         const { data } = await axios.get('/user/');
