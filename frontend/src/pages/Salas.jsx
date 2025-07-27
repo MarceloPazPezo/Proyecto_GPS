@@ -120,13 +120,13 @@ export default function Salas() {
                   { 
                     icon: FaCloud, 
                     label: "Nube de palabras", 
-                    value: "notas",
+                    value: "pizarra",
                     color: "text-[#65CD73]"
                   },
                   { 
                     icon: FaChalkboard, 
                     label: "Pizarra de proyecto", 
-                    value: "pizarra",
+                    value: "notas",
                     color: "text-[#FF9233]"
                   },
                 ].map((act) => (
