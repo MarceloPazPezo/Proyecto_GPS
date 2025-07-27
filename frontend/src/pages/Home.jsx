@@ -65,7 +65,7 @@ const steps = [
 const Home = () => {
   return (
     // Contenedor principal con el nuevo fondo claro y color de texto por defecto
-    <div className=" w-full bg-gradient-to-br from-sky-200 via-sky-200 to-sky-100 text-slate-800 font-sans p-4 sm:p-8 rounded-2xl">
+    <div className=" w-full bg-sky-50 text-slate-800 font-sans p-4 sm:p-8 ">
       <div className="max-w-7xl mx-auto">
         
         {/* Sección de Bienvenida */}

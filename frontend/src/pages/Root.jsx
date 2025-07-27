@@ -14,7 +14,7 @@ function Root() {
 }
 
 function PageRoot({ sidebarOpen, setSidebarOpen }) {
-    const location = useLocation();
+  const location = useLocation();
 
   // --- CAMBIO CLAVE AQUÍ ---
   // Comprobamos si la ruta es /home o si COMIENZA CON /host/
@@ -23,10 +23,14 @@ function PageRoot({ sidebarOpen, setSidebarOpen }) {
   // Caso 1: La ruta es /home. Tiene su propio layout con Sidebar.
   if (location.pathname === '/home') {
     return (
+      <div >
+      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <main className={` transition-all duration-300 ${sidebarOpen ? 'ml-56' : ''}`}>
       <div>
-        <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         <Outlet />
       </div>
+      </main>
+      </div >
     );
   }
 
@@ -39,10 +43,10 @@ function PageRoot({ sidebarOpen, setSidebarOpen }) {
     );
   }
 
-   if (location.pathname === '/scoreBoard') {
+  if (location.pathname === '/scoreBoard') {
     return (
       <div>
-      
+
         <Outlet />
       </div>
     );
@@ -51,7 +55,7 @@ function PageRoot({ sidebarOpen, setSidebarOpen }) {
   if (location.pathname.startsWith('/hostIdeas')) {
     return (
       <div>
-          <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         <Outlet />
       </div>
     );
@@ -59,13 +63,11 @@ function PageRoot({ sidebarOpen, setSidebarOpen }) {
 
   // Si no es ninguna de las anteriores, usamos el layout por defecto con Sidebar y contenedor.
   return (
-    <div className="min-h-screen w-full bg-[#D8EFFD] flex">
+    <div className="min-h-screen w-full bg-[#efefef] flex">
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       <main className={`flex-1 flex items-center justify-center min-h-screen transition-all duration-300 ${sidebarOpen ? 'ml-56' : ''}`}>
         <div className="w-full h-full flex items-center justify-center">
-          <div className="bg-[#f7f7fb] w-full max-w-11/12 rounded-xl shadow p-9">
-            <Outlet />
-          </div>
+          <Outlet />
         </div>
       </main>
     </div>

@@ -4,6 +4,8 @@ import DraggableNote from "../components/DraggableNote";
 import { DndContext } from "@dnd-kit/core";
 import { crearNota, saveMuralFront, getNotesByMural, deleteNoteFront } from "../services/stickNotes.service";
 import { useNavigate } from "react-router-dom";
+import { showErrorAlert, showSuccessAlert } from "../helpers/sweetAlert";
+
 
 const VerpizarraNotas = () => {
     const [notes, setNotes] = useState([]);
@@ -86,6 +88,29 @@ const VerpizarraNotas = () => {
         }
         setSaving(false);
     };
+    const saveMuralclick = async () => {
+        setSaving(true);
+        try {
+            const formattedNotesForBackend = notes.map(note => ({
+                id: note.id,
+                titulo: note.title ?? "Titulo",
+                descripcion: note.text ?? "Nueva Nota",
+                color: note.color ?? "#fef08a",
+                posx: note.position?.x ?? 0,
+                posy: note.position?.y ?? 0,
+                idMural: idMural,
+            }));
+
+            await saveMuralFront(idMural, formattedNotesForBackend);
+
+            showSuccessAlert("Mural guardado", "El mural se a guarado correctamente");
+        } catch (error) {
+            console.error("Error guardando mural:", error);
+            showErrorAlert("Error al guardar el mural", error);
+        }
+        setSaving(false);
+    };
+
     useEffect(() => {
         const autoSaveInterval = setInterval(() => {
             saveMural();
@@ -97,21 +122,68 @@ const VerpizarraNotas = () => {
     const handleDragEnd = (event) => {
         const { active, delta } = event;
 
-        setNotes((prevNotes) =>
-            prevNotes.map((note) => {
+        setNotes((prevNotes) => {
+            return prevNotes.map((note) => {
                 if (note.id === active.id) {
                     const currentPosition = note.position ?? { x: 0, y: 0 };
-                    const newX = Math.max(0, currentPosition.x + delta.x);
-                    const newY = Math.max(0, currentPosition.y + delta.y);
-
-                    return {
-                        ...note,
-                        position: { x: newX, y: newY },
+                    let newPosition = {
+                        x: Math.max(0, currentPosition.x + delta.x),
+                        y: Math.max(0, currentPosition.y + delta.y),
                     };
+
+                    const minDx = 210;
+                    const minDy = 230;
+
+                    // Máximos desplazamientos en cada dirección
+                    let maxOffsetXPos = 0;
+                    let maxOffsetXNeg = 0;
+                    let maxOffsetYPos = 0;
+                    let maxOffsetYNeg = 0;
+
+                    prevNotes.forEach((otherNote) => {
+                        if (otherNote.id === note.id) return;
+
+                        const dx = otherNote.position.x - newPosition.x;
+                        const dy = otherNote.position.y - newPosition.y;
+
+                        const absDx = Math.abs(dx);
+                        const absDy = Math.abs(dy);
+
+                        if (absDx < minDx && absDy < minDy) {
+                            const overlapX = minDx - absDx + 5;
+                            const overlapY = minDy - absDy + 5;
+
+                            if (dx < 0 && overlapX > maxOffsetXPos) maxOffsetXPos = overlapX;
+                            if (dx >= 0 && overlapX > maxOffsetXNeg) maxOffsetXNeg = overlapX;
+                            if (dy < 0 && overlapY > maxOffsetYPos) maxOffsetYPos = overlapY;
+                            if (dy >= 0 && overlapY > maxOffsetYNeg) maxOffsetYNeg = overlapY;
+                        }
+                    });
+
+                    // Calculamos desplazamientos en X e Y
+                    let offsetX = 0;
+                    if (maxOffsetXPos > maxOffsetXNeg) offsetX = maxOffsetXPos;
+                    else if (maxOffsetXNeg > 0) offsetX = -maxOffsetXNeg;
+
+                    let offsetY = 0;
+                    if (maxOffsetYPos > maxOffsetYNeg) offsetY = maxOffsetYPos;
+                    else if (maxOffsetYNeg > 0) offsetY = -maxOffsetYNeg;
+
+                    // Ahora elegimos el eje de mayor desplazamiento y movemos sólo en ese eje
+                    if (Math.abs(offsetX) > Math.abs(offsetY)) {
+                        newPosition.x = Math.max(0, newPosition.x + offsetX);
+                        // Y no cambia
+                    } else if (Math.abs(offsetY) > 0) {
+                        newPosition.y = Math.max(0, newPosition.y + offsetY);
+                        // X no cambia
+                    }
+                    // Si ambos son 0, no hay solapamiento, no se mueve nada
+
+                    return { ...note, position: newPosition };
                 }
                 return note;
-            })
-        );
+            });
+        });
     };
 
     const volver = () => {
@@ -161,7 +233,7 @@ const VerpizarraNotas = () => {
                     </button>
 
                     <button
-                        onClick={saveMural}
+                        onClick={saveMuralclick}
                         className="fixed bottom-4 right-4 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-lg z-50"
                         disabled={saving}
                     >
