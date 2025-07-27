@@ -189,25 +189,32 @@ export async function importUsers(req, res) {
       return handleErrorClient(res, 400, "Debes enviar un array de usuarios");
     }
 
+    // Primera pasada: validación de formato
     const validUsers = [];
     const invalidUsers = [];
+    
     for (let i = 0; i < users.length; i++) {
       const user = users[i];
       const { value, error } = userCreateValidation.validate(user, {
         abortEarly: false,
       });
+      
       if (error) {
         // Mapear cada error a su campo y mensaje
         const fieldErrors = error.details?.map((e) => ({
           field: e.path && e.path.length > 0 ? e.path[0] : "unknown",
           message: e.message,
         })) || [{ field: "unknown", message: error.message }];
+        
         invalidUsers.push({ index: i, user, error: fieldErrors });
         continue;
       }
+      
+      // Agregar el índice original para mantener la referencia
       validUsers.push({ ...value, __originalIndex: i });
     }
 
+    // Si no hay usuarios válidos en formato, retornar solo errores de formato
     if (validUsers.length === 0) {
       return handleErrorClient(
         res,
@@ -217,17 +224,34 @@ export async function importUsers(req, res) {
       );
     }
 
-    const [importedUsers, error] = await importUsersService(validUsers);
+    // Segunda pasada: validación de duplicados y creación
+    const [importedUsers, serviceError] = await importUsersService(validUsers);
 
-    // Si no se importó ninguno, error
+    // Combinar errores de formato con errores de duplicados
+    let allInvalidUsers = [...invalidUsers];
+    
+    if (serviceError?.invalidUsers) {
+      // Mapear los errores del servicio a los índices originales
+      const serviceInvalidUsers = serviceError.invalidUsers.map(serviceInvalid => {
+        // Buscar el índice original
+        const originalUser = validUsers.find(v => v.__originalIndex === serviceInvalid.index);
+        return {
+          index: originalUser ? originalUser.__originalIndex : serviceInvalid.index,
+          user: serviceInvalid.user,
+          error: serviceInvalid.error
+        };
+      });
+      
+      allInvalidUsers = [...allInvalidUsers, ...serviceInvalidUsers];
+    }
+
+    // Si no se importó ninguno
     if (!importedUsers || importedUsers.length === 0) {
       return handleErrorClient(
         res,
         400,
-        error?.invalidUsers
-          ? "Ningún usuario fue importado"
-          : error || "Ningún usuario fue importado",
-        error?.invalidUsers ? { invalidUsers: error.invalidUsers } : undefined,
+        "Ningún usuario fue importado",
+        { invalidUsers: allInvalidUsers },
       );
     }
 
@@ -240,10 +264,10 @@ export async function importUsers(req, res) {
       return { ...u, index: match ? match.__originalIndex : null };
     });
 
-    // Siempre responde 201 si hay al menos uno importado
+    // Respuesta exitosa con usuarios importados y errores combinados
     return handleSuccess(res, 201, "Usuarios importados correctamente", {
       imported: importedWithIndex,
-      invalidUsers,
+      invalidUsers: allInvalidUsers,
     });
   } catch (error) {
     handleErrorServer(res, 500, error.message);

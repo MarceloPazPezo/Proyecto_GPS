@@ -10,14 +10,14 @@ import {
 } from '@tanstack/react-table';
 
 const Table = ({
-data = [],
-columns: userColumns = [],
-pageSize = 10,
-badgeMap = {}, // NUEVA PROP
-onEdit,
-onDelete,
-onView,
-renderActions,
+  data = [],
+  columns: userColumns = [],
+  pageSize = 10,
+  badgeMap = {}, // NUEVA PROP
+  onEdit,
+  onDelete,
+  onView,
+  renderActions,
 }) => {
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
@@ -39,7 +39,15 @@ renderActions,
     const baseCols = userColumns.map(col => {
       let filterFn = 'includesString';
       let filterElement;
-      let cellRender = col.cell || (info => info.getValue());
+      // Truncamiento automático si la columna tiene truncate: true y no tiene cell custom
+      let cellRender = col.cell || ((info) => {
+        const value = info.getValue();
+        if (col.truncate && typeof value === 'string') {
+          const maxLength = typeof col.truncate === 'number' ? col.truncate : 50;
+          return value.length > maxLength ? value.slice(0, maxLength) + '...' : value;
+        }
+        return value;
+      });
       if (col.filterType === 'select' && Array.isArray(col.filterOptions)) {
         filterFn = (row, columnId, filterValue) => {
           if (!filterValue) return true;
@@ -65,7 +73,7 @@ renderActions,
             const color = badgeMap[col.accessorKey][value] || badgeMap[col.accessorKey]['default'];
             if (!color) return value;
             return (
-              <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-md border font-semibold text-xs ${color.bg} ${color.text} ${color.border}`}>
+              <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-md border font-semibold text-xs min-w-[184px] max-w-[184px] ${color.bg} ${color.text} ${color.border}`}>
                 <span className={`w-2 h-2 rounded-full flex-shrink-0 flex-grow-0 inline-block ${color.dot}`}></span>
                 {color.label || value}
               </span>
@@ -118,7 +126,7 @@ renderActions,
     baseCols.unshift(indexCol);
     baseCols.push({
       id: 'actions',
-      header: 'Opciones',
+      header: 'Acciones',
       size: 120,
       cell: ({ row }) =>
         renderActions
@@ -183,8 +191,8 @@ renderActions,
                     {header.column.getCanFilter() && (
                       <div>
                         {header.column.columnDef.filterElement
-                        ? header.column.columnDef.filterElement({ column: header.column })
-                        : (
+                          ? header.column.columnDef.filterElement({ column: header.column })
+                          : (
                             <input
                               type="text"
                               value={header.column.getFilterValue() || ''}
@@ -201,17 +209,17 @@ renderActions,
             ))}
           </thead>
           <tbody className="block md:table-row-group overflow-x-auto md:overflow-visible">
-            {pageRows.map(row => (
+            {pageRows.map((row, idx) => (
               <tr
                 key={row.id}
-                className={`block md:table-row`}
+                className={`block md:table-row ${idx % 2 === 1 ? 'bg-gray-100' : ''}`}
                 style={{ height: '48px', minHeight: '48px', maxHeight: '48px' }}
               >
                 {row.getVisibleCells().map(cell => (
                   <td
                     key={cell.id}
                     className={`p-0 align-top border-b border-white/20 text-slate-800 bg-white/80 block md:table-cell ${cell.column.columnDef.sticky === 'left' ? 'sticky left-0 z-10 shadow-md' : ''} ${cell.column.columnDef.sticky === 'right' ? 'sticky right-0 z-10 shadow-md' : ''}`}
-                    style={{ minWidth: cell.column.columnDef.size, maxWidth: cell.column.columnDef.size, height: '48px', minHeight: '48px', maxHeight: '48px' }}
+                    style={{ minWidth: cell.column.columnDef.size, maxWidth: cell.column.columnDef.size, height: '48px', minHeight: '48px', maxHeight: '48px', backgroundColor: idx % 2 === 1 ? '#f3f4f6' : undefined }}
                   >
                     <div className="flex items-center h-full w-full px-2 break-words whitespace-normal" title={String(cell.getValue?.() ?? '')}>
                       {/* Si el contenido es un botón, input, select, etc, forzar cursor-pointer */}
@@ -299,7 +307,7 @@ renderActions,
               }}
               className="w-12 text-lg text-slate-700 bg-transparent outline-none border-none text-center focus:ring-0 cursor-pointer"
               disabled={table.getPageCount() === 0}
-              style={{ boxShadow: 'none',  minWidth: '3rem', maxWidth: '3rem' }}
+              style={{ boxShadow: 'none', minWidth: '3rem', maxWidth: '3rem' }}
             />
             <button
               type="button"

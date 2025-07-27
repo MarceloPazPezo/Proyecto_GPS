@@ -193,19 +193,37 @@ export async function importUsersService(usersArray) {
     // Para marcar duplicados dentro del archivo, primero revisa los ruts/emails repetidos en el array
     const seenRuts = {};
     const seenEmails = {};
+    
     for (let i = 0; i < usersArray.length; i++) {
       const user = usersArray[i];
+      const originalIndex = user.__originalIndex !== undefined ? user.__originalIndex : i;
+      
+      // Normalizar RUT
       user.rut = normalizarRut(user.rut);
 
       // Verificar duplicados internos en el archivo
       const fieldErrors = [];
+      
       if (user.rut && seenRuts[user.rut] !== undefined) {
-        fieldErrors.push({ field: 'rut', message: `Rut duplicado en archivo (fila ${seenRuts[user.rut] + 1})` });
+        const duplicateOriginalIndex = usersArray[seenRuts[user.rut]].__originalIndex !== undefined 
+          ? usersArray[seenRuts[user.rut]].__originalIndex 
+          : seenRuts[user.rut];
+        fieldErrors.push({ 
+          field: 'rut', 
+          message: `Rut duplicado en archivo (fila ${duplicateOriginalIndex + 1})` 
+        });
       } else {
         seenRuts[user.rut] = i;
       }
+      
       if (user.email && seenEmails[user.email] !== undefined) {
-        fieldErrors.push({ field: 'email', message: `Email duplicado en archivo (fila ${seenEmails[user.email] + 1})` });
+        const duplicateOriginalIndex = usersArray[seenEmails[user.email]].__originalIndex !== undefined 
+          ? usersArray[seenEmails[user.email]].__originalIndex 
+          : seenEmails[user.email];
+        fieldErrors.push({ 
+          field: 'email', 
+          message: `Email duplicado en archivo (fila ${duplicateOriginalIndex + 1})` 
+        });
       } else {
         seenEmails[user.email] = i;
       }
@@ -215,17 +233,25 @@ export async function importUsersService(usersArray) {
       if (existingRut) {
         fieldErrors.push({ field: 'rut', message: 'Rut duplicado en base de datos' });
       }
+      
       const existingEmail = await userRepository.findOne({ where: { email: user.email } });
       if (existingEmail) {
         fieldErrors.push({ field: 'email', message: 'Email duplicado en base de datos' });
       }
+      
       if (fieldErrors.length > 0) {
-        invalidUsers.push({ index: i, user, error: fieldErrors });
+        invalidUsers.push({ 
+          index: originalIndex, // Usar el índice original
+          user: { ...user, __originalIndex: undefined }, // Limpiar el índice interno
+          error: fieldErrors 
+        });
         continue;
       }
 
-      user.password = await encryptPassword(user.password);
-      validUsers.push(user);
+      // Limpiar el índice interno antes de crear el usuario
+      const { __originalIndex, ...cleanUser } = user;
+      cleanUser.password = await encryptPassword(cleanUser.password);
+      validUsers.push(cleanUser);
     }
 
     const createdUsers = [];
@@ -237,7 +263,8 @@ export async function importUsersService(usersArray) {
           rut: user.rut,
           email: user.email,
           password: user.password,
-          rol: "usuario",
+          rol: user.rol || "usuario",
+          idCarrera: user.idCarrera || null,
         });
 
         const savedUser = await userRepository.save(newUser);

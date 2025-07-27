@@ -10,6 +10,8 @@ export function useImportUsers({ onSuccess }) {
     rut: user.rut || '',
     email: user.email || '',
     password: user.password || '',
+    rol: user.rol || 'usuario', // Valor por defecto
+    idCarrera: user.idCarrera || user.carrera || null, // Opcional
   });
 
   const handleImport = async (users, options = {}) => {
@@ -34,19 +36,34 @@ export function useImportUsers({ onSuccess }) {
 
       // Notificar a la tabla si se pasa el callback onImported
       if (typeof options.onImported === 'function') {
+        console.log('Respuesta del servidor:', res);
+        
         // indices importados
         const importedIndices = Array.isArray(res.imported)
           ? res.imported.map(u => u.index).filter(idx => idx !== null && idx !== undefined)
           : [];
+        
+        console.log('Índices importados:', importedIndices);
+        
         // errores por fila
         const fieldMap = {
           nombreCompleto: 'nombreCompleto',
           email: 'email',
           rut: 'rut',
           password: 'password',
+          rol: 'rol',
+          idCarrera: 'idCarrera',
+          carrera: 'idCarrera', // Mapeo alternativo
         };
+        
         const errors = {};
-        (res.invalidUsers || res.details?.invalidUsers || []).forEach(u => {
+        const invalidUsers = res.invalidUsers || res.details?.invalidUsers || [];
+        
+        console.log('Usuarios inválidos del servidor:', invalidUsers);
+        
+        invalidUsers.forEach(u => {
+          console.log(`Procesando error para índice ${u.index}:`, u);
+          
           if (Array.isArray(u.error)) {
             errors[u.index] = {};
             u.error.forEach(err => {
@@ -56,16 +73,26 @@ export function useImportUsers({ onSuccess }) {
               }
               errors[u.index][mappedField] = err.message;
             });
+          } else if (typeof u.error === 'string') {
+            // Error general como string (ej: "Rut duplicado en base de datos")
+            // Determinar el campo apropiado basado en el mensaje
+            if (u.error.toLowerCase().includes('rut')) {
+              errors[u.index] = { rut: u.error };
+            } else if (u.error.toLowerCase().includes('email')) {
+              errors[u.index] = { email: u.error };
+            } else {
+              // Error general que se muestra en el campo más relevante o en todos
+              errors[u.index] = { _general: u.error };
+            }
           } else {
-            errors[u.index] = { _row: u.error };
+            errors[u.index] = { _row: u.error || 'Error desconocido' };
           }
         });
-        if (importedIndices.length > 0 || Object.keys(errors).length > 0) {
-          options.onImported(importedIndices, errors);
-        } else {
-          // Llama igual para forzar actualización en el padre
-          options.onImported([], {});
-        }
+        
+        console.log('Errores procesados para la tabla:', errors);
+        
+        // SIEMPRE llamar onImported para actualizar la tabla
+        options.onImported(importedIndices, errors);
       }
 
       // Si la respuesta tiene usuarios importados y al menos uno fue exitoso

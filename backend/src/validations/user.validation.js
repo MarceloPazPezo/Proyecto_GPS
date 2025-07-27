@@ -201,6 +201,7 @@ export const userCreateValidation = Joi.object({
       }
       return value;
     }, "Validación personalizada de rol")
+    .default("usuario")
     .messages({
       "string.base": "El rol debe ser de tipo string.",
       "any.only": `El rol debe ser uno de los siguientes: ${ROLES.join(", ")}`,
@@ -220,7 +221,7 @@ export const userCreateValidation = Joi.object({
     })
   }),
 })
-  .or("nombreCompleto", "email", "password", "rut", "rol")
+  .or("nombreCompleto", "email", "password", "rut", "rol", "idCarrera")
   .unknown(false)
   .messages({
     "object.unknown": "No se permiten propiedades adicionales.",
@@ -301,7 +302,7 @@ export const userWithCarreraValidation = Joi.object({
     "any.required": "La carrera es obligatoria para esta operación."
   }),
 })
-  .or("nombreCompleto", "email", "password", "rut", "rol")
+  .or("nombreCompleto", "email", "password", "rut", "rol", "idCarrera")
   .unknown(false)
   .messages({
     "object.unknown": "No se permiten propiedades adicionales.",

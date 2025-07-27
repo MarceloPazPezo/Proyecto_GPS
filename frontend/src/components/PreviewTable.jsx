@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import {
   useReactTable,
@@ -16,12 +16,7 @@ import { FaTrash } from "react-icons/fa";
  *  - onDeleteRow: función para eliminar una fila (opcional)
  */
 const PreviewTable = ({ data, columns, onDataChange, rowErrors, importedRows = [], onDeleteRow }) => {
-  const [editRows, setEditRows] = useState(data);
-
-  // Sincroniza cambios externos
-  React.useEffect(() => {
-    setEditRows(data);
-  }, [data]);
+  // Eliminamos el estado local editRows para evitar re-renders que causan pérdida de foco
 
   // Resumen
   const total = data.length;
@@ -65,14 +60,14 @@ const PreviewTable = ({ data, columns, onDataChange, rowErrors, importedRows = [
               return (
                 <div className="flex flex-col">
                   <input
+                    key={`${rowIndex}-${field}`}
                     className={`border rounded px-2 py-1 text-sm w-full ${isImported ? 'bg-green-50 border-green-300 text-green-700 cursor-not-allowed' : errorMsg ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
                     value={value ?? ''}
                     disabled={isImported}
                     onChange={e => {
                       if (isImported) return;
-                      const newRows = [...editRows];
+                      const newRows = [...data];
                       newRows[rowIndex] = { ...newRows[rowIndex], [field]: e.target.value };
-                      setEditRows(newRows);
                       onDataChange && onDataChange(newRows);
                     }}
                   />
@@ -84,10 +79,10 @@ const PreviewTable = ({ data, columns, onDataChange, rowErrors, importedRows = [
       })),
       ...(deleteCol ? [deleteCol] : []),
     ];
-  }, [columns, editRows, onDataChange, rowErrors, importedRows, onDeleteRow]);
+  }, [columns, onDataChange, rowErrors, importedRows, onDeleteRow]);
 
   const table = useReactTable({
-    data: editRows,
+    data: data,
     columns: tableColumns,
     getCoreRowModel: getCoreRowModel(),
     debugTable: false,

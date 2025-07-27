@@ -97,17 +97,18 @@ const Users = () => {
     {
       accessorKey: 'nombreCompleto',
       header: 'Nombre completo',
-      size: 200,
+      size: 250,
     },
     {
       accessorKey: 'email',
       header: 'Correo electrónico',
       truncate: true,
+      size: 250,
     },
     {
       accessorKey: 'rol',
       header: 'Rol',
-      size: 120,
+      size: 200,
       filterType: 'select',
       filterOptions: [
         { value: 'Administrador', label: 'Administrador' },
@@ -147,7 +148,7 @@ const Users = () => {
   ];
 
   return (
-    <div>
+    <div className="p-9">
       <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
         <h1 className="text-3xl font-bold text-[#2C3E50]">Usuarios</h1>
         <div className="flex items-center gap-2">
