@@ -30,8 +30,15 @@ export async function createCarreraService(body) {
       relations: ["idEncargado"],
     });
     if (!carreraFound) return [null, "Carrera no encontrada"];
+    // Unificar formato como en getCarrerasService
     const result = {
-      ...carreraFound,
+      id: carreraFound.id,
+      nombre: carreraFound.nombre,
+      codigo: carreraFound.codigo,
+      descripcion: carreraFound.descripcion,
+      departamento: carreraFound.departamento,
+      createdAt: carreraFound.createdAt,
+      idEncargado: carreraFound.idEncargado?.id || null,
       rutEncargado: carreraFound.idEncargado?.rut || null,
     };
     return [result, null];
@@ -50,9 +57,15 @@ export async function getCarreraService(query) {
       relations: ["idEncargado"],
     });
     if (!carreraFound) return [null, "Carrera no encontrada"];
-    // Agregar rut del encargado si existe
+    // Unificar formato como en getCarrerasService
     const result = {
-      ...carreraFound,
+      id: carreraFound.id,
+      nombre: carreraFound.nombre,
+      codigo: carreraFound.codigo,
+      descripcion: carreraFound.descripcion,
+      departamento: carreraFound.departamento,
+      createdAt: carreraFound.createdAt,
+      idEncargado: carreraFound.idEncargado?.id || null,
       rutEncargado: carreraFound.idEncargado?.rut || null,
     };
     return [result, null];
@@ -86,9 +99,9 @@ export async function getCarrerasService() {
 
 export async function updateCarreraService(query, body) {
   try {
-    const { id, nombre } = query;
+    const { id, nombre, codigo } = query;
     const carreraRepository = AppDataSource.getRepository(Carrera);
-    const carreraFound = await carreraRepository.findOne({ where: [{ id: id }, { nombre: nombre }] });
+    const carreraFound = await carreraRepository.findOne({ where: [{ id: id }, { nombre: nombre }, { codigo: codigo }] });
     if (!carreraFound) return [null, "Carrera no encontrada"];
     if (body.nombre) {
       const existingCarrera = await carreraRepository.findOne({ where: { nombre: body.nombre } });
@@ -97,11 +110,22 @@ export async function updateCarreraService(query, body) {
       }
     }
     await carreraRepository.update({ id: carreraFound.id }, { nombre: body.nombre });
-    const carreraData = await carreraRepository.findOne({ where: { id: carreraFound.id } });
+    const carreraData = await carreraRepository.findOne({ where: { id: carreraFound.id }, relations: ["idEncargado"] });
     if (!carreraData) {
       return [null, "Carrera no encontrada después de actualizar"];
     }
-    return [carreraData, null];
+    // Unificar formato como en getCarrerasService
+    const result = {
+      id: carreraData.id,
+      nombre: carreraData.nombre,
+      codigo: carreraData.codigo,
+      descripcion: carreraData.descripcion,
+      departamento: carreraData.departamento,
+      createdAt: carreraData.createdAt,
+      idEncargado: carreraData.idEncargado?.id || null,
+      rutEncargado: carreraData.idEncargado?.rut || null,
+    };
+    return [result, null];
   } catch (error) {
     console.error("Error al modificar una carrera:", error);
     return [null, "Error interno del servidor"];

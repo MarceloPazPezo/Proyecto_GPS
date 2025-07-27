@@ -16,7 +16,7 @@ const useEditCarrera = (setCarreras) => {
     const handleUpdate = async (updatedCarreraData) => {
         if (updatedCarreraData) {
             try {
-            const updatedCarrera = await updateCarrera(updatedCarreraData, dataCarrera[0].rut);
+            const updatedCarrera = await updateCarrera(updatedCarreraData, dataCarrera[0].codigo);
             showSuccessAlert('¡Actualizada!','La carrera ha sido actualizado correctamente.');
             setIsPopupOpen(false);
             const formattedCarrera = formatPostUpdateCarreraData(updatedCarrera);

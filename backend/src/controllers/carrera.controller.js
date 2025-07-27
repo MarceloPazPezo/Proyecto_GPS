@@ -86,11 +86,12 @@ export async function getCarreras(req, res) {
 
 export async function updateCarrera(req, res) {
   try {
-    const { id, nombre } = req.query;
+    const { id, nombre, codigo } = req.query;
     const { body } = req;
     const { error: queryError } = carreraQueryValidation.validate({
       id,
       nombre,
+      codigo
     });
     if (queryError) {
       return handleErrorClient(
@@ -109,7 +110,7 @@ export async function updateCarrera(req, res) {
         bodyError.message,
       );
     const [carrera, carreraError] = await updateCarreraService(
-      { id, nombre },
+      { id, nombre, codigo },
       body,
     );
     if (carreraError)
