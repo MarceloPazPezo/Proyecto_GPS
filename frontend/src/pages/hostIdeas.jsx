@@ -2,9 +2,16 @@ import { useRef, useState, useEffect } from "react";
 import { socket } from "../main"; // Asume que el socket está exportado desde tu archivo principal
 import WordCloud from "react-d3-cloud";
 import { motion, AnimatePresence } from "framer-motion";
-import { startCase } from "lodash";
 import { useNavigate } from "react-router-dom";
 import html2canvas from "html2canvas";
+
+function capitalizeSpanish(str) {
+    if (!str) return str;
+    return str.split(' ').map(word => {
+        if (word.length === 0) return word;
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    }).join(' ');
+}
 
 // --- 1. PALETA DE COLORES ---
 // Definimos un array con los colores que queremos que se usen en la nube.
@@ -61,7 +68,7 @@ const HostIdeas = () => {
     useEffect(() => {
         const recibirRespuestas = (newAnswer) => {
 
-            const palabra = startCase(newAnswer.responder.trim());
+            const palabra = capitalizeSpanish(newAnswer.responder.trim());
             //console.log(palabra);
             if (!palabra) return; // Ignorar respuestas vacías
 
