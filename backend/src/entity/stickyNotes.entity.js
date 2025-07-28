@@ -45,6 +45,10 @@ const StickyNotesSchema = new EntitySchema({
             onUpdate: "CURRENT_TIMESTAMP",
             nullable: false,
         },
+        idMural:{
+            type: "int",
+            nullable: false,
+        }
     },
     relations: {
         mural: {
