@@ -107,44 +107,18 @@ export function useImportUsers({ onSuccess }) {
         return true;
       } else if (Array.isArray(res.imported) && res.imported.length > 0 && Array.isArray(res.invalidUsers) && res.invalidUsers.length > 0) {
         // Importación parcial, NO cerrar el popup
-        let msg = `Se importaron ${res.imported.length} usuario(s) correctamente.\n\n${res.invalidUsers.length} usuario(s) no se importaron.`;
-        const detalles = res.invalidUsers.map((u, idx) => {
-          let m = `Fila ${u.index + 1}`;
-          if (u.user?.rut) m += ` | RUT: ${u.user.rut}`;
-          if (u.user?.email) m += ` | Email: ${u.user.email}`;
-          // Mostrar todos los mensajes de error si es array
-          if (Array.isArray(u.error)) {
-            m += `\nMotivo: ${u.error.map(e => e.message).join('; ')}`;
-          } else {
-            m += `\nMotivo: ${u.error}`;
-          }
-          return m;
-        }).join('\n\n');
         Swal.fire({
           icon: 'warning',
           title: 'Importación parcial',
-          html: `<div style="text-align:left;white-space:pre-wrap;">${msg}\n\n${detalles}</div>`,
-          width: 600,
+          text: `Se importaron ${res.imported.length} usuarios con éxito. ${res.invalidUsers.length} usuarios no se pudieron importar.`,
         });
         return false;
       } else if (Array.isArray(res.invalidUsers) && res.invalidUsers.length > 0) {
         // Ningún usuario fue importado, NO cerrar el popup
-        const detalles = res.invalidUsers.map((u, idx) => {
-          let msg = `Fila ${u.index + 1}`;
-          if (u.user?.rut) msg += ` | RUT: ${u.user.rut}`;
-          if (u.user?.email) msg += ` | Email: ${u.user.email}`;
-          if (Array.isArray(u.error)) {
-            msg += `\nMotivo: ${u.error.map(e => e.message).join('; ')}`;
-          } else {
-            msg += `\nMotivo: ${u.error}`;
-          }
-          return msg;
-        }).join('\n\n');
         Swal.fire({
           icon: 'error',
           title: 'Ningún usuario fue importado',
-          html: `<pre style="text-align:left;white-space:pre-wrap;">${detalles}</pre>`,
-          width: 600,
+          text: `${res.invalidUsers.length} usuarios no se pudieron importar. Revisa los errores en la tabla.`,
         });
         return false;
       } else {

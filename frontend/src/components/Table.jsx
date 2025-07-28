@@ -74,7 +74,11 @@ const Table = ({
             if (!color) return value;
             return (
               <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-md border font-semibold text-xs min-w-[184px] max-w-[184px] ${color.bg} ${color.text} ${color.border}`}>
-                <span className={`w-2 h-2 rounded-full flex-shrink-0 flex-grow-0 inline-block ${color.dot}`}></span>
+                {color.icon ? (
+                  React.createElement(color.icon, { className: "w-4 h-4 flex-shrink-0" })
+                ) : (
+                  <span className={`w-2 h-2 rounded-full flex-shrink-0 flex-grow-0 inline-block ${color.dot}`}></span>
+                )}
                 {color.label || value}
               </span>
             );

@@ -8,7 +8,7 @@ import useDeleteUser from '@hooks/users/useDeleteUser';
 import ImportUsersPopup from '@components/ImportUsersPopup.jsx';
 import CreateUserPopup from '@components/CreateUserPopup.jsx';
 import { useImportUsers } from '@hooks/users/useImportUsers.jsx';
-import { MdUploadFile, MdEdit, MdDelete, MdPersonAddAlt1 } from 'react-icons/md';
+import { MdUploadFile, MdEdit, MdDelete, MdPersonAddAlt1, MdAdminPanelSettings, MdSchool, MdSupervisorAccount, MdPerson, MdGroup } from 'react-icons/md';
 import useCreateUser from '@hooks/users/useCreateUser.jsx';
 
 const Users = () => {
@@ -42,48 +42,47 @@ const Users = () => {
   const { handleDelete } = useDeleteUser(fetchUsers, setDataUser);
 
   // Definición de los colores para los badges de rol
-  // Definición de los colores para los badges de rol
   const rolBadgeMap = {
     'Administrador': {
       bg: 'bg-green-100',
       text: 'text-green-800',
       border: 'border-green-400',
-      dot: 'bg-green-500',
+      icon: MdAdminPanelSettings,
       label: 'Administrador'
     },
     'Encargado Carrera': {
       bg: 'bg-blue-100',
       text: 'text-blue-800',
       border: 'border-blue-400',
-      dot: 'bg-blue-500',
+      icon: MdSchool,
       label: 'Encargado de Carrera'
     },
     'Tutor': {
       bg: 'bg-yellow-100',
       text: 'text-yellow-800',
       border: 'border-yellow-400',
-      dot: 'bg-yellow-500',
+      icon: MdSupervisorAccount,
       label: 'Tutor'
     },
     'Tutorado': {
       bg: 'bg-orange-100',
       text: 'text-orange-800',
       border: 'border-orange-400',
-      dot: 'bg-orange-500',
+      icon: MdGroup,
       label: 'Tutorado'
     },
     'Usuario': {
       bg: 'bg-gray-100',
       text: 'text-gray-800',
       border: 'border-gray-400',
-      dot: 'bg-gray-500',
+      icon: MdPerson,
       label: 'Usuario'
     },
     'default': {
       bg: 'bg-gray-100',
       text: 'text-gray-800',
       border: 'border-gray-400',
-      dot: 'bg-gray-500',
+      icon: MdPerson,
       label: 'Desconocido'
     }
   };
