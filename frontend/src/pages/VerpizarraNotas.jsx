@@ -27,9 +27,7 @@ const VerpizarraNotas = () => {
                     idMural: idMural,
                 }));
                 setNotes(formattedNotes);
-                console.log(idMural)
             } catch (error) {
-                console.log(idMural)
                 console.error("Error cargando notas:", error);
             }
         };
