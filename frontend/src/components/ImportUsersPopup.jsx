@@ -151,14 +151,14 @@ const ImportUsersPopup = ({ show, setShow, onFile, loading = false }) => {
   const handleImport = async () => {
     if (tableData.length > 0 && onFile) {
       try {
-        console.log('Iniciando importación de usuarios...');
+        // console.log('Iniciando importación de usuarios...');
         
         await onFile({
           name: fileName,
           data: tableData,
           onImported: (importedIndices, invalidErrors) => {
-            console.log('Usuarios importados:', importedIndices);
-            console.log('Errores encontrados:', invalidErrors);
+            // console.log('Usuarios importados:', importedIndices);
+            // console.log('Errores encontrados:', invalidErrors);
             setImportedRows(importedIndices);
             setRowErrors(invalidErrors);
             
@@ -166,7 +166,7 @@ const ImportUsersPopup = ({ show, setShow, onFile, loading = false }) => {
             const successCount = importedIndices.length;
             const errorCount = Object.keys(invalidErrors).length;
             const message = `Importación completada: ${successCount} usuarios creados, ${errorCount} errores`;
-            console.log(message);
+            // console.log(message);
           }
         });
       } catch (err) {

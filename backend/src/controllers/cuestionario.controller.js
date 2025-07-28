@@ -243,10 +243,10 @@ export async function obtenerPreguntasYRespuestasController(req, res) {
             jsonData = req.body;
         }
 
-        console.log("Datos recibidos para actualizar preguntas y respuestas:", jsonData);
+        // console.log("Datos recibidos para actualizar preguntas y respuestas:", jsonData);
         const { idUser, titulo, preguntas } = jsonData;
 
-        console.log("preguntas:", preguntas);
+        // console.log("preguntas:", preguntas);
         // Validar que preguntas sea un array
         if (!Array.isArray(preguntas)) {
             return handleErrorClient(res, 400, "Error de formato", "El campo 'preguntas' debe ser un array");
@@ -287,7 +287,7 @@ export async function obtenerPreguntasYRespuestasController(req, res) {
             },
             preguntasData: preguntas
         };
-        console.log("Datos del servicio:", serviceData);
+        // console.log("Datos del servicio:", serviceData);
         // 4. Llamamos al servicio transaccional
         const [resultado, errorService] = await actualizarCuestionarioCompletoService(idCuestionario, serviceData);
         

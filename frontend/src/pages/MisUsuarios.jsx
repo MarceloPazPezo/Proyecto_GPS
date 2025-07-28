@@ -8,7 +8,7 @@ import useDeleteMiUsuario from '@hooks/users/useDeleteMiUsuario';
 import ImportMisUsuariosPopup from '@components/ImportMisUsuariosPopup.jsx';
 import CreateMiUsuarioPopup from '@components/CreateMiUsuarioPopup.jsx';
 import { useImportMisUsuarios } from '@hooks/users/useImportMisUsuarios.jsx';
-import { MdUploadFile, MdEdit, MdDelete, MdPersonAddAlt1 } from 'react-icons/md';
+import { MdUploadFile, MdEdit, MdDelete, MdPersonAddAlt1, MdSupervisorAccount, MdPerson, MdGroup } from 'react-icons/md';
 import useCreateMiUsuario from '@hooks/users/useCreateMiUsuario.jsx';
 
 const MisUsuarios = () => {
@@ -42,34 +42,33 @@ const MisUsuarios = () => {
   const { handleDelete } = useDeleteMiUsuario(fetchUsers, setDataUser);
 
   // Definición de los colores para los badges de rol
-  // Definición de los colores para los badges de rol
   const rolBadgeMap = {
     'Tutor': {
       bg: 'bg-yellow-100',
       text: 'text-yellow-800',
       border: 'border-yellow-400',
-      dot: 'bg-yellow-500',
+      icon: MdSupervisorAccount,
       label: 'Tutor'
     },
     'Tutorado': {
       bg: 'bg-orange-100',
       text: 'text-orange-800',
       border: 'border-orange-400',
-      dot: 'bg-orange-500',
+      icon: MdGroup,
       label: 'Tutorado'
     },
     'Usuario': {
       bg: 'bg-gray-100',
       text: 'text-gray-800',
       border: 'border-gray-400',
-      dot: 'bg-gray-500',
+      icon: MdPerson,
       label: 'Usuario'
     },
     'default': {
       bg: 'bg-gray-100',
       text: 'text-gray-800',
       border: 'border-gray-400',
-      dot: 'bg-gray-500',
+      icon: MdPerson,
       label: 'Desconocido'
     }
   };
@@ -93,7 +92,7 @@ const MisUsuarios = () => {
     {
       accessorKey: 'rol',
       header: 'Rol',
-      size: 120,
+      size: 200,
       filterType: 'select',
       filterOptions: [
         { value: 'Tutor', label: 'Tutor' },

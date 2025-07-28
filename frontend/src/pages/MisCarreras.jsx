@@ -80,7 +80,7 @@ const MisCarreras = () => {
 
           {/* Panel de estadísticas */}
           {!loading && carreras.length > 0 && (
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-xl transform hover:scale-105 transition-transform duration-300">
                 <div className="flex items-center justify-between">
                   <div>
@@ -101,18 +101,6 @@ const MisCarreras = () => {
                   </div>
                   <div className="p-3 bg-white/20 rounded-xl">
                     <FaBuilding size={24} />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-6 text-white shadow-xl transform hover:scale-105 transition-transform duration-300">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-green-100 text-sm font-medium">Recientes (30 días)</p>
-                    <p className="text-3xl font-bold">{stats.recientes}</p>
-                  </div>
-                  <div className="p-3 bg-white/20 rounded-xl">
-                    <MdTrendingUp size={24} />
                   </div>
                 </div>
               </div>

@@ -51,10 +51,10 @@ export async function createCarreraService(body) {
 
 export async function getCarreraService(query) {
   try {
-    const { id, nombre } = query;
+    const { id, nombre, codigo } = query;
     const carreraRepository = AppDataSource.getRepository(Carrera);
     const carreraFound = await carreraRepository.findOne({
-      where: [{ id: id }, { nombre: nombre }],
+      where: [{ id: id }, { nombre: nombre }, { codigo: codigo }],
       relations: ["idEncargado"],
     });
     if (!carreraFound) return [null, "Carrera no encontrada"];

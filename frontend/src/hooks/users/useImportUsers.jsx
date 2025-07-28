@@ -36,14 +36,14 @@ export function useImportUsers({ onSuccess }) {
 
       // Notificar a la tabla si se pasa el callback onImported
       if (typeof options.onImported === 'function') {
-        console.log('Respuesta del servidor:', res);
+        // console.log('Respuesta del servidor:', res);
         
         // indices importados
         const importedIndices = Array.isArray(res.imported)
           ? res.imported.map(u => u.index).filter(idx => idx !== null && idx !== undefined)
           : [];
         
-        console.log('Índices importados:', importedIndices);
+        // console.log('Índices importados:', importedIndices);
         
         // errores por fila
         const fieldMap = {
@@ -59,10 +59,10 @@ export function useImportUsers({ onSuccess }) {
         const errors = {};
         const invalidUsers = res.invalidUsers || res.details?.invalidUsers || [];
         
-        console.log('Usuarios inválidos del servidor:', invalidUsers);
+        // console.log('Usuarios inválidos del servidor:', invalidUsers);
         
         invalidUsers.forEach(u => {
-          console.log(`Procesando error para índice ${u.index}:`, u);
+          // console.log(`Procesando error para índice ${u.index}:`, u);
           
           if (Array.isArray(u.error)) {
             errors[u.index] = {};
@@ -89,7 +89,7 @@ export function useImportUsers({ onSuccess }) {
           }
         });
         
-        console.log('Errores procesados para la tabla:', errors);
+        // console.log('Errores procesados para la tabla:', errors);
         
         // SIEMPRE llamar onImported para actualizar la tabla
         options.onImported(importedIndices, errors);

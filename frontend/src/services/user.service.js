@@ -100,7 +100,7 @@ export async function deleteMiUsuario(rut) {
 
 export async function importMisUsuarios(usuarios) {
     try {
-        const response = await axios.delete('/user/mis-usuarios/import', { data: { usuarios } });
+        const response = await axios.post('/user/mis-usuarios/import', { usuarios });
         return response.data;
     } catch (error) {
         return error.response?.data || error;

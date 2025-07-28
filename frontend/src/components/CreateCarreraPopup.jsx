@@ -43,7 +43,7 @@ export default function CreateCarreraPopup({ show, setShow, dataCarreras }) {
             try {
                 const response = await createCarrera(createdCarreraData);
 
-                console.log("Carrera creada:", response.data);
+                // console.log("Carrera creada:", response.data);
                 
                 if (response.status === 'Client error') {
                     errorData(response.details);

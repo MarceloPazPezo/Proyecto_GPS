@@ -7,7 +7,7 @@ import { getCarreras } from '../services/carrera.service';
 export default function UpdateUserPopup({ show, setShow, data, action }) {
     const userData = data && data.length > 0 ? data[0] : {};
 
-    console.log("Datos del usuario a editar:", userData);
+    // console.log("Datos del usuario a editar:", userData);
     // Mapeo de nombres legibles a valores de BD
     const rolMap = {
         'Administrador': 'administrador',

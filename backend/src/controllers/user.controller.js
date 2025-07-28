@@ -15,8 +15,9 @@ import {
 } from "../services/user.service.js";
 import {
   userBodyValidation,
-  userQueryValidation,
   userCreateValidation,
+  userQueryValidation,
+  userImportMisUsuariosValidation,
 } from "../validations/user.validation.js";
 import {
   handleErrorClient,
@@ -439,8 +440,8 @@ export async function importMisUsuarios(req, res) {
     const invalidUsers = [];
     for (let i = 0; i < usuarios.length; i++) {
       const user = usuarios[i];
-      // Validar con Joi
-      const { value, error } = userCreateValidation.validate(user, {
+      // Validar con Joi usando la nueva validación para MisUsuarios
+      const { value, error } = userImportMisUsuariosValidation.validate(user, {
         abortEarly: false,
       });
       if (error) {
