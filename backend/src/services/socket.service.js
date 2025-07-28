@@ -53,7 +53,8 @@ export function socketEvents(socket) {
         socket.to(socket.room).emit("finnish");
         socket.leave(body.sala);
         rooms.splice(rooms.indexOf(body.sala));
-        //console.log(rooms);
+        users.splice(users.indexOf(socket.id));
+        // console.log(rooms);
     });
 
     socket.on("opt",(data)=>{

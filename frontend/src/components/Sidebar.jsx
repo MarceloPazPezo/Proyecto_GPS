@@ -5,7 +5,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { logout } from '@services/auth.service.js';
 import { useAuth } from '@context/AuthContext';
 import { FiMenu, FiX } from "react-icons/fi";
-import { MdExpandMore, MdHome, MdLibraryBooks, MdGroup, MdSupervisorAccount, MdCollectionsBookmark, MdPeople } from "react-icons/md";
+import { MdExpandMore, MdHome, MdLibraryBooks, MdGroup, MdSupervisorAccount, MdCollectionsBookmark, MdPeople, MdAdminPanelSettings, MdSchool, MdPerson } from "react-icons/md";
 // Estado para el desplegable de Recursos Humanos
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -14,6 +14,46 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const userRole = user?.rol;
+
+    // Función para obtener el color y el icono según el rol
+    const getRoleStyle = (role) => {
+        switch (role) {
+            case 'administrador':
+                return {
+                    bgColor: 'bg-gradient-to-r from-red-500 to-red-600',
+                    textColor: 'text-white',
+                    icon: <MdAdminPanelSettings size={24} />,
+                    roleLabel: 'Administrador',
+                    borderColor: 'border-red-300'
+                };
+            case 'encargado_carrera':
+                return {
+                    bgColor: 'bg-gradient-to-r from-blue-500 to-blue-600',
+                    textColor: 'text-white',
+                    icon: <MdSchool size={24} />,
+                    roleLabel: 'Encargado de Carrera',
+                    borderColor: 'border-blue-300'
+                };
+            case 'estudiante':
+                return {
+                    bgColor: 'bg-gradient-to-r from-green-500 to-green-600',
+                    textColor: 'text-white',
+                    icon: <MdPerson size={24} />,
+                    roleLabel: 'Estudiante',
+                    borderColor: 'border-green-300'
+                };
+            default:
+                return {
+                    bgColor: 'bg-gradient-to-r from-gray-500 to-gray-600',
+                    textColor: 'text-white',
+                    icon: <MdPerson size={24} />,
+                    roleLabel: 'Usuario',
+                    borderColor: 'border-gray-300'
+                };
+        }
+    };
+
+    const roleStyle = getRoleStyle(userRole);
 
     const logoutSubmit = () => {
         try {
@@ -80,12 +120,25 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                     )}
                 </div>
                 {/* Información del usuario actual */}
-                <div className="px-6 py-4 border-b border-white/10 flex flex-col gap-1 bg-white/60">
-                    <span className="font-semibold text-[#2C3E50] text-base flex items-center gap-2">
-                        <MdPeople size={60} className="text-[#4EB9FA]" />
-                        {user?.nombreCompleto || 'Usuario'}
-                    </span>
-                    <span className="text-xs text-[#2C3E50] font-medium">{user?.rol || 'Sin rol'}</span>
+                <div className="px-4 py-4 border-b border-white/20">
+                    <div className={`${roleStyle.bgColor} ${roleStyle.textColor} rounded-lg p-4 shadow-lg border-2 ${roleStyle.borderColor}`}>
+                        {/* Nombre del usuario - más prominente */}
+                        <div className="text-center mb-3">
+                            <h3 className="font-bold text-base leading-tight">
+                                {user?.nombreCompleto || 'Usuario'}
+                            </h3>
+                        </div>
+                        
+                        {/* Rol con icono - abajo */}
+                        <div className="flex items-center justify-center gap-2">
+                            <div className="bg-white/20 rounded-full p-1.5">
+                                {roleStyle.icon}
+                            </div>
+                            <span className="text-sm font-semibold">
+                                {roleStyle.roleLabel}
+                            </span>
+                        </div>
+                    </div>
                 </div>
                 <nav className="flex-1 flex flex-col gap-2 mt-6 px-4">
                     {navLinks.map(link => (

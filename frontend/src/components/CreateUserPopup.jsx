@@ -42,6 +42,12 @@ export default function CreateUserPopup({ show, setShow, dataUsers }) {
 
     const handleSubmit = async (createdUserData) => {
         if (createdUserData) {
+            // Asegurar que idCarrera sea número o no se envíe
+            if (createdUserData.idCarrera === null || createdUserData.idCarrera === '' || createdUserData.idCarrera === undefined) {
+                delete createdUserData.idCarrera;
+            } else {
+                createdUserData.idCarrera = Number(createdUserData.idCarrera);
+            }
             try {
                 const response = await createUser(createdUserData);
 
@@ -141,7 +147,7 @@ export default function CreateUserPopup({ show, setShow, dataUsers }) {
                                     {
                                         label: (
                                             <div className="flex items-center gap-2 mb-1">
-                                                <span className="font-semibold text-[#2C3E50]">Contraseña</span>
+                                                <span className="font-semibold text-[#2C3E50]">Carrera</span>
                                                 <span className="relative group">
                                                     <img src={QuestionIcon} alt="info" className="w-4 h-4 cursor-pointer" />
                                                     <span className="absolute left-6 top-1 z-10 hidden group-hover:block bg-white text-xs text-[#2C3E50] border border-[#4EB9FA]/30 rounded px-2 py-1 shadow-lg min-w-max">
@@ -150,16 +156,15 @@ export default function CreateUserPopup({ show, setShow, dataUsers }) {
                                                 </span>
                                             </div>
                                         ),
-                                        label: "Carrera",
                                         name: "idCarrera",
                                         fieldType: 'select',
                                         required: false,
-                                        defaultValue: "",
+                                        defaultValue: null,
                                         options: loadingCarreras
-                                            ? [{ value: '', label: 'Cargando...' }]
+                                            ? [{ value: null, label: 'Cargando...' }]
                                             : carreras.length > 0
                                                 ? carreras.map(c => ({ value: c.id, label: `${c.nombre} (${c.codigo})` }))
-                                                : [{ value: '', label: 'No hay carreras disponibles' }],
+                                                : [{ value: null, label: 'No hay carreras disponibles' }],
                                         errorMessageData: null,
                                         onChange: (e) => {
                                             // Si tienes lógica de error, puedes agregarla aquí

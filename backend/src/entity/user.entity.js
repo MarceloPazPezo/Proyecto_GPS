@@ -62,6 +62,7 @@ const UserSchema = new EntitySchema({
         referencedColumnName: "id",
       },
       nullable: true, // Un usuario puede no tener carrera asignada
+      onDelete: "SET NULL",
     },
     carrerasEncargado: {
       type: "one-to-many",

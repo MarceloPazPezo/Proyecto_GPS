@@ -10,8 +10,8 @@ import { deleteMural } from "../services/stickNotes.service.js";
 import useUsers from "../hooks/users/useGetUsers.jsx";
 import { useState } from "react";
 import { FaThLarge, FaList, FaEdit, FaTrash, FaShareAlt, FaEye } from "react-icons/fa";
-import PopUpUpdateMural from "../components/popupUpdateMural.jsx";
 import { updateMural } from "../services/stickNotes.service.js";
+import PopUpUpdateMural from "../components/PopUpUpdateMural.jsx";
 
 const Biblioteca = () => {
     const { fetchQuizzes, quizzes } = useQuizzes();

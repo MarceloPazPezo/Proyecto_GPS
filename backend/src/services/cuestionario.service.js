@@ -196,7 +196,7 @@ export async function obtenerPreguntasYRespuestas(idCuestionario) {
             .groupBy('p.id')
             .getRawMany();
 
-        console.log("Preguntas y respuestas obtenidas:", result);
+        // console.log("Preguntas y respuestas obtenidas:", result);
         return [result, null]
     }
     catch (error) {

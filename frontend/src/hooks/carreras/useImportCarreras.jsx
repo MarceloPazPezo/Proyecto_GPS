@@ -78,44 +78,18 @@ export function useImportCarreras({ onSuccess }) {
         return true;
       } else if (Array.isArray(res.imported) && res.imported.length > 0 && Array.isArray(res.invalidCarreras) && res.invalidCarreras.length > 0) {
         // Importación parcial, NO cerrar el popup
-        let msg = `Se importaron ${res.imported.length} carrera(s) correctamente.\n\n${res.invalidCarreras.length} carrera(s) no se importaron.`;
-        const detalles = res.invalidCarreras.map((u, idx) => {
-          let m = `Fila ${u.index + 1}`;
-          if (u.carrera?.codigo) m += ` | CODIGO: ${u.carrera.codigo}`;
-          if (u.carrera?.rutEncargado) m += ` | rutEncargado: ${u.carrera.rutEncargado}`;
-          // Mostrar todos los mensajes de error si es array
-          if (Array.isArray(u.error)) {
-            m += `\nMotivo: ${u.error.map(e => e.message).join('; ')}`;
-          } else {
-            m += `\nMotivo: ${u.error}`;
-          }
-          return m;
-        }).join('\n\n');
         Swal.fire({
           icon: 'warning',
           title: 'Importación parcial',
-          html: `<div style="text-align:left;white-space:pre-wrap;">${msg}\n\n${detalles}</div>`,
-          width: 600,
+          text: `Se importaron ${res.imported.length} carrera(s) correctamente. ${res.invalidCarreras.length} carrera(s) no se importaron.`,
         });
         return false;
       } else if (Array.isArray(res.invalidCarreras) && res.invalidCarreras.length > 0) {
-        // Ningún usuario fue importado, NO cerrar el popup
-        const detalles = res.invalidCarreras.map((u, idx) => {
-          let msg = `Fila ${u.index + 1}`;
-          if (u.carrera?.codigo) m += ` | CODIGO: ${u.carrera.codigo}`;
-          if (u.carrera?.rutEncargado) m += ` | rutEncargado: ${u.carrera.rutEncargado}`;
-          if (Array.isArray(u.error)) {
-            msg += `\nMotivo: ${u.error.map(e => e.message).join('; ')}`;
-          } else {
-            msg += `\nMotivo: ${u.error}`;
-          }
-          return msg;
-        }).join('\n\n');
+        // Ninguna carrera fue importada, NO cerrar el popup
         Swal.fire({
           icon: 'error',
-          title: 'Ninguna carrera fue importado',
-          html: `<pre style="text-align:left;white-space:pre-wrap;">${detalles}</pre>`,
-          width: 600,
+          title: 'Ninguna carrera fue importada',
+          text: `${res.invalidCarreras.length} carrera(s) no pudieron ser importadas.`,
         });
         return false;
       } else {

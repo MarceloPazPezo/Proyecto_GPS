@@ -61,10 +61,11 @@ const Carreras = () => {
       accessorKey: 'descripcion',
       header: 'Descripcion',
       truncate: true,
+      size: 250,
     },
     {
       accessorKey: 'departamento',
-      header: 'departamento',
+      header: 'Departamento',
       truncate: true,
     },
     {

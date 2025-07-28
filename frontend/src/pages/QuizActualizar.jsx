@@ -211,7 +211,6 @@ function QuizActualizar() {
                     </div>
                     <div className="flex-shrink-0 p-4 space-y-2 border-t ">
                         <button onClick={() => addSlide('Quiz')} className="w-full bg-[#4EB9FA]/80 text-[#2C3E50] font-bold py-2.5 px-4 rounded-lg hover:bg-[#B0DFFD]">Añadir pregunta</button>
-                        <button onClick={() => addSlide('Diapositiva')} className="w-full bg-[#4EB9FA]/80 text-[#2C3E50] font-bold py-2.5 px-4 rounded-lg hover:bg-[#B0DFFD]">Añadir diapositiva</button>
                     </div>
                 </div>
 
