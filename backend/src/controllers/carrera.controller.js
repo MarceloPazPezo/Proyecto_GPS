@@ -1,8 +1,9 @@
 "use strict";
 import {
+  createCarreraService,
   getCarreraService,
   getCarrerasService,
-  createCarreraService,
+  getMisCarrerasService,
   updateCarreraService,
   deleteCarreraService,
   importCarrerasService,
@@ -11,6 +12,7 @@ import {
   carreraCreateValidation,
   carreraQueryValidation,
   carreraBodyValidation,
+  carreraImportValidation,
 } from "../validations/carrera.validation.js";
 import {
   handleErrorClient,
@@ -168,7 +170,7 @@ export async function importCarreras(req, res) {
     const invalidCarreras = [];
     for (let i = 0; i < carreras.length; i++) {
       const carrera = carreras[i];
-      const { value, error } = carreraCreateValidation.validate(carrera, {
+      const { value, error } = carreraImportValidation.validate(carrera, {
         abortEarly: false,
       });
       if (error) {
@@ -177,9 +179,10 @@ export async function importCarreras(req, res) {
           message: e.message,
         })) || [{ field: "unknown", message: error.message }];
         invalidCarreras.push({ index: i, carrera, error: fieldErrors });
-        continue;
+      } else {
+        value.__originalIndex = i;
+        validCarreras.push(value);
       }
-      validCarreras.push({ ...value, __originalIndex: i });
     }
     if (validCarreras.length === 0) {
       return handleErrorClient(
@@ -218,14 +221,14 @@ export async function importCarreras(req, res) {
 
 export async function getMyCarreras(req, res) {
   try {
-    const userAuth = req.user; // Asumiendo que el usuario autenticado está en req.user
-    if (!userAuth?.carrerasEncargado || userAuth.carrerasEncargado.length === 0)
-      return handleErrorClient(res, 404, "No tienes carreras asignadas");
+    const userAuth = req.user; // Usuario autenticado está en req.user
+    if (!userAuth?.id) {
+      return handleErrorClient(res, 401, "Usuario no autenticado");
+    }
 
-    const [carreras, errorCarreras] = await getCarrerasService(
-      userAuth.carrerasEncargado,
-    );
+    const [carreras, errorCarreras] = await getMisCarrerasService(userAuth.id);
     if (errorCarreras) return handleErrorClient(res, 404, errorCarreras);
+    
     carreras.length === 0
       ? handleSuccess(res, 204)
       : handleSuccess(res, 200, "Carreras encontradas", carreras);
