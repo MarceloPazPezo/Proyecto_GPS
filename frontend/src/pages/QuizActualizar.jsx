@@ -32,6 +32,7 @@ function QuizActualizar() {
         handleAnswerTextChange,
         handleToggleCorrectAnswer,
         toggleExtraAnswers,
+        handleImageChange,
     } = useQuizBuilder();
 
     const [isUpdating, setIsUpdating] = useState(false);
@@ -145,14 +146,36 @@ function QuizActualizar() {
                                 textoRespuesta: answer.text, // La API espera 'textoRespuesta'
                                 correcta: answer.isCorrect,  // La API espera 'correcta'
                             })),
+                        imagenField: slide.imagen && typeof slide.imagen !== 'string' ? `imagenPregunta${slide.id}` : null,
                     })),
             };
 
             // Para depuración: puedes ver en la consola el JSON exacto que se envía
-            console.log("JSON generado para enviar al backend:", JSON.stringify(jsonPayload, null, 2));
+            // console.log("JSON generado para enviar al backend:", JSON.stringify(jsonPayload, null, 2));
 
-            // --- 4. Llamar al servicio de actualización ---
-            await updateQuiz(quizId, jsonPayload);
+            // --- 4. Preparar FormData para enviar imágenes junto con el JSON ---
+            const formData = new FormData();
+            formData.append('data', JSON.stringify(jsonPayload));
+            
+            // Adjuntar imágenes nuevas (solo las que son archivos, no URLs)
+            const quizSlides = slides.filter(s => s.type === 'Quiz');
+            quizSlides.forEach(slide => {
+                if (slide.imagen && typeof slide.imagen !== 'string') {
+                    formData.append(`imagenPregunta${slide.id}`, slide.imagen);
+                }
+            });
+            
+            // Depuración: mostrar el contenido real de FormData
+            for (let pair of formData.entries()) {
+                if (pair[1] instanceof File) {
+                    console.log(pair[0], pair[1].name, pair[1].type);
+                } else {
+                    console.log(pair[0], pair[1]);
+                }
+            }
+
+            // --- 5. Llamar al servicio de actualización ---
+            await updateQuiz(quizId, formData);
             
             showSuccessAlert("¡Éxito!", "El quiz ha sido actualizado correctamente.");
             navigate('/biblioteca'); // Opcional: navegar a otra página tras el éxito
@@ -188,14 +211,16 @@ function QuizActualizar() {
                     </div>
                     <div className="flex-shrink-0 p-4 space-y-2 border-t ">
                         <button onClick={() => addSlide('Quiz')} className="w-full bg-[#4EB9FA]/80 text-[#2C3E50] font-bold py-2.5 px-4 rounded-lg hover:bg-[#B0DFFD]">Añadir pregunta</button>
-                        <button onClick={() => addSlide('Diapositiva')} className="w-full bg-[#4EB9FA]/80 text-[#2C3E50] font-bold py-2.5 px-4 rounded-lg hover:bg-[#B0DFFD]">Añadir diapositiva</button>
                     </div>
                 </div>
 
                 <main className="flex-grow p-4 md:p-6 overflow-y-auto order-2 "
                     style={{ backgroundImage: `url(${fondoSVG})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                     <QuizEditor 
-                        slide={activeSlide}
+                        slide={{
+                            ...activeSlide,
+                            onImageChange: handleImageChange
+                        }}
                         onQuestionTextChange={handleQuestionTextChange}
                         onAnswerTextChange={handleAnswerTextChange}
                         onToggleCorrect={handleToggleCorrectAnswer}

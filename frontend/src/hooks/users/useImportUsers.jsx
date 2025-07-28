@@ -10,6 +10,8 @@ export function useImportUsers({ onSuccess }) {
     rut: user.rut || '',
     email: user.email || '',
     password: user.password || '',
+    rol: user.rol || 'usuario', // Valor por defecto
+    idCarrera: user.idCarrera || user.carrera || null, // Opcional
   });
 
   const handleImport = async (users, options = {}) => {
@@ -34,19 +36,34 @@ export function useImportUsers({ onSuccess }) {
 
       // Notificar a la tabla si se pasa el callback onImported
       if (typeof options.onImported === 'function') {
+        // console.log('Respuesta del servidor:', res);
+        
         // indices importados
         const importedIndices = Array.isArray(res.imported)
           ? res.imported.map(u => u.index).filter(idx => idx !== null && idx !== undefined)
           : [];
+        
+        // console.log('Índices importados:', importedIndices);
+        
         // errores por fila
         const fieldMap = {
           nombreCompleto: 'nombreCompleto',
           email: 'email',
           rut: 'rut',
           password: 'password',
+          rol: 'rol',
+          idCarrera: 'idCarrera',
+          carrera: 'idCarrera', // Mapeo alternativo
         };
+        
         const errors = {};
-        (res.invalidUsers || res.details?.invalidUsers || []).forEach(u => {
+        const invalidUsers = res.invalidUsers || res.details?.invalidUsers || [];
+        
+        // console.log('Usuarios inválidos del servidor:', invalidUsers);
+        
+        invalidUsers.forEach(u => {
+          // console.log(`Procesando error para índice ${u.index}:`, u);
+          
           if (Array.isArray(u.error)) {
             errors[u.index] = {};
             u.error.forEach(err => {
@@ -56,16 +73,26 @@ export function useImportUsers({ onSuccess }) {
               }
               errors[u.index][mappedField] = err.message;
             });
+          } else if (typeof u.error === 'string') {
+            // Error general como string (ej: "Rut duplicado en base de datos")
+            // Determinar el campo apropiado basado en el mensaje
+            if (u.error.toLowerCase().includes('rut')) {
+              errors[u.index] = { rut: u.error };
+            } else if (u.error.toLowerCase().includes('email')) {
+              errors[u.index] = { email: u.error };
+            } else {
+              // Error general que se muestra en el campo más relevante o en todos
+              errors[u.index] = { _general: u.error };
+            }
           } else {
-            errors[u.index] = { _row: u.error };
+            errors[u.index] = { _row: u.error || 'Error desconocido' };
           }
         });
-        if (importedIndices.length > 0 || Object.keys(errors).length > 0) {
-          options.onImported(importedIndices, errors);
-        } else {
-          // Llama igual para forzar actualización en el padre
-          options.onImported([], {});
-        }
+        
+        // console.log('Errores procesados para la tabla:', errors);
+        
+        // SIEMPRE llamar onImported para actualizar la tabla
+        options.onImported(importedIndices, errors);
       }
 
       // Si la respuesta tiene usuarios importados y al menos uno fue exitoso
@@ -80,44 +107,18 @@ export function useImportUsers({ onSuccess }) {
         return true;
       } else if (Array.isArray(res.imported) && res.imported.length > 0 && Array.isArray(res.invalidUsers) && res.invalidUsers.length > 0) {
         // Importación parcial, NO cerrar el popup
-        let msg = `Se importaron ${res.imported.length} usuario(s) correctamente.\n\n${res.invalidUsers.length} usuario(s) no se importaron.`;
-        const detalles = res.invalidUsers.map((u, idx) => {
-          let m = `Fila ${u.index + 1}`;
-          if (u.user?.rut) m += ` | RUT: ${u.user.rut}`;
-          if (u.user?.email) m += ` | Email: ${u.user.email}`;
-          // Mostrar todos los mensajes de error si es array
-          if (Array.isArray(u.error)) {
-            m += `\nMotivo: ${u.error.map(e => e.message).join('; ')}`;
-          } else {
-            m += `\nMotivo: ${u.error}`;
-          }
-          return m;
-        }).join('\n\n');
         Swal.fire({
           icon: 'warning',
           title: 'Importación parcial',
-          html: `<div style="text-align:left;white-space:pre-wrap;">${msg}\n\n${detalles}</div>`,
-          width: 600,
+          text: `Se importaron ${res.imported.length} usuarios con éxito. ${res.invalidUsers.length} usuarios no se pudieron importar.`,
         });
         return false;
       } else if (Array.isArray(res.invalidUsers) && res.invalidUsers.length > 0) {
         // Ningún usuario fue importado, NO cerrar el popup
-        const detalles = res.invalidUsers.map((u, idx) => {
-          let msg = `Fila ${u.index + 1}`;
-          if (u.user?.rut) msg += ` | RUT: ${u.user.rut}`;
-          if (u.user?.email) msg += ` | Email: ${u.user.email}`;
-          if (Array.isArray(u.error)) {
-            msg += `\nMotivo: ${u.error.map(e => e.message).join('; ')}`;
-          } else {
-            msg += `\nMotivo: ${u.error}`;
-          }
-          return msg;
-        }).join('\n\n');
         Swal.fire({
           icon: 'error',
           title: 'Ningún usuario fue importado',
-          html: `<pre style="text-align:left;white-space:pre-wrap;">${detalles}</pre>`,
-          width: 600,
+          text: `${res.invalidUsers.length} usuarios no se pudieron importar. Revisa los errores en la tabla.`,
         });
         return false;
       } else {

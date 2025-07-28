@@ -76,13 +76,34 @@ export async function eliminarQuiz(Quiz) {
     }
 }
 
-export async function updateQuiz(idquiz,quiz) {
+export async function updateQuiz(idquiz, quiz) {
     try {
         console.log("Actualizando quiz:", quiz);
-        const response = await axios.patch(`/quiz/lote/${idquiz}`, quiz);
+        let config = {};
+        
+        // Si quiz es FormData, configuramos el header adecuado
+        if (quiz instanceof FormData) {
+            config = {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            };
+        }
+        
+        const response = await axios.patch(`/quiz/lote/${idquiz}`, quiz, config);
         return response.data;
     } catch (error) {
         console.error(error);
-        return;
+        throw error.response?.data || new Error("Error al actualizar el quiz");
+    }
+}
+
+export async function registrarSesion(idUser,idquiz){
+    try {
+        const res=await axios.post("/sesion",{idUser:idUser,idCuestionario:idquiz});
+        return res.data;
+    } catch (error) {
+        console.error(error);
+        return error;
     }
 }

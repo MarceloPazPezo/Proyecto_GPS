@@ -32,6 +32,9 @@ export async function loginService(user) {
       return [null, createErrorMessage("password", "La contraseña es incorrecta")];
     }
 
+    if(userFound.rol==='usuario')
+      return [null, createErrorMessage("rol", "No tiene acceso a estas caracteristicas")];
+
     let carrerasEncargado = [];
     if (userFound.rol === "encargado_carrera" && userFound.carrerasEncargado) {
       // Devuelve solo el id de cada carrera encargada

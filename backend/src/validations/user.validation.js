@@ -130,12 +130,12 @@ export const userBodyValidation = Joi.object({
     "number.positive": "El idCarrera debe ser un número positivo.",
   }),
 })
-  .or("nombreCompleto", "email", "password", "newPassword", "rut", "rol")
+  .or("nombreCompleto", "email", "password", "newPassword", "rut", "rol", "idCarrera")
   .unknown(false)
   .messages({
     "object.unknown": "No se permiten propiedades adicionales.",
     "object.missing":
-      "Debes proporcionar al menos un campo: nombreCompleto, email, password, newPassword, rut o rol.",
+      "Debes proporcionar al menos un campo: nombreCompleto, email, password, newPassword, rut, rol o idCarrera.",
   });
 
 export const userCreateValidation = Joi.object({
@@ -201,6 +201,7 @@ export const userCreateValidation = Joi.object({
       }
       return value;
     }, "Validación personalizada de rol")
+    .default("usuario")
     .messages({
       "string.base": "El rol debe ser de tipo string.",
       "any.only": `El rol debe ser uno de los siguientes: ${ROLES.join(", ")}`,
@@ -220,7 +221,96 @@ export const userCreateValidation = Joi.object({
     })
   }),
 })
-  .or("nombreCompleto", "email", "password", "rut", "rol")
+  .or("nombreCompleto", "email", "password", "rut", "rol", "idCarrera")
+  .unknown(false)
+  .messages({
+    "object.unknown": "No se permiten propiedades adicionales.",
+    "object.missing": "Debes proporcionar idCarrera o carreraCodigo.",
+  });
+// Validación específica para importación de MisUsuarios con código de carrera
+export const userImportMisUsuariosValidation = Joi.object({
+  nombreCompleto: Joi.string()
+    .min(15)
+    .max(50)
+    .pattern(stringPattern)
+    .required()
+    .messages({
+      "string.empty": "El nombre completo no puede estar vacío.",
+      "any.required": "El nombre completo es obligatorio.",
+      "string.base": "El nombre completo debe ser de tipo texto.",
+      "string.min": "El nombre completo debe tener al menos 15 caracteres.",
+      "string.max": "El nombre completo debe tener como máximo 50 caracteres.",
+      "string.pattern.base":
+        "El nombre completo solo puede contener letras y espacios.",
+    }),
+  rut: Joi.string().min(9).max(12).required().pattern(rutPattern).messages({
+    "string.empty": "El rut no puede estar vacío.",
+    "string.base": "El rut debe ser de tipo string.",
+    "string.min": "El rut debe tener como mínimo 9 caracteres.",
+    "string.max": "El rut debe tener como máximo 12 caracteres.",
+    "string.pattern.base":
+      "Formato rut inválido, debe ser xx.xxx.xxx-x o xxxxxxxx-x.",
+    "any.required": "El rut es obligatorio",
+  }),
+  email: Joi.string()
+    .min(15)
+    .max(100)
+    .email()
+    .required()
+    .messages({
+      "string.empty": "El correo electrónico no puede estar vacío.",
+      "any.required": "El correo electrónico es obligatorio.",
+      "string.base": "El correo electrónico debe ser de tipo texto.",
+      "string.email": "El correo electrónico debe finalizar en @gmail.cl.",
+      "string.min": "El correo electrónico debe tener al menos 15 caracteres.",
+      "string.max":
+        "El correo electrónico debe tener como máximo 100 caracteres.",
+    })
+    .custom(domainEmailValidator, "Validación dominio email"),
+  password: Joi.string()
+    .min(8)
+    .max(26)
+    .pattern(/^[a-zA-Z0-9]+$/)
+    .required()
+    .messages({
+      "string.empty": "La contraseña no puede estar vacía.",
+      "any.required": "La contraseña es obligatoria.",
+      "string.base": "La contraseña debe ser de tipo texto.",
+      "string.min": "La contraseña debe tener al menos 8 caracteres.",
+      "string.max": "La contraseña debe tener como máximo 26 caracteres.",
+      "string.pattern.base":
+        "La contraseña solo puede contener letras y números.",
+    }),
+  rol: Joi.any()
+    .custom((value, helpers) => {
+      if (typeof value !== "string") {
+        return helpers.error("string.base");
+      }
+      if (!ROLES.includes(value)) {
+        return helpers.error("any.only");
+      }
+      return value;
+    }, "Validación personalizada de rol")
+    .default("usuario")
+    .messages({
+      "string.base": "El rol debe ser de tipo string.",
+      "any.only": `El rol debe ser uno de los siguientes: ${ROLES.join(", ")}`,
+    }),
+  // Campos opcionales para carrera
+  idCarrera: Joi.number().integer().positive().allow(null).messages({
+    "number.base": "El idCarrera debe ser un número.",
+    "number.integer": "El idCarrera debe ser un número entero.",
+    "number.positive": "El idCarrera debe ser un número positivo.",
+  }),
+  carreraCodigo: Joi.string().min(2).max(10).allow('', null).messages({
+    "string.base": "El código de carrera debe ser de tipo texto.",
+    "string.min": "El código de carrera debe tener al menos 2 caracteres.",
+    "string.max": "El código de carrera debe tener como máximo 10 caracteres.",
+  }),
+  carrera: Joi.string().allow('', null).messages({
+    "string.base": "La carrera debe ser de tipo texto.",
+  }),
+})
   .unknown(false)
   .messages({
     "object.unknown": "No se permiten propiedades adicionales.",
@@ -301,7 +391,7 @@ export const userWithCarreraValidation = Joi.object({
     "any.required": "La carrera es obligatoria para esta operación."
   }),
 })
-  .or("nombreCompleto", "email", "password", "rut", "rol")
+  .or("nombreCompleto", "email", "password", "rut", "rol", "idCarrera")
   .unknown(false)
   .messages({
     "object.unknown": "No se permiten propiedades adicionales.",

@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import Form from './Form';
 import CloseIcon from '@assets/XIcon.svg';
 import QuestionIcon from '@assets/QuestionCircleIcon.svg';
@@ -6,8 +7,28 @@ import PropTypes from 'prop-types';
 import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
 import { createUser } from '@services/user.service.js';
 import { formatUserData } from '@helpers/formatData.js';
-
+import { getCarreras } from '@services/carrera.service.js';
 export default function CreateUserPopup({ show, setShow, dataUsers }) {
+    const [carreras, setCarreras] = useState([]);
+    const [loadingCarreras, setLoadingCarreras] = useState(false);
+
+    useEffect(() => {
+        if (show) {
+            setLoadingCarreras(true);
+            getCarreras()
+                .then((res) => {
+                    // Si viene como { data: [...] }, usar res.data, si no, usar res
+                    let carrerasArr = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : []);
+                    setCarreras(carrerasArr);
+                })
+                .catch((err) => {
+                    console.error('Error obteniendo carreras:', err);
+                    setCarreras([]);
+                })
+                .finally(() => setLoadingCarreras(false));
+        }
+    }, [show]);
+
     const {
         errorNombreCompleto,
         errorEmail,
@@ -16,11 +37,17 @@ export default function CreateUserPopup({ show, setShow, dataUsers }) {
         errorData,
         handleInputChange,
     } = useCreateUser();
-    
+
     const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d{6}|[1-2]\d{7}|29\.999\.999|29999999)-[\dkK]$/);
 
     const handleSubmit = async (createdUserData) => {
         if (createdUserData) {
+            // Asegurar que idCarrera sea número o no se envíe
+            if (createdUserData.idCarrera === null || createdUserData.idCarrera === '' || createdUserData.idCarrera === undefined) {
+                delete createdUserData.idCarrera;
+            } else {
+                createdUserData.idCarrera = Number(createdUserData.idCarrera);
+            }
             try {
                 const response = await createUser(createdUserData);
 
@@ -116,6 +143,32 @@ export default function CreateUserPopup({ show, setShow, dataUsers }) {
                                             { value: 'usuario', label: 'Usuario' },
                                         ],
                                         required: true,
+                                    },
+                                    {
+                                        label: (
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-semibold text-[#2C3E50]">Carrera</span>
+                                                <span className="relative group">
+                                                    <img src={QuestionIcon} alt="info" className="w-4 h-4 cursor-pointer" />
+                                                    <span className="absolute left-6 top-1 z-10 hidden group-hover:block bg-white text-xs text-[#2C3E50] border border-[#4EB9FA]/30 rounded px-2 py-1 shadow-lg min-w-max">
+                                                        Este campo es opcional
+                                                    </span>
+                                                </span>
+                                            </div>
+                                        ),
+                                        name: "idCarrera",
+                                        fieldType: 'select',
+                                        required: false,
+                                        defaultValue: null,
+                                        options: loadingCarreras
+                                            ? [{ value: null, label: 'Cargando...' }]
+                                            : carreras.length > 0
+                                                ? carreras.map(c => ({ value: c.id, label: `${c.nombre} (${c.codigo})` }))
+                                                : [{ value: null, label: 'No hay carreras disponibles' }],
+                                        errorMessageData: null,
+                                        onChange: (e) => {
+                                            // Si tienes lógica de error, puedes agregarla aquí
+                                        },
                                     },
                                     {
                                         label: (

@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { login } from '@services/auth.service.js';   // Asegúrate de que esta ruta sea correcta
 import useLogin from '@hooks/auth/useLogin.jsx';     // Asegúrate de que esta ruta sea correcta
 import fondoSVG from '../assets/fondo_azul.svg'; 
-
+import {showErrorAlert} from "../helpers/sweetAlert.js"
 const Login = () => {
     const navigate = useNavigate();
     const {
@@ -15,10 +15,12 @@ const Login = () => {
     const loginSubmit = async (data) => {
         try {
             const response = await login(data);
+            //console.log(response)
             if (response.status === 'Success') {
                 navigate('/home');
             } else if (response.status === 'Client error') {
                 errorData(response.details);
+                showErrorAlert("Acceso denegado",response.details.message)
             }
         } catch (error) {
             console.log(error);

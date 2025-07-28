@@ -1,11 +1,13 @@
 
+import React, { useState, useEffect } from 'react';
 import Form from './Form';
 import CloseIcon from '@assets/XIcon.svg';
 import QuestionIcon from '@assets/QuestionCircleIcon.svg';
-
+import { getCarreras } from '../services/carrera.service';
 export default function UpdateUserPopup({ show, setShow, data, action }) {
     const userData = data && data.length > 0 ? data[0] : {};
 
+    // console.log("Datos del usuario a editar:", userData);
     // Mapeo de nombres legibles a valores de BD
     const rolMap = {
         'Administrador': 'administrador',
@@ -21,6 +23,26 @@ export default function UpdateUserPopup({ show, setShow, data, action }) {
         'usuario': 'usuario',
     };
     const rolValue = rolMap[userData.rol] || "";
+
+    // Estado para carreras gestionadas
+    const [carreras, setCarreras] = React.useState([]);
+    const [loadingCarreras, setLoadingCarreras] = React.useState(false);
+
+    React.useEffect(() => {
+        if (show) {
+            setLoadingCarreras(true);
+            getCarreras()
+                .then((res) => {
+                    let carrerasArr = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : []);
+                    setCarreras(carrerasArr);
+                })
+                .catch((err) => {
+                    console.error('Error obteniendo carreras:', err);
+                    setCarreras([]);
+                })
+                .finally(() => setLoadingCarreras(false));
+        }
+    }, [show]);
 
     const handleSubmit = (formData) => {
         action(formData);
@@ -51,7 +73,7 @@ export default function UpdateUserPopup({ show, setShow, data, action }) {
                                 title={null}
                                 autoComplete="off"
                                 size="max-w-xs sm:max-w-2xl"
-                                fields={[ 
+                                fields={[
                                     {
                                         label: "Nombre completo",
                                         name: "nombreCompleto",
@@ -107,6 +129,32 @@ export default function UpdateUserPopup({ show, setShow, data, action }) {
                                         ],
                                         required: true,
                                         defaultValue: rolValue,
+                                    },
+                                    {
+                                        label: (
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-semibold text-[#2C3E50]">Carrera</span>
+                                                <span className="relative group">
+                                                    <img src={QuestionIcon} alt="info" className="w-4 h-4 cursor-pointer" />
+                                                    <span className="absolute left-6 top-1 z-10 hidden group-hover:block bg-white text-xs text-[#2C3E50] border border-[#4EB9FA]/30 rounded px-2 py-1 shadow-lg min-w-max">
+                                                        Este campo es opcional
+                                                    </span>
+                                                </span>
+                                            </div>
+                                        ),
+                                        name: "idCarrera",
+                                        fieldType: 'select',
+                                        required: false,
+                                        defaultValue: userData.idCarrera?.id || userData.idCarrera || "",
+                                        options: loadingCarreras
+                                            ? [{ value: '', label: 'Cargando...' }]
+                                            : carreras.length > 0
+                                                ? carreras.map(c => ({ value: c.id, label: `${c.nombre} (${c.codigo})` }))
+                                                : [{ value: '', label: 'No hay carreras disponibles' }],
+                                        errorMessageData: null,
+                                        onChange: (e) => {
+                                            // Si tienes lógica de error, puedes agregarla aquí
+                                        },
                                     },
                                     {
                                         label: (

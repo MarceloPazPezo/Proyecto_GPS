@@ -9,7 +9,7 @@ import express, { json, urlencoded } from "express";
 import { cookieKey, HOST, PORT } from "./config/configEnv.js";
 import { connectDB } from "./config/configDb.js";
 import { initializeMinio } from "./config/configMinio.js";
-import { createUsers, createCarreras } from "./config/initialSetup.js";
+import { createUsers, createCarreras, createMural, createNotas, createtutor } from "./config/initialSetup.js";
 import { passportJwtSetup } from "./auth/passport.auth.js";
 import http from 'http'
 import { Server } from 'socket.io'
@@ -87,10 +87,14 @@ async function setupServer() {
 async function setupAPI() {
   try {
     await connectDB();
-    //await initializeMinio();
+    await initializeMinio();
     await setupServer();
     await createUsers();
     await createCarreras();
+    await createtutor();
+    await createMural();
+    await createNotas();
+    
   } catch (error) {
     console.log("Error en index.js -> setupAPI(), el error es: ", error);
   }

@@ -124,8 +124,6 @@ export default function UpdateMiUsuarioPopup({ show, setShow, data, action }) {
                                         name: "rol",
                                         fieldType: 'select',
                                         options: [
-                                            { value: 'administrador', label: 'Administrador' },
-                                            { value: 'encargado_carrera', label: 'Encargado de Carrera' },
                                             { value: 'tutor', label: 'Tutor' },
                                             { value: 'tutorado', label: 'Tutorado' },
                                             { value: 'usuario', label: 'Usuario' },
