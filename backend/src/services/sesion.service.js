@@ -1,11 +1,11 @@
 "use strict";
 import Sesion from "../entity/sesion.entity.js";
-import { AppDataSource } from "../config/configDb";
+import { AppDataSource } from "../config/configDb.js"
 
-export async function createSesionService(Sesion) {
+export async function createSesionService(data) {
     try{
         const SesionRepository = AppDataSource.getRepository(Sesion);
-        const { idCuestionario, idUser } = Sesion;
+        const { idCuestionario, idUser } = data;
         const newSesion = SesionRepository.create({
             idCuestionario: idCuestionario, idUser: idUser
         });

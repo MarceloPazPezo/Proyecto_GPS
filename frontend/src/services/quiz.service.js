@@ -97,3 +97,13 @@ export async function updateQuiz(idquiz, quiz) {
         throw error.response?.data || new Error("Error al actualizar el quiz");
     }
 }
+
+export async function registrarSesion(idUser,idquiz){
+    try {
+        const res=await axios.post("/sesion",{idUser:idUser,idCuestionario:idquiz});
+        return res.data;
+    } catch (error) {
+        console.error(error);
+        return error;
+    }
+}

@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { socket } from "../main";
-import { getQuizByIdLote } from "../services/quiz.service";
+import { getQuizByIdLote, registrarSesion } from "../services/quiz.service";
 import fondoSVG from '../assets/fondo_azul.svg';
 import { createDefaultAnswers, createExtraAnswers } from '../helpers/quizHelpers.js';
 
@@ -56,7 +56,7 @@ const Host = () => {
     };
 
     const recieveAnswer = (data) => {
-        setPlayersAnswered(prev => prev + 1); 
+        setPlayersAnswered(prev => prev + 1);
         if (showOptions && data.correcta === 'true') {
             const newScores = scores.map((player) => {
                 if (player.socket === data.socket) {
@@ -69,9 +69,17 @@ const Host = () => {
         }
     };
 
-    const siguientePreg = () => {
+    const siguientePreg = async () => {
         index++;
         if (index >= Qz.length) {
+            try {
+                const idUser = JSON.parse(sessionStorage.getItem("usuario")).id;
+                //console.log(idUser,quizId)
+                const resp = await registrarSesion(idUser, quizId);
+                console.log(resp)
+            } catch (error) {
+                console.error(error);
+            }
             sessionStorage.removeItem('participantes');
             sessionStorage.removeItem('sala');
             sessionStorage.setItem("scores", JSON.stringify(scores));
@@ -100,7 +108,7 @@ const Host = () => {
         }
     };
 
-    const finalizarAct = () => {
+    const finalizarAct = async () => {
         socket.emit("finnish", { sala: sessionStorage.getItem('sala') });
         sessionStorage.removeItem("sala");
         sessionStorage.removeItem("participantes");
@@ -151,7 +159,7 @@ const Host = () => {
                             value={timer}
                         />
                         <button onClick={setUpActividad}
-                            disabled={timer<5||timer===null}
+                            disabled={timer < 5 || timer === null}
                             className="w-full max-w-xs mt-6 bg-green-500 border-2 border-green-700 text-white font-bold py-3 rounded-lg transition-all duration-200 hover:bg-green-600 hover:-translate-y-0.5 shadow-md">
                             Iniciar Actividad
                         </button>
@@ -165,15 +173,15 @@ const Host = () => {
                                     {/* Mitad izquierda - Imagen */}
                                     <div className="w-1/2 flex items-center justify-center">
                                         <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg max-w-full max-h-full flex items-center justify-center">
-                                            <img 
-                                                src={pregunta.imagenUrl} 
-                                                alt="Pregunta" 
+                                            <img
+                                                src={pregunta.imagenUrl}
+                                                alt="Pregunta"
                                                 className="max-w-full max-h-full object-contain rounded-lg"
                                                 style={{ maxHeight: '400px' }}
                                             />
                                         </div>
                                     </div>
-                                    
+
                                     {/* Mitad derecha - Alternativas */}
                                     <div className="w-1/2 flex flex-col justify-center gap-3">
                                         {pregunta.Respuestas.map((option, index) => {

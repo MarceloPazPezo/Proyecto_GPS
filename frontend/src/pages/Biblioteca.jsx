@@ -113,7 +113,7 @@ const Biblioteca = () => {
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                     <h1 className="text-3xl font-bold text-[#2C3E50]">Mi Biblioteca</h1>
                 </div>
-                <p class="text-gray-500 mt-1">Gestiona tus cuestionarios, nubes de palabras y pizarras.</p>
+                <p className="text-gray-500 mt-1">Gestiona tus cuestionarios, nubes de palabras y pizarras.</p>
 
                 {/* === Cuestionarios === */}
                 <section className="mt-12 mb-6">

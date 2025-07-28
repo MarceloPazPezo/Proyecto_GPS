@@ -10,7 +10,7 @@ import EXRoutes from "./EX.routes.js";
 import muralRoutes from "./mural.routes.js";
 import notasRoute from "./notes.routes.js";
 import carreraRoutes from "./carrera.routes.js";
-
+import sesionRoutes from "./sesion.routes.js"
 const router = Router();
 
 router
@@ -23,6 +23,7 @@ router
   .use("/notas", notasRoute)
   .use("/mural", muralRoutes)
   .use("/EX", EXRoutes)
+  .use("/sesion",sesionRoutes)
   .use("/carrera", carreraRoutes);
 
 export default router;
