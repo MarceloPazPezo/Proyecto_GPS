@@ -14,9 +14,9 @@ async function createUsers() {
     await Promise.all([
       userRepository.save(
         userRepository.create({
-          nombreCompleto: "Diego Alexis Salazar Jara",
-          rut: "21308770-3",
-          email: "administrador2024@gmail.cl",
+          nombreCompleto: "Victor Manuel Lopez Galvez",
+          rut: "20322376-5",
+          email: "administrador@ubiobio.cl",
           password: await encryptPassword("admin1234"),
           rol: "administrador",
         }),
@@ -25,7 +25,7 @@ async function createUsers() {
         userRepository.create({
           nombreCompleto: "Diego Sebastián Ampuero Belmar",
           rut: "21151897-9",
-          email: "usuario1.2024@gmail.cl",
+          email: "usuario1.2024@ubiobio.cl",
           password: await encryptPassword("user1234"),
           rol: "usuario",
         })
@@ -33,8 +33,8 @@ async function createUsers() {
         userRepository.save(
           userRepository.create({
             nombreCompleto: "Alexander Benjamín Marcelo Carrasco Fuentes",
-            rut: "20630735-8",
-            email: "usuario2.2024@gmail.cl",
+            rut: "1500001-1",
+            email: "usuario1@ubiobio.cl",
             password: await encryptPassword("user1234"),
             rol: "usuario",
           }),
@@ -42,35 +42,8 @@ async function createUsers() {
       userRepository.save(
         userRepository.create({
           nombreCompleto: "Pablo Andrés Castillo Fernández",
-          rut: "20738450-K",
-          email: "usuario3.2024@gmail.cl",
-          password: await encryptPassword("user1234"),
-          rol: "usuario",
-        }),
-      ),
-      userRepository.save(
-        userRepository.create({
-          nombreCompleto: "Felipe Andrés Henríquez Zapata",
-          rut: "20976635-3",
-          email: "usuario4.2024@gmail.cl",
-          password: await encryptPassword("user1234"),
-          rol: "usuario",
-        }),
-      ),
-      userRepository.save(
-        userRepository.create({
-          nombreCompleto: "Diego Alexis Meza Ortega",
-          rut: "21172447-1",
-          email: "usuario5.2024@gmail.cl",
-          password: await encryptPassword("user1234"),
-          rol: "usuario",
-        }),
-      ),
-      userRepository.save(
-        userRepository.create({
-          nombreCompleto: "Juan Pablo Rosas Martin",
-          rut: "20738415-1",
-          email: "usuario6.2024@gmail.cl",
+          rut: "1500002-2",
+          email: "usuario2@ubiobio.cl",
           password: await encryptPassword("user1234"),
           rol: "usuario",
         }),
@@ -78,8 +51,17 @@ async function createUsers() {
       userRepository.save(
         userRepository.create({
           nombreCompleto: "Cristian Andrés Salazar Jara",
-          rut: "21000000-3",
-          email: "encargado1.2025@ubiobio.cl",
+          rut: "20000001-1",
+          email: "encargado1@ubiobio.cl",
+          password: await encryptPassword("encargado1234"),
+          rol: "encargado_carrera",
+        }),
+      ),
+      userRepository.save(
+        userRepository.create({
+          nombreCompleto: "Marcelo Alfredo Paz Pezo",
+          rut: "20000002-2",
+          email: "encargado2@ubiobio.cl",
           password: await encryptPassword("encargado1234"),
           rol: "encargado_carrera",
         }),
@@ -99,7 +81,7 @@ async function createCarreras() {
     if (count > 0) return;
 
     // Buscar el encargado por email
-    const encargado = await userRepository.findOne({ where: { email: "encargado1.2025@ubiobio.cl" } });
+    const encargado = await userRepository.findOne({ where: { email: "encargado1@ubiobio.cl" } });
     if (!encargado) throw new Error("No se encontró el encargado de carrera");
 
     await Promise.all([
