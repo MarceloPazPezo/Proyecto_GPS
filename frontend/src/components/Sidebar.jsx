@@ -5,12 +5,10 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { logout } from '@services/auth.service.js';
 import { useAuth } from '@context/AuthContext';
 import { FiMenu, FiX } from "react-icons/fi";
-import { MdExpandMore, MdHome, MdLibraryBooks, MdGroup, MdSupervisorAccount, MdCollectionsBookmark, MdPeople, MdAdminPanelSettings, MdSchool, MdPerson } from "react-icons/md";
+import { MdHome, MdLibraryBooks, MdGroup, MdSupervisorAccount, MdCollectionsBookmark, MdAdminPanelSettings, MdSchool, MdPerson } from "react-icons/md";
 // Estado para el desplegable de Recursos Humanos
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
-    const [openRRHH, setOpenRRHH] = React.useState(true);
-
     const navigate = useNavigate();
     const { user } = useAuth();
     const userRole = user?.rol;
@@ -34,12 +32,20 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                     roleLabel: 'Encargado de Carrera',
                     borderColor: 'border-blue-300'
                 };
-            case 'estudiante':
+            case 'tutor':
+                return {
+                    bgColor: 'bg-gradient-to-r from-yellow-500 to-yellow-600',
+                    textColor: 'text-white',
+                    icon: <MdPerson size={24} />,
+                    roleLabel: 'Tutor',
+                    borderColor: 'border-yellow-300'
+                };
+            case 'tutorado':
                 return {
                     bgColor: 'bg-gradient-to-r from-green-500 to-green-600',
                     textColor: 'text-white',
                     icon: <MdPerson size={24} />,
-                    roleLabel: 'Estudiante',
+                    roleLabel: 'Tutorado',
                     borderColor: 'border-green-300'
                 };
             default:
